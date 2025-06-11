@@ -5,30 +5,41 @@ set -e
 BACKUP_DIR="$HOME/.config-backups/$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$BACKUP_DIR"
 
-echo "🔗 Creating symlinks for dotfiles (with backups)..."
+echo "📦 Backing up current configs to $BACKUP_DIR"
 
-# Symlink for Neovim
+# Backup Neovim config
 if [ -e "$HOME/.config/nvim" ]; then
-  echo "📦 Backing up ~/.config/nvim to $BACKUP_DIR"
   mv "$HOME/.config/nvim" "$BACKUP_DIR/"
+  echo "✅ Backed up ~/.config/nvim"
 fi
-ln -s "$HOME/dotfiles/config/nvim" "$HOME/.config/nvim"
-echo "✅ Linked nvim config"
 
-# Symlink for WezTerm
+# Backup WezTerm config (directory or single file)
 if [ -e "$HOME/.config/wezterm" ]; then
-  echo "📦 Backing up ~/.config/wezterm to $BACKUP_DIR"
   mv "$HOME/.config/wezterm" "$BACKUP_DIR/"
+  echo "✅ Backed up ~/.config/wezterm"
+elif [ -e "$HOME/.wezterm.lua" ]; then
+  mv "$HOME/.wezterm.lua" "$BACKUP_DIR/"
+  echo "✅ Backed up ~/.wezterm.lua"
 fi
-ln -s "$HOME/dotfiles/config/wezterm" "$HOME/.config/wezterm"
-echo "✅ Linked wezterm config"
 
-# Symlink for .zshrc
+# Backup .zshrc
 if [ -e "$HOME/.zshrc" ]; then
-  echo "📦 Backing up ~/.zshrc to $BACKUP_DIR"
   mv "$HOME/.zshrc" "$BACKUP_DIR/"
+  echo "✅ Backed up ~/.zshrc"
 fi
+
+echo "🔗 Creating symlinks..."
+
+# Symlink Neovim
+ln -s "$HOME/dotfiles/config/nvim" "$HOME/.config/nvim"
+echo "✅ Linked ~/.config/nvim"
+
+# Symlink WezTerm directory
+ln -s "$HOME/dotfiles/config/wezterm" "$HOME/.config/wezterm"
+echo "✅ Linked ~/.config/wezterm"
+
+# Symlink .zshrc
 ln -s "$HOME/dotfiles/home/.zshrc" "$HOME/.zshrc"
-echo "✅ Linked .zshrc"
+echo "✅ Linked ~/.zshrc"
 
 echo "🎉 All done! Backups saved in $BACKUP_DIR"
