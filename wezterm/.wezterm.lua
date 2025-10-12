@@ -7,7 +7,7 @@ config.color_scheme = "Catppuccin Macchiato"
 config.enable_tab_bar = true
 config.window_decorations = "RESIZE"
 config.window_background_opacity = 0.5
-config.font = wezterm.font("JetBrains Mono", { weight = "Regular", stretch = "Normal", style = "Normal" })
+config.font = wezterm.font("CaskaydiaCove Nerd Font", { weight = "Regular", stretch = "Normal", style = "Normal" })
 config.window_close_confirmation = "AlwaysPrompt"
 config.scrollback_lines = 3000
 config.inactive_pane_hsb = {
