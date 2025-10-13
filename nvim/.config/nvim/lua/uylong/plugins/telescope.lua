@@ -24,7 +24,10 @@ return {
           i = {
             ["<C-k>"] = actions.move_selection_previous,
             ["<C-j>"] = actions.move_selection_next,
-            ["<C-q>"] = actions.send_selected_to_qflist + actions.open_qflist,
+            ["<C-q>"] = function(prompt_bufnr)
+              actions.send_to_qflist(prompt_bufnr)
+              actions.open_qflist()
+            end,
           },
         },
       },

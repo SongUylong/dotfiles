@@ -1,16 +1,60 @@
+local session_tracker_file = vim.fn.stdpath("data") .. "/last_session_name.txt"
+
+local function get_last_session()
+	if vim.fn.filereadable(session_tracker_file) == 1 then
+		return vim.fn.readfile(session_tracker_file)[1]
+	end
+	return nil
+end
+
+local function set_last_session(name)
+	vim.fn.writefile({ name }, session_tracker_file)
+end
+
 return {
-  "rmagatti/auto-session",
-  config = function()
-    local auto_session = require("auto-session")
+	"rmagatti/auto-session",
+	lazy = false,
+	keys = {
+		-- Save session (prompt if new, overwrite if exists)
+		{
+			"<leader>ss",
+			function()
+				local current_session_name = get_last_session()
+				local name
 
-    auto_session.setup({
-      auto_restore_enabled = false,
-      auto_session_suppress_dirs = { "~/", "~/Dev/", "~/Downloads", "~/Documents" },
-    })
+				if current_session_name then
+					name = current_session_name
+				else
+					name = vim.fn.input("Session name: ")
+				end
 
-    local keymap = vim.keymap
+				if name ~= "" then
+					vim.cmd("AutoSession save " .. name)
+					set_last_session(name)
+					print("Saved session: " .. name)
+				else
+					print("Session not saved (no name entered)")
+				end
+			end,
+			desc = "Save session (prompt if new, overwrite if exists)",
+		},
 
-    keymap.set("n", "<leader>sr", "<cmd>SessionRestore<CR>", { desc = "Restore session for cwd" })
-    keymap.set("n", "<leader>ss", "<cmd>SessionSave<CR>", { desc = "Save session for auto session root dir" })
-  end,
+		{
+			"<leader>sr",
+			"<cmd>AutoSession search<CR>",
+			desc = "Session picker (Telescope)",
+		},
+	},
+
+	opts = {
+		auto_save = false, -- disable auto save
+		auto_restore = false, -- disable auto restore
+		auto_create = false, -- don't create sessions automatically
+		suppressed_dirs = { "~/", "~/Downloads", "~/Documents" },
+		root_dir = vim.fn.stdpath("data") .. "/sessions/",
+		session_lens = {
+			picker = "telescope", -- use Telescope
+			load_on_setup = true,
+		},
+	},
 }
