@@ -104,11 +104,15 @@ outer.left = 5
 # end tell'
 # '''
 
-# Launch apps
-alt-c = 'exec-and-forget open -a /Applications/Cursor.app'
-alt-t = 'exec-and-forget open -a /Applications/WezTerm.app'
-alt-b = 'exec-and-forget open -a /Applications/Google\ Chrome.app'
-alt-n = 'exec-and-forget open -a /Applications/Notion.app'
+# Launch apps (new instances)
+alt-c = 'exec-and-forget open -n /Applications/Cursor.app'
+alt-t = 'exec-and-forget open -n /Applications/WezTerm.app'
+alt-b = 'exec-and-forget open -n /Applications/Google\ Chrome.app'
+alt-n = 'exec-and-forget open -n /Applications/Notion.app'
+
+# Close current window
+alt-q = 'close'
+
 alt-shift-r = ['exec-and-forget /opt/homebrew/bin/sketchybar --reload']
 
 # See: https://nikitabobko.github.ioeAeroSpace/commands#layout
@@ -175,5 +179,4 @@ alt-shift-h = ['join-with left', 'mode main']
 alt-shift-j = ['join-with down', 'mode main']
 alt-shift-k = ['join-with up', 'mode main']
 alt-shift-l = ['join-with right', 'mode main']
-
 
