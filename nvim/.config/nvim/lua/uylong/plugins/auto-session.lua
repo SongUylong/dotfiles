@@ -1,60 +1,52 @@
-local session_tracker_file = vim.fn.stdpath("data") .. "/last_session_name.txt"
-
-local function get_last_session()
-	if vim.fn.filereadable(session_tracker_file) == 1 then
-		return vim.fn.readfile(session_tracker_file)[1]
-	end
-	return nil
-end
-
-local function set_last_session(name)
-	vim.fn.writefile({ name }, session_tracker_file)
-end
-
 return {
 	"rmagatti/auto-session",
-	lazy = false,
+	lazy = false, -- Necessary for auto-restoring on startup
+
 	keys = {
-		-- Save session (prompt if new, overwrite if exists)
 		{
-			"<leader>ss",
+			-- For SAVING a session WITH A CUSTOM NAME. This will prompt you.
+			"<leader>ss", -- Note the capital 'S'
 			function()
-				local current_session_name = get_last_session()
-				local name
-
-				if current_session_name then
-					name = current_session_name
+				local session_name = vim.fn.input("Enter session name: ")
+				if session_name and session_name ~= "" then
+					vim.cmd("AutoSession save " .. session_name)
+					vim.notify("Session saved as: " .. session_name)
 				else
-					name = vim.fn.input("Session name: ")
-				end
-
-				if name ~= "" then
-					vim.cmd("AutoSession save " .. name)
-					set_last_session(name)
-					print("Saved session: " .. name)
-				else
-					print("Session not saved (no name entered)")
+					vim.notify("Session save cancelled.", vim.log.levels.WARN)
 				end
 			end,
-			desc = "Save session (prompt if new, overwrite if exists)",
+			desc = "Save session with a custom name",
 		},
-
 		{
+			-- For RESTORING, DELETING, and SEARCHING sessions with Telescope.
 			"<leader>sr",
 			"<cmd>AutoSession search<CR>",
-			desc = "Session picker (Telescope)",
+			desc = "Search/Restore/Delete sessions (Telescope)",
 		},
 	},
 
 	opts = {
-		auto_save = false, -- disable auto save
-		auto_restore = false, -- disable auto restore
-		auto_create = false, -- don't create sessions automatically
-		suppressed_dirs = { "~/", "~/Downloads", "~/Documents" },
-		root_dir = vim.fn.stdpath("data") .. "/sessions/",
+		-- Automatically restore the session for the current directory if one exists.
+		auto_restore = true,
+
+		-- We set these to false so the plugin only acts when you press the keymaps.
+		auto_save = false,
+		auto_create = false,
+
+		-- This section enables the Telescope UI (the session_lens).
 		session_lens = {
-			picker = "telescope", -- use Telescope
+			picker = "telescope", -- Use Telescope as the interface
 			load_on_setup = true,
+			-- Default keymap to delete a session is <C-d> in insert mode.
+			mappings = {
+				delete_session = { "i", "<C-d>" },
+			},
 		},
+		-- Recommended setting to make sessions more useful
+		sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions",
+
+		log_level = "error",
+		root_dir = vim.fn.stdpath("data") .. "/sessions/",
+		suppressed_dirs = { "~/", "~/Downloads", "~/Documents" },
 	},
 }
