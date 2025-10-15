@@ -1,5 +1,6 @@
 local wezterm = require("wezterm")
 local config = wezterm.config_builder()
+local act = wezterm.action
 
 config.enable_wayland = false
 config.font_size = 20
@@ -41,7 +42,12 @@ bar.apply_to_config(config, {
 		},
 		workspace = {
 			enabled = true,
+			icon = wezterm.nerdfonts.fa_briefcase,
 			color = 6,
+			format = function()
+				local name = wezterm.mux.get_active_workspace()
+				return string.format(" %s ", name)
+			end,
 		},
 		zoom = {
 			enabled = true,
@@ -243,4 +249,8 @@ wezterm.on("close-all-other-tabs", function(window, pane)
 		end
 	end
 end)
+--aerospace
+table.insert(config.keys, { key = "e", mods = "ALT", action = "Nop" })
+
+-- Let AeroSpace handle Alt+e instead of WezTerm
 return config

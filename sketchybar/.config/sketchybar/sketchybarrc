@@ -6,6 +6,8 @@ ITEM_DIR="$CONFIG_DIR/items"
 ##### Bar Appearance #####
 sketchybar --bar position=top height=40 blur_radius=0 color=0x40000000
 
+#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 ##### Default Item Style #####
 default=(
   padding_left=6
@@ -21,6 +23,8 @@ default=(
   updates=on
 )
 sketchybar --default "${default[@]}"
+
+#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ##### Aerospace Workspaces #####
 sketchybar --add event aerospace_workspace_change
@@ -53,6 +57,25 @@ for monitor in $(aerospace list-monitors --format "%{monitor-appkit-nsscreen-scr
       script="$PLUGIN_DIR/aerospace.sh $sid"
   done
 done
+
+# --- Kanika Item: Added to the left side, right after workspaces ---
+sketchybar --add item kanika left \
+  --set kanika \
+  icon="" \
+  label="Potato" \
+  label.drawing=on \
+  icon.padding_left=8 \
+  icon.padding_right=4 \
+  label.padding_right=8 \
+  background.color=0xff3c3e4f \
+  background.corner_radius=8 \
+  background.height=28 \
+  background.drawing=on \
+  script="" \
+  click_script="" \
+  update_freq=0
+
+#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ##### Right Side Items #####
 sketchybar --add item clock right \
