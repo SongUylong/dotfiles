@@ -132,7 +132,6 @@ eval "$(zoxide init --cmd cd zsh)"
 # ------------------------------------------------------------------------------
 # TheFuck Integration
 # ------------------------------------------------------------------------------
-eval $(thefuck --alias fk)
 
 export PATH="$PATH:$HOME/.config/composer/vendor/bin"
     export NVM_DIR="$HOME/.nvm"
@@ -151,3 +150,6 @@ function y() {
 	fi
 	rm -f -- "$tmp"
 }
+
+eval $(thefuck --alias fk)
+eval "$(pyenv init -)"

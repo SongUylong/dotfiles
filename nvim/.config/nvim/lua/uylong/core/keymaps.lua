@@ -5,9 +5,12 @@ local keymap = vim.keymap -- for conciseness
 keymap.set("i", "jk", "<ESC>", { desc = "Exit insert mode with jk" })
 
 keymap.set("n", "<leader>nh", ":nohl<CR>", { desc = "Clear search highlights" })
-
 -- increment/decrement numbers
-keymap.set({ "n", "v" }, "<leader>d", [["_d]], { desc = "Delete without yank" })
+keymap.set({ "n", "v" }, "dd", [["_d]], {
+	noremap = true,
+	silent = true,
+	desc = "Delete without yank",
+})
 
 keymap.set("n", "<leader>-", "<C-x>", { desc = "Decrement number" }) -- decrement
 -- window management
@@ -81,8 +84,3 @@ vim.keymap.set("t", "<C-`>", function()
 end, {
 	desc = "Toggle bottom terminal (from terminal mode)",
 })
--- Execute Lua code in visual mode
-vim.keymap.set("v", "<leader>x", function()
-	local code = table.concat(vim.fn.getline("v", "."), "\n")
-	load(code)()
-end, { desc = "Execute selected Lua code" })
