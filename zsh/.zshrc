@@ -106,6 +106,7 @@ alias ldate='lsd -l --sort time --group-dirs first'
 alias lgit='lsd -l --git --group-dirs first'
 alias lt='tree -a'
 alias cursor='~/Applications/cursor.AppImage --no-sandbox'
+alias nvid='neovide & disown && exit'
 # ------------------------------------------------------------------------------
 # Fzf Integration
 # ------------------------------------------------------------------------------

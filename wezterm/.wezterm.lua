@@ -3,14 +3,18 @@ local config = wezterm.config_builder()
 local act = wezterm.action
 
 config.enable_wayland = false
-config.font_size = 20
+config.font_size = 16
 config.color_scheme = "Catppuccin Macchiato"
 config.enable_tab_bar = true
 config.window_decorations = "RESIZE"
 config.window_background_opacity = 0.5
 config.font = wezterm.font("CaskaydiaCove Nerd Font", { weight = "Regular", stretch = "Normal", style = "Normal" })
 config.window_close_confirmation = "AlwaysPrompt"
+config.harfbuzz_features = { "kern", "liga", "clig", "calt" }
+config.freetype_load_target = "Normal"
+config.freetype_render_target = "Normal"
 config.scrollback_lines = 3000
+
 config.inactive_pane_hsb = {
 	saturation = 0.24,
 	brightness = 0.5,

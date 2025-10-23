@@ -110,7 +110,9 @@ alt-b = 'exec-and-forget open -n /Applications/Google\ Chrome.app'
 alt-n = 'exec-and-forget open -n /Applications/Notion.app'
 
 # Close current window
-alt-q = 'close'
+# Quit current application (Cmd-Q)
+# Quit current application (alternative method)
+alt-q = "close"
 
 alt-shift-r = ['exec-and-forget /opt/homebrew/bin/sketchybar --reload']
 

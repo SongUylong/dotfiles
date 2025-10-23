@@ -6,12 +6,23 @@ keymap.set("i", "jk", "<ESC>", { desc = "Exit insert mode with jk" })
 
 keymap.set("n", "<leader>nh", ":nohl<CR>", { desc = "Clear search highlights" })
 -- increment/decrement numbers
-keymap.set({ "n", "v" }, "dd", [["_d]], {
+-- Delete without yanking
+keymap.set("n", "dd", function()
+	-- Use normal! so it ignores user mappings
+	vim.cmd('normal! "_dd')
+end, {
 	noremap = true,
 	silent = true,
-	desc = "Delete without yank",
+	desc = "Delete line without yank",
 })
 
+keymap.set("v", "d", function()
+	vim.cmd('normal! "_d')
+end, {
+	noremap = true,
+	silent = true,
+	desc = "Delete selection without yank",
+})
 keymap.set("n", "<leader>-", "<C-x>", { desc = "Decrement number" }) -- decrement
 -- window management
 keymap.set("n", "<leader>wv", "<C-w>v", { desc = "Split window vertically" }) -- split window vertically
