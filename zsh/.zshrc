@@ -96,6 +96,7 @@ zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
 # Aliases
 # ------------------------------------------------------------------------------
 alias c='clear'
+alias music='rmpc'
 alias nvimd="sudo -E nvim"
 alias ls='lsd -F --group-dirs first --sort extension'
 alias ll='lsd -la --header --long --group-dirs first --sort extension'
