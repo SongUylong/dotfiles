@@ -19,7 +19,7 @@ return {
 				graphql = { "prettier" },
 				liquid = { "prettier" },
 				lua = { "stylua" },
-				php = { "pretty-php" },
+				php = { "pint" },
 				blade = { "blade-formatter" },
 				python = { "isort", "black" },
 			},

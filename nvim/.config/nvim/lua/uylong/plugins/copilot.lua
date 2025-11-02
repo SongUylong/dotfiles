@@ -1,3 +1,7 @@
+-- This global variable is no longer needed,
+-- since the plugin won't be loaded anyway.
+-- vim.g.copilot_auto_enable = 0
+
 -- Define extended prompts
 local prompts = {
 	-- Code related
@@ -31,6 +35,13 @@ local prompts = {
 return {
 	{
 		"CopilotC-Nvim/CopilotChat.nvim",
+
+		-- VVV THIS IS THE FIX VVV
+		-- This tells lazy.nvim to not load the plugin on startup.
+		-- It will be loaded on-demand when you press any of its keys.
+		enabled = false,
+		-- ^^^ ----------------- ^^^
+
 		dependencies = {
 			{ "github/copilot.vim" },
 			{ "nvim-lua/plenary.nvim" },
@@ -44,13 +55,14 @@ return {
 				},
 			},
 		},
-		event = "VeryLazy",
+		-- 'event' is no longer needed if 'enabled = false' is set
+		-- event = "VeryLazy",
 		opts = {
 			prompts = prompts,
 			system_prompt = "You are an expert software engineer. Provide clean, accurate answers and follow best practices.",
-			question_header = "  " .. (vim.env.USER or "User"),
-			answer_header = "  Copilot",
-			error_header = "  Error",
+			question_header = "  " .. (vim.env.USER or "User"),
+			answer_header = "  Copilot",
+			error_header = "- Error",
 			mappings = {
 				complete = { insert = "<Tab>", detail = "Use @<Tab> or /<Tab>" },
 				close = { normal = "q", insert = "<C-c>" },
@@ -150,6 +162,8 @@ return {
 			{ "<leader>aa", "<cmd>CopilotChatModels<CR>", desc = "Select Model" },
 			{ "<leader>al", "<cmd>CopilotChatReset<CR>", desc = "Clear Chat" },
 			{ "<leader>aw", "<cmd>CopilotChatToggle<CR>", desc = "Toggle Chat Window" },
+			{ "<leader>ad", "<cmd>Copilot disable<CR>", desc = "Disable Copilot" },
+			{ "<leader>aE", "<cmd>Copilot enable<CR>", desc = "Enable Copilot" },
 		},
 	},
 }
