@@ -155,3 +155,4 @@ function y() {
 
 eval $(thefuck --alias fk)
 eval "$(pyenv init -)"
+export PATH="$PATH:/Users/eric/.composer/vendor/bin"
