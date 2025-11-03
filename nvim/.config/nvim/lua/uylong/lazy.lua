@@ -44,6 +44,9 @@ require("lazy").setup({
 	install = {
 		colorscheme = { "habamax" }, -- default colorscheme while installing
 	},
+	rocks = {
+		enabled = false,
+	},
 	checker = {
 		enabled = true, -- auto-check for plugin updates
 		notify = false, -- disable annoying notifications
