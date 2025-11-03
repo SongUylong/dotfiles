@@ -15,7 +15,15 @@ end, {
 	silent = true,
 	desc = "Delete line without yank",
 })
-
+--wrapping
+keymap.set("n", "<leader>ww", function()
+	vim.wo.wrap = not vim.wo.wrap
+	if vim.wo.wrap then
+		print("Wrap: ON")
+	else
+		print("Wrap: OFF")
+	end
+end, { desc = "Toggle line wrap" })
 keymap.set("v", "d", function()
 	vim.cmd('normal! "_d')
 end, {
@@ -23,6 +31,7 @@ end, {
 	silent = true,
 	desc = "Delete selection without yank",
 })
+
 keymap.set("n", "<leader>-", "<C-x>", { desc = "Decrement number" }) -- decrement
 -- window management
 keymap.set("n", "<leader>wv", "<C-w>v", { desc = "Split window vertically" }) -- split window vertically

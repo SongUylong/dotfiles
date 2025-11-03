@@ -13,8 +13,6 @@ opt.autowriteall = true
 opt.autoindent = true -- copy indent from current line when starting new one
 opt.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
 
-opt.wrap = true
-
 -- search settings
 opt.ignorecase = true -- ignore case when searching
 opt.smartcase = true -- if you include mixed case in your search, assumes you want case-sensitive
