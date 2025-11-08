@@ -1,0 +1,7 @@
+vim.keymap.del("n", "<c-/>")
+vim.keymap.del("t", "<c-/>")
+
+vim.keymap.set("n", "<c-`>", function()
+  Snacks.terminal(nil, { cwd = LazyVim.root() })
+end, { desc = "Terminal (Root Dir)" })
+vim.keymap.set("t", "<C-`>", "<cmd>close<cr>", { desc = "Hide Terminal" })
