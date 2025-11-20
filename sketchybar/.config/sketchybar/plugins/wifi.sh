@@ -17,18 +17,17 @@ else
   fi
   SSID="$INFO"
   case "$SSID" in
-    ""|"Off"|"You are not associated"*)
-      ICON="󰤭"
-      LABEL=""
-      ICON_COLOR="0xffe06c75" # red
-      ;;
-    *)
-      ICON="󰤨"
-      LABEL="$SSID"
-      ICON_COLOR="0xff98c379" # green
-      ;;
+  "" | "Off" | "You are not associated"*)
+    ICON="󰤭"
+    LABEL=""
+    ICON_COLOR="0xffe06c75" # red
+    ;;
+  *)
+    ICON="󰤨"
+    LABEL="$SSID"
+    ICON_COLOR="0xff98c379" # green
+    ;;
   esac
 fi
 
 sketchybar --set "$NAME" icon="$ICON" label="$LABEL" icon.color=$ICON_COLOR
-
