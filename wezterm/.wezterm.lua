@@ -8,7 +8,7 @@ config.color_scheme = "Catppuccin Macchiato"
 config.enable_tab_bar = true
 config.window_decorations = "RESIZE"
 config.window_background_opacity = 0.5
-config.font = wezterm.font("CaskaydiaCove Nerd Font", { weight = "Regular", stretch = "Normal", style = "Normal" })
+config.font = wezterm.font("Caskaydia Mono Nerd Font", { weight = "Regular", stretch = "Normal", style = "Normal" })
 config.window_close_confirmation = "AlwaysPrompt"
 config.harfbuzz_features = { "kern", "liga", "clig", "calt" }
 config.freetype_load_target = "Normal"
