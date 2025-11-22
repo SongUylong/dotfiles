@@ -58,7 +58,6 @@ STOW_MODULES=(
     wezterm
     yazi
     nvim
-    hypr   # Hyprland config
 )
 
 for module in "${STOW_MODULES[@]}"; do
@@ -69,6 +68,23 @@ for module in "${STOW_MODULES[@]}"; do
         echo " -> Skipping $module (not found)"
     fi
 done
+
+# ---------------------------------------------------
+# Stow Hyprland config separately with existing files removed
+# ---------------------------------------------------
+HYPR_MODULE="hypr"
+HYPR_CONFIG_DIR="$HOME/.config/hypr"
+
+if [[ -d "$DOTFILES_DIR/$HYPR_MODULE" ]]; then
+    if [[ -d "$HYPR_CONFIG_DIR" ]]; then
+        echo " -> Removing existing Hyprland configs to allow stow to overwrite"
+        rm -f "$HYPR_CONFIG_DIR"/*
+    fi
+    echo " -> Stowing Hyprland config"
+    stow -R "$HYPR_MODULE"
+else
+    echo " -> Skipping Hyprland config (not found in dotfiles)"
+fi
 
 # ---------------------------------------------------
 # Change default shell to zsh if not already
@@ -85,6 +101,6 @@ echo ""
 echo "=============================="
 echo "Setup complete! 🎉"
 echo " • Installed packages: zsh, wezterm, yazi, neovim, lsd, tree, fzf, thefuck, xclip, etc."
-echo " • Dotfiles stowed: ${STOW_MODULES[*]}"
+echo " • Dotfiles stowed: ${STOW_MODULES[*]} + hypr"
 echo " • Default shell: $(basename "$SHELL")"
 echo "=============================="
