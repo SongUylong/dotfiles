@@ -100,7 +100,4 @@ fi
 echo ""
 echo "=============================="
 echo "Setup complete! 🎉"
-echo " • Installed packages: zsh, wezterm, yazi, neovim, lsd, tree, fzf, thefuck, xclip, etc."
-echo " • Dotfiles stowed: ${STOW_MODULES[*]} + hypr"
-echo " • Default shell: $(basename "$SHELL")"
-echo "=============================="
+echo " • Installed packages: zsh, wezterm, yazi, neovim, lsd, tree, fzf, thefuck, xclip, etc." echo " • Dotfiles stowed: ${STOW_MODULES[*]} + hypr" echo " • Default shell: $(basename "$SHELL")" echo "=============================="
