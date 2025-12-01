@@ -110,6 +110,10 @@ zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
 # Aliases
 # ------------------------------------------------------------------------------
 alias c='clear'
+cursor() {
+    # The '&' puts it in background, 'disown' detaches it completely
+    ~/cursor/cursor.AppImage "$@" >/dev/null 2>&1 & disown
+}
 alias music='rmpc'
 alias nvimd="sudo -E nvim"
 alias ls='lsd -F --group-dirs first --sort extension'
@@ -167,3 +171,4 @@ function y() {
 }
 
 . "$HOME/.local/share/../bin/env"
+eval "$(pyenv init -)"
