@@ -172,3 +172,4 @@ function y() {
 
 . "$HOME/.local/share/../bin/env"
 eval "$(pyenv init -)"
+eval "$(mise activate zsh)"
