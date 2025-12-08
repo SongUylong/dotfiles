@@ -125,7 +125,7 @@ alias ldate='lsd -l --sort time --group-dirs first'
 alias lgit='lsd -l --git --group-dirs first'
 alias lt='tree -a'
 alias nvid='neovide & disown'
-
+alias airport='xdg-terminal-exec --app-id=com.omarchy.Omarchy --title=Omarchpods /usr/bin/python3 /opt/omarchpods/ui/main.py 2>&1'
 # ------------------------------------------------------------------------------
 # Fzf Integration
 # ------------------------------------------------------------------------------
@@ -171,5 +171,6 @@ function y() {
 }
 
 . "$HOME/.local/share/../bin/env"
-eval "$(pyenv init -)"
-eval "$(mise activate zsh)"
+# eval "$(pyenv init -)"
+# eval "$(mise activate zsh)"
+export PATH="$HOME/.local/bin:$PATH"
