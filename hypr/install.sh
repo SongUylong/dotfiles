@@ -9,7 +9,7 @@ sudo pacman -Syu --noconfirm
 
 echo "==> Installing base packages..."
 sudo pacman -S --noconfirm --needed \
-    zsh stow wezterm curl unzip neovim lsd tree fzf thefuck xclip \
+    zsh stow wezterm curl unzip xorg-xhost cursor-bin neovim lsd tree fzf thefuck xclip \
     ffmpeg 7zip jq poppler fd ripgrep zoxide imagemagick xsel wl-clipboard chafa
 
 # ---------------------------------------------------

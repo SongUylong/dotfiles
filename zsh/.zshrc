@@ -110,10 +110,6 @@ zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
 # Aliases
 # ------------------------------------------------------------------------------
 alias c='clear'
-cursor() {
-    # The '&' puts it in background, 'disown' detaches it completely
-    ~/cursor/cursor.AppImage "$@" >/dev/null 2>&1 & disown
-}
 alias music='rmpc'
 alias nvimd="sudo -E nvim"
 alias ls='lsd -F --group-dirs first --sort extension'
@@ -125,7 +121,6 @@ alias ldate='lsd -l --sort time --group-dirs first'
 alias lgit='lsd -l --git --group-dirs first'
 alias lt='tree -a'
 alias nvid='neovide & disown'
-alias airport='xdg-terminal-exec --app-id=com.omarchy.Omarchy --title=Omarchpods /usr/bin/python3 /opt/omarchpods/ui/main.py 2>&1'
 # ------------------------------------------------------------------------------
 # Fzf Integration
 # ------------------------------------------------------------------------------
@@ -170,7 +165,7 @@ function y() {
     rm -f -- "$tmp"
 }
 
-. "$HOME/.local/share/../bin/env"
 # eval "$(pyenv init -)"
 # eval "$(mise activate zsh)"
 export PATH="$HOME/.local/bin:$PATH"
+eval "$(mise activate zsh)"
