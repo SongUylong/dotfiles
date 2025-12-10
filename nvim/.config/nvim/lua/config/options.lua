@@ -3,3 +3,7 @@
 -- Add any additional options here
 --
 vim.g.snacks_animate = false
+vim.o.autoindent = true
+vim.o.smartindent = true
+vim.o.cindent = true
+vim.o.expandtab = true

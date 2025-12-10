@@ -155,4 +155,5 @@ function y() {
 
 eval $(thefuck --alias fk)
 eval "$(pyenv init -)"
+alias cursor='open -a Cursor'
 export PATH="$PATH:/Users/eric/.composer/vendor/bin"

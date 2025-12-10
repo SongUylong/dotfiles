@@ -7,7 +7,7 @@ config.font_size = 16
 config.color_scheme = "Catppuccin Macchiato"
 config.enable_tab_bar = true
 config.window_decorations = "RESIZE"
-config.window_background_opacity = 0.5
+config.window_background_opacity = 1
 config.font = wezterm.font("CaskaydiaCove Nerd Font", { weight = "Regular", stretch = "Normal", style = "Normal" })
 config.window_close_confirmation = "AlwaysPrompt"
 config.harfbuzz_features = { "kern", "liga", "clig", "calt" }
@@ -81,7 +81,7 @@ bar.apply_to_config(config, {
 	},
 })
 
-config.disable_default_mouse_bindings = true
+config.disable_default_mouse_bindings = false
 
 config.colors = {
 	foreground = "#CBE0F0",
