@@ -8,8 +8,10 @@ echo "==> Updating system..."
 sudo pacman -Syu --noconfirm
 
 echo "==> Installing base packages..."
+# Added 'lm_sensors' to this list for fan control support
 sudo pacman -S --noconfirm --needed \
-    zsh stow wezterm curl unzip xorg-xhost cursor-bin neovim lsd tree fzf thefuck xclip \
+    lm_sensors \
+    zsh stow wezterm curl unzip xorg-xhost cursor-bin pipewire-pulse bluez bluez-utils pipewire-alsa pavucontrol wireplumber neovim lsd tree fzf thefuck xclip \
     ffmpeg 7zip jq poppler fd ripgrep zoxide imagemagick xsel wl-clipboard chafa
 
 # ---------------------------------------------------
@@ -87,6 +89,42 @@ else
 fi
 
 # ---------------------------------------------------
+# Setup Fan Control (Only if Nuvoton chip is found)
+# ---------------------------------------------------
+echo "==> Configuring Fan Control..."
+
+# Check if the Nuvoton nct67* chip exists on this system
+# This prevents errors if you run this script on a laptop or different PC
+if grep -r "nct67" /sys/class/hwmon/hwmon*/name 2>/dev/null; then
+    echo " -> Nuvoton chip detected. Installing fan control service..."
+    
+    SERVICE_FILE="/etc/systemd/system/set-fan-speed.service"
+
+    # Write the service file securely
+    sudo tee "$SERVICE_FILE" > /dev/null <<'EOF'
+[Unit]
+Description=Set Fan PWM6 to Constant 120
+After=lm_sensors.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'for path in /sys/class/hwmon/hwmon*/name; do if grep -q "nct67" "$path"; then dir=$(dirname "$path"); echo 1 > "$dir/pwm6_enable"; echo 120 > "$dir/pwm6"; exit 0; fi; done'
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    # Reload systemd and enable the service
+    echo " -> Enabling set-fan-speed.service..."
+    sudo systemctl daemon-reload
+    sudo systemctl enable --now set-fan-speed
+    echo " -> Fan locked to 120 PWM."
+
+else
+    echo " -> Nuvoton (nct67*) chip NOT found. Skipping fan control setup."
+fi
+
+# ---------------------------------------------------
 # Change default shell to zsh if not already
 # ---------------------------------------------------
 CURRENT_SHELL=$(basename "$SHELL" || echo "")
@@ -100,4 +138,8 @@ fi
 echo ""
 echo "=============================="
 echo "Setup complete! 🎉"
-echo " • Installed packages: zsh, wezterm, yazi, neovim, lsd, tree, fzf, thefuck, xclip, etc." echo " • Dotfiles stowed: ${STOW_MODULES[*]} + hypr" echo " • Default shell: $(basename "$SHELL")" echo "=============================="
+echo " • Installed packages: zsh, wezterm, yazi, neovim, lm_sensors, etc."
+echo " • Dotfiles stowed: ${STOW_MODULES[*]} + hypr"
+echo " • Fan Control: Configured (if hardware found)"
+echo " • Default shell: $(basename "$SHELL")"
+echo "=============================="

@@ -169,3 +169,7 @@ function y() {
 # eval "$(mise activate zsh)"
 export PATH="$HOME/.local/bin:$PATH"
 eval "$(mise activate zsh)"
+export PATH="$HOME/bin:$PATH"
+
+# opencode
+export PATH=/home/usong/.opencode/bin:$PATH
