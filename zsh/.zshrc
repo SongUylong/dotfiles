@@ -157,3 +157,8 @@ eval $(thefuck --alias fk)
 eval "$(pyenv init -)"
 alias cursor='open -a Cursor'
 export PATH="$PATH:/Users/eric/.composer/vendor/bin"
+# The following lines have been added by Docker Desktop to enable Docker CLI completions.
+fpath=(/Users/eric/.docker/completions $fpath)
+autoload -Uz compinit
+compinit
+# End of Docker CLI completions

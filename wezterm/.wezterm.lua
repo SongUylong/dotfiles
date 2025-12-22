@@ -4,7 +4,7 @@ local act = wezterm.action
 
 config.enable_wayland = false
 config.font_size = 16
-config.color_scheme = "Catppuccin Macchiato"
+config.color_scheme = "UltraDark"
 config.enable_tab_bar = true
 config.window_decorations = "RESIZE"
 config.window_background_opacity = 1
@@ -43,6 +43,7 @@ bar.apply_to_config(config, {
 			enabled = true,
 			icon = wezterm.nerdfonts.fa_clock,
 			format = "%I:%M",
+			color = 6,
 		},
 		workspace = {
 			enabled = true,
@@ -71,48 +72,48 @@ bar.apply_to_config(config, {
 		hostname = {
 			enabled = false,
 			icon = wezterm.nerdfonts.cod_server,
-			color = 8,
+			color = 2,
 		},
 		cwd = {
 			enabled = true,
 			icon = wezterm.nerdfonts.oct_file_directory,
-			color = 7,
+			color = 2,
 		},
 	},
 })
 
 config.disable_default_mouse_bindings = false
 
-config.colors = {
-	foreground = "#CBE0F0",
-	background = "#011423",
-	cursor_bg = "#47FF9C",
-	cursor_border = "#47FF9C",
-	cursor_fg = "#011423",
-	selection_bg = "#033259",
-	selection_fg = "#CBE0F0",
-	ansi = {
-		"#214969",
-		"#E52E2E",
-		"#44FFB1",
-		"#FFE073",
-		"#0FC5ED",
-		"#a277ff",
-		"#24EAF7",
-		"#24EAF7",
-	},
-	brights = {
-		"#214969",
-		"#E52E2E",
-		"#44FFB1",
-		"#FFE073",
-		"#A277FF",
-		"#a277ff",
-		"#24EAF7",
-		"#24EAF7",
-	},
-}
-
+-- config.colors = {
+-- 	foreground = "#CBE0F0",
+-- 	background = "#011423",
+-- 	cursor_bg = "#47FF9C",
+-- 	cursor_border = "#47FF9C",
+-- 	cursor_fg = "#011423",
+-- 	selection_bg = "#033259",
+-- 	selection_fg = "#CBE0F0",
+-- 	ansi = {
+-- 		"#214969",
+-- 		"#E52E2E",
+-- 		"#44FFB1",
+-- 		"#FFE073",
+-- 		"#0FC5ED",
+-- 		"#a277ff",
+-- 		"#24EAF7",
+-- 		"#24EAF7",
+-- 	},
+-- 	brights = {
+-- 		"#214969",
+-- 		"#E52E2E",
+-- 		"#44FFB1",
+-- 		"#FFE073",
+-- 		"#A277FF",
+-- 		"#a277ff",
+-- 		"#24EAF7",
+-- 		"#24EAF7",
+-- 	},
+-- }
+--
 local act = wezterm.action
 config.leader = { key = "w", mods = "ALT", timeout_milliseconds = math.maxinteger }
 
