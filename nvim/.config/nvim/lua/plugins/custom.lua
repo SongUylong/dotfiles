@@ -69,7 +69,6 @@ return {
             ".DS_Store",
             "thumbs.db",
             ".github",
-            ".gitignore",
             "package-lock.json",
             ".changeset",
             ".prettierrc.json",
@@ -78,7 +77,10 @@ return {
       },
     },
   },
-  { "sphamba/smear-cursor.nvim", opts = {
-    cursor_color = "",
-  } },
+  -- { "sphamba/smear-cursor.nvim", opts = {
+  --   cursor_color = "",
+  -- } },
+  {
+    "mg979/vim-visual-multi",
+  },
 }
