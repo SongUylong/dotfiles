@@ -473,44 +473,66 @@ fc-cache -fv
 echo -e "${GREEN} -> Installed CascadiaCode Nerd Font${NC}"
 
 # ---------------------------------------------------
-# Stow your dotfiles (overwrite existing configs)
+# Stow your dotfiles (auto-detect and stow all configs)
 # ---------------------------------------------------
 echo ""
 echo "==> Stowing dotfiles from $DOTFILES_DIR"
 cd "$DOTFILES_DIR"
 
-STOW_MODULES=(
-    zsh
-    wezterm
-    yazi
-    nvim
-)
+# Directories to exclude from auto-stowing
+EXCLUDE_DIRS=("backup" "hypr")
 
+# Auto-detect all directories with .config folders
+echo " -> Auto-detecting stowable modules..."
+STOW_MODULES=()
+
+for dir in */; do
+    dir_name="${dir%/}"  # Remove trailing slash
+    
+    # Skip excluded directories
+    if [[ " ${EXCLUDE_DIRS[@]} " =~ " ${dir_name} " ]]; then
+        continue
+    fi
+    
+    # Only stow if directory has .config or is a valid config directory
+    if [[ -d "$dir_name/.config" ]] || [[ -d "$dir_name" ]]; then
+        # Check if it's not a hidden directory
+        if [[ ! "$dir_name" =~ ^\. ]]; then
+            STOW_MODULES+=("$dir_name")
+        fi
+    fi
+done
+
+# Stow all detected modules
 for module in "${STOW_MODULES[@]}"; do
     if [[ -d "$module" ]]; then
         echo " -> Stowing $module (overwriting existing files if any)"
-        stow -R --override=delete "$module"
-    else
-        echo -e "${YELLOW} -> Skipping $module (not found)${NC}"
+        stow -R --adopt "$module" 2>/dev/null || {
+            echo -e "${YELLOW}    ⚠  $module: Using fallback stow method${NC}"
+            stow -R "$module"
+        }
     fi
 done
 
 # ---------------------------------------------------
-# Stow Hyprland config separately with existing files removed
+# Stow Hyprland config separately (has install.sh)
 # ---------------------------------------------------
+echo ""
+echo "==> Stowing Hyprland config..."
 HYPR_MODULE="hypr"
-HYPR_CONFIG_DIR="$HOME/.config/hypr"
 
 if [[ -d "$DOTFILES_DIR/$HYPR_MODULE" ]]; then
-    if [[ -d "$HYPR_CONFIG_DIR" ]]; then
-        echo " -> Removing existing Hyprland configs to allow stow to overwrite"
-        rm -f "$HYPR_CONFIG_DIR"/*
-    fi
-    echo " -> Stowing Hyprland config"
-    stow -R "$HYPR_MODULE"
+    echo " -> Stowing Hyprland config (overwriting existing files if any)"
+    stow -R --adopt "$HYPR_MODULE" 2>/dev/null || {
+        echo -e "${YELLOW}    ⚠  Hyprland: Using fallback stow method${NC}"
+        stow -R "$HYPR_MODULE"
+    }
 else
     echo -e "${YELLOW} -> Skipping Hyprland config (not found in dotfiles)${NC}"
 fi
+
+echo ""
+echo -e "${GREEN} -> Stowed modules: ${STOW_MODULES[*]} + hypr${NC}"
 
 # ---------------------------------------------------
 # Setup Fan Control (Only if Nuvoton chip is found)
@@ -565,15 +587,7 @@ echo ""
 echo "=============================="
 echo -e "${GREEN}Setup complete! 🎉${NC}"
 echo " • All packages installed (skipped already installed ones)"
-echo " • Dotfiles stowed: ${STOW_MODULES[*]} + hypr"
-echo " • Bluetooth & Printing: Configured"
-echo " • Fan Control: Configured (if hardware found)"
-echo " • Default shell: $(basename "$SHELL")"
-echo "=============================="
-
-echo -e "${GREEN}Setup complete! 🎉${NC}"
-echo " • All packages installed (skipped already installed ones)"
-echo " • Dotfiles stowed: ${STOW_MODULES[*]} + hypr"
+echo " • Dotfiles auto-stowed: ${STOW_MODULES[*]} + hypr"
 echo " • Bluetooth & Printing: Configured"
 echo " • Fan Control: Configured (if hardware found)"
 echo " • Default shell: $(basename "$SHELL")"
