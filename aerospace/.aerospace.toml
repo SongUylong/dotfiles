@@ -75,8 +75,8 @@ inner.horizontal = 8
 inner.vertical = 8
 outer.bottom = 5
 outer.top = [{ monitor.main = 10 }, 10]
-outer.right = 5
-outer.left = 5
+outer.right = 15
+outer.left = 15
 
 # 'main' binding mode declaration
 # See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes
@@ -110,7 +110,7 @@ outer.left = 5
 # Launch apps (new instances)
 alt-c = 'exec-and-forget open -n /Applications/Cursor.app'
 alt-t = 'exec-and-forget open -n /Applications/WezTerm.app'
-alt-b = 'exec-and-forget open -n /Applications/Google\ Chrome.app'
+alt-b = 'exec-and-forget open -n /Applications/Firefox.app'
 alt-n = 'exec-and-forget open -n /Applications/Notion.app'
 
 # Close current window

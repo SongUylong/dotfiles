@@ -11,9 +11,24 @@ config.window_background_opacity = 1
 config.font = wezterm.font("CaskaydiaCove Nerd Font", { weight = "Regular", stretch = "Normal", style = "Normal" })
 config.window_close_confirmation = "AlwaysPrompt"
 config.harfbuzz_features = { "kern", "liga", "clig", "calt" }
-config.freetype_load_target = "Normal"
-config.freetype_render_target = "Normal"
-config.scrollback_lines = 3000
+config.freetype_load_target = "Light" -- sharper text on Retina
+config.freetype_render_target = "HorizontalLcd" -- better LCD subpixel rendering
+
+-- Performance / Smoothness settings (M4 optimized)
+config.max_fps = 120
+config.animation_fps = 120
+config.cursor_blink_rate = 0 -- disable blinking for fewer redraws
+config.front_end = "WebGpu"
+config.webgpu_power_preference = "HighPerformance"
+config.enable_scroll_bar = false
+
+-- Additional M4 optimizations
+config.unicode_version = 14
+config.scrollback_lines = 10000 -- reasonable scrollback without memory bloat
+config.use_resize_increments = false -- smoother window resizing
+config.adjust_window_size_when_changing_font_size = false
+config.check_for_updates = false -- disable update checks
+config.default_cursor_style = "SteadyBlock" -- no cursor animation overhead
 
 config.inactive_pane_hsb = {
 	saturation = 0.24,
