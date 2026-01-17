@@ -4,4 +4,5 @@
 
   services.flatpak = {
     enable = true;
+  };
 }
