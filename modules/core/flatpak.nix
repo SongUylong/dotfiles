@@ -4,5 +4,8 @@
 
   services.flatpak = {
     enable = true;
+    packages = [
+      "flathub:org.kde.kdenlive"
+    ];
   };
 }
