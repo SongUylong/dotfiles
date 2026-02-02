@@ -133,28 +133,8 @@ local act = wezterm.action
 config.leader = { key = "w", mods = "ALT", timeout_milliseconds = math.maxinteger }
 
 config.keys = {
-	{ key = "c", mods = "LEADER", action = act.ActivateCopyMode },
-	--Pane Split
-	{ key = "v", mods = "LEADER", action = act.SplitVertical({ domain = "CurrentPaneDomain" }) },
-	{ key = "h", mods = "LEADER", action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
-	--Panes Move
-	{ key = "h", mods = "ALT", action = act.ActivatePaneDirection("Left") },
-	{ key = "j", mods = "ALT", action = act.ActivatePaneDirection("Down") },
-	{ key = "k", mods = "ALT", action = act.ActivatePaneDirection("Up") },
-	{ key = "l", mods = "ALT", action = act.ActivatePaneDirection("Right") },
-	--Panes Zoom
-	{ key = "z", mods = "LEADER", action = act.TogglePaneZoomState },
-	--Panes Close
-	{ key = "x", mods = "LEADER", action = act.CloseCurrentPane({ confirm = true }) },
-	{ key = "X", mods = "LEADER", action = act.EmitEvent("close-all-other-panes") },
-	--Panes Rotate
-	{ key = "r", mods = "LEADER", action = act.RotatePanes("Clockwise") },
-	--Panes Resize
-	{ key = "s", mods = "LEADER", action = act.ActivateKeyTable({ name = "resize_pane", one_shot = false }) },
-	-- Workspace
-	{ key = "w", mods = "LEADER", action = act.ActivateKeyTable({ name = "workspace" }) },
-	-- Tabs
-	{ key = "t", mods = "LEADER", action = act.ActivateKeyTable({ name = "tab" }) },
+	{ key = "c", mods = "SUPER", action = act.ActivateCopyMode },
+	{ key = "x", mods = "SUPER", action = act.CloseCurrentTab({ confirm = false }) },
 	{
 		key = "p",
 		mods = "LEADER",

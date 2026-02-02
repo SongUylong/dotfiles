@@ -21,7 +21,6 @@ enable-normalization-opposite-orientation-for-nested-containers = true
 # See: https://nikitabobko.github.io/AeroSpace/guide#layouts
 # The 'accordion-padding' specifies the size of accordion padding
 # You can set 0 to disable the padding feature
-accordion-padding = 0
 
 # Possible values: tiles|accordion
 default-root-container-layout = 'tiles'
@@ -71,12 +70,12 @@ preset = 'qwerty'
 #                 Monitor pattern is the same as for 'workspace-to-monitor-force-assignment'.
 #                 See: https://nikitabobko.github.io/AeroSpace/guide#assign-workspaces-to-monitors
 [gaps]
-inner.horizontal = 8
-inner.vertical = 8
-outer.bottom = 5
-outer.top = [{ monitor.main = 10 }, 10]
-outer.right = 15
-outer.left = 15
+inner.horizontal = 30
+inner.vertical = 30
+outer.bottom = 30
+outer.top = [{ monitor.main = 30 }, 30]
+outer.right = 30
+outer.left = 30
 
 # 'main' binding mode declaration
 # See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes
@@ -123,6 +122,7 @@ alt-shift-r = ['exec-and-forget /opt/homebrew/bin/sketchybar --reload']
 # See: https://nikitabobko.github.ioeAeroSpace/commands#layout
 alt-comma = 'layout accordion horizontal vertical'
 alt-f = 'fullscreen'
+alt-shift-f = 'exec-and-forget open -a Finder'
 alt-y = ['focus right', 'join-with down', 'layout tiles horizontal']
 # See: https://nikitabobko.github.io/AeroSpace/commands#focus
 alt-h = 'focus left'

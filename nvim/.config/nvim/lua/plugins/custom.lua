@@ -25,11 +25,11 @@ return {
       rocks = { "magick" },
     },
   },
-  {
-    "3rd/image.nvim",
-    dependencies = { "luarocks.nvim" },
-    opts = {},
-  },
+  -- {
+  --   "3rd/image.nvim",
+  --   dependencies = { "luarocks.nvim" },
+  --   opts = {},
+  -- },
 
   {
     "nvim-mini/mini.move",
@@ -116,5 +116,51 @@ return {
   -- } },
   {
     "mg979/vim-visual-multi",
+  },
+  {
+    "mistricky/codesnap.nvim",
+    dir = "/Users/eric/codesnap.nvim",
+    keys = {
+      -- Visual mode keybindings
+      { "<leader>sc", ":CodeSnap<CR>", mode = "v", desc = "CodeSnap to clipboard" },
+      { "<leader>sC", ":CodeSnapSave<CR>", mode = "v", desc = "CodeSnap save to file" },
+      { "<leader>sa", ":CodeSnapASCII<CR>", mode = "v", desc = "CodeSnap ASCII" },
+      { "<leader>sh", ":CodeSnapHighlight<CR>", mode = "v", desc = "CodeSnap with highlight" },
+    },
+    config = function()
+      require("codesnap").setup({
+        show_line_number = true,
+        highlight_color = "#ffffff20",
+        show_workspace = true,
+        snapshot_config = {
+          theme = "candy",
+          window = {
+            mac_window_bar = true,
+            shadow = {
+              radius = 20,
+              color = "#00000040",
+            },
+          },
+        },
+      })
+    end,
+  },
+  {
+    "user.buffer.keys",
+    virtual = true,
+    event = "VeryLazy",
+    config = function()
+      local map = vim.keymap.set
+
+      for i = 1, 9 do
+        map("n", "<C-" .. i .. ">", "<cmd>BufferLineGoToBuffer " .. i .. "<cr>", { desc = "Go to Buffer " .. i })
+      end
+
+      -- Close current Buffer using Ctrl + x
+      -- Uses Snacks to keep the window layout intact
+      map("n", "<C-x>", function()
+        Snacks.bufdelete()
+      end, { desc = "Close Current Buffer" })
+    end,
   },
 }

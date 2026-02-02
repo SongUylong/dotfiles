@@ -52,14 +52,14 @@ zinit cdreplay -q
 # Prompt Configuration
 # ------------------------------------------------------------------------------
 [[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
-ZVM_READKEY_ENGINE=$ZVM_READKEY_ENGINE_NEX
 
 # ------------------------------------------------------------------------------
 # Key Bindings
 # ------------------------------------------------------------------------------
 bindkey '^p' history-beginning-search-backward
 bindkey '^n' history-beginning-search-forward
-
+unset ZVM_READKEY_ENGINE
+bindkey -e
 # ------------------------------------------------------------------------------
 # History Settings
 # ------------------------------------------------------------------------------
