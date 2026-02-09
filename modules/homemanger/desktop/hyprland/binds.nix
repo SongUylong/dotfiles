@@ -17,25 +17,25 @@
       "$mainMod, F, fullscreen, 1"
       "$mainMod ALT, F, fullscreen, 0"
       "$mainMod SHIFT, F, exec, nemo"
-      "$mainMod, Space, exec, toggle-rofi rofi -show drun"
+      "$mainMod, Space, exec, caelestia shell launcher open" # Use Caelestia launcher
       "$mainMod SHIFT, Space, exec, browser-search"
       "$mainMod SHIFT, D, exec, webcord --enable-features=UseOzonePlatform --ozone-platform=wayland"
       "$mainMod SHIFT, Escape, exec, swaylock"
       "ALT, Escape, exec, hyprlock"
-      "$mainMod, Escape, exec, power-menu"
+      "$mainMod, Escape, exec, caelestia shell launcher open --category power" # Use Caelestia power menu
       "$mainMod, P, pseudo,"
       "$mainMod, X, togglesplit,"
       "$mainMod, T, exec, wezterm"
       "$mainMod ALT, T, exec, toggle-oppacity"
       "$mainMod, E, exec, toggle-float"
       "ALT, E, exec, hyprctl dispatch exec '[float; size 1111 700] nemo'"
-      "$mainMod SHIFT, B, exec, toggle-waybar"
+      # "$mainMod SHIFT, B, exec, toggle-waybar"  # Disabled for Caelestia
       "$mainMod, C ,exec, hyprpicker -a"
       "$mainMod, S, exec, spotify"
       "$mainMod, W,exec, wallpaper-picker"
       "$mainMod SHIFT, W,exec, hyprctl dispatch exec '[float; size 925 615] waypaper'"
       "$mainMod, N, exec, firefox https://www.notion.so"
-      "$mainMod SHIFT, N, exec, swaync-client -t -sw"
+      # "$mainMod SHIFT, N, exec, swaync-client -t -sw"  # Disabled for Caelestia - uses own notifications
       "CTRL SHIFT, Escape, exec, hyprctl dispatch exec '[workspace 9] missioncenter'"
       "$mainMod, equal, exec, woomer"
 

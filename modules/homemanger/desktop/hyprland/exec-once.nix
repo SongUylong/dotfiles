@@ -11,8 +11,8 @@
     "poweralertd &"
     "wl-clip-persist --clipboard both &"
     "wl-paste --watch cliphist store &"
-    "waybar &"
-    "swaync &"
+    # "waybar &"  # Disabled for Caelestia - uses its own bar
+    # "swaync &"  # Disabled for Caelestia - uses its own notifications
     "udiskie --automount --notify --smart-tray &"
     "hyprctl setcursor Bibata-Modern-Ice 24 &"
     "init-wallpaper &"
