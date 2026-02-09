@@ -10,5 +10,6 @@
     ./wezterm/wezterm.nix
     ./waypaper.nix
     ./gtk.nix
+    ./caelestia.nix
   ];
 }

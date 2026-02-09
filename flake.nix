@@ -31,35 +31,49 @@
       url = "github:nix-community/stylix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-  };
 
-  outputs = { nixpkgs, ... } @ inputs: let
-    system = "x86_64-linux";
-    username = "uylong";
-
-    pkgs = import nixpkgs {
-      inherit system;
-      config.allowUnfree = true;
-    };
-
-    lib = nixpkgs.lib;
-
-    sharedModules = [
-      inputs.stylix.nixosModules.stylix
-    ];
-  in {
-    nixosConfigurations = {
-      desktop = nixpkgs.lib.nixosSystem {
-        inherit lib system;
-        specialArgs = { inherit inputs username; host = "desktop"; };
-        modules = sharedModules ++ [ ./hosts/desktop ];
-      };
-
-      laptop = nixpkgs.lib.nixosSystem {
-        inherit lib system;
-        specialArgs = { inherit inputs username; host = "laptop"; };
-        modules = sharedModules ++ [ ./hosts/laptop ];
-      };
+    caelestia-shell = {
+      url = "github:caelestia-dots/shell";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
+
+  outputs =
+    { nixpkgs, ... }@inputs:
+    let
+      system = "x86_64-linux";
+      username = "uylong";
+
+      pkgs = import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+      };
+
+      lib = nixpkgs.lib;
+
+      sharedModules = [
+        inputs.stylix.nixosModules.stylix
+      ];
+    in
+    {
+      nixosConfigurations = {
+        desktop = nixpkgs.lib.nixosSystem {
+          inherit lib system;
+          specialArgs = {
+            inherit inputs username;
+            host = "desktop";
+          };
+          modules = sharedModules ++ [ ./hosts/desktop ];
+        };
+
+        laptop = nixpkgs.lib.nixosSystem {
+          inherit lib system;
+          specialArgs = {
+            inherit inputs username;
+            host = "laptop";
+          };
+          modules = sharedModules ++ [ ./hosts/laptop ];
+        };
+      };
+    };
 }
