@@ -117,31 +117,9 @@ stop_recording() {
         exit 1
     fi
     
-    # Convert MP4 to GIF using ffmpeg
-    notify-send -u normal "Screen Recording" "Converting to GIF..."
-    
-    if ! command -v ffmpeg &> /dev/null; then
-        notify-send -u critical "Screen Recording" "ffmpeg is not installed, saving as MP4 only"
-        notify-send -u normal "Screen Recording" "MP4 saved (no clipboard copy for video)\nLocation: $mp4file"
-        rm -f "$filenamefile"
-        exit 0
-    fi
-    
-    if ffmpeg -i "$mp4file" \
-        -vf "fps=30,scale=480:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=128[p];[s1][p]paletteuse=dither=bayer" \
-        -loop 0 \
-        "$giffile" 2>/dev/null; then
-        
-        # Copy GIF to clipboard as image data
-        wl-copy --type image/gif < "$giffile"
-        notify-send -u normal "Screen Recording" "GIF saved and copied to clipboard!\nLocation: $giffile"
-        
-        # Remove the temporary MP4 file
-        rm "$mp4file"
-    else
-        # If GIF conversion fails, keep the MP4
-        notify-send -u warning "Screen Recording" "GIF conversion failed, MP4 saved (no clipboard copy for video)\nLocation: $mp4file"
-    fi
+    # Copy MP4 video file to clipboard for sharing
+    echo "file://$mp4file" | wl-copy --type text/uri-list
+    notify-send -u normal "Screen Recording" "Recording saved and ready to share!\nLocation: $mp4file"
     
     # Clean up filename file
     rm -f "$filenamefile"

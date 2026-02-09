@@ -7,7 +7,7 @@
     language = en
     folder = ~/Pictures/wallpapers/catppuccin-mocha
     monitors = All
-    wallpaper = ~/Pictures/wallpapers/catppuccin-mocha/city-horizon.jpg
+    wallpaper = ~/Pictures/wallpapers/wallpaper
     backend = swww
     fill = fill
     sort = name

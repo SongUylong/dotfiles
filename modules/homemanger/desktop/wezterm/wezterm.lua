@@ -77,11 +77,14 @@ wezterm.on("update-status", function(window, pane)
 	end
 
 	-- Check if zoomed
-	local panes_with_info = pane:tab():panes_with_info()
-	for _, p in ipairs(panes_with_info) do
-		if p.is_active and p.is_zoomed then
-			table.insert(left_cells, { Foreground = { Color = palette.ansi[4] } })
-			table.insert(left_cells, { Text = wezterm.nerdfonts.md_fullscreen .. " zoom " })
+	local tab = pane:tab()
+	if tab then
+		local panes_with_info = tab:panes_with_info()
+		for _, p in ipairs(panes_with_info) do
+			if p.is_active and p.is_zoomed then
+				table.insert(left_cells, { Foreground = { Color = palette.ansi[4] } })
+				table.insert(left_cells, { Text = wezterm.nerdfonts.md_fullscreen .. " zoom " })
+			end
 		end
 	end
 
@@ -118,46 +121,18 @@ config.disable_default_mouse_bindings = false
 config.leader = { key = "w", mods = "ALT", timeout_milliseconds = math.maxinteger }
 
 config.keys = {
-	{ key = "c", mods = "LEADER", action = act.ActivateCopyMode },
-	--Pane Split
-	{ key = "v", mods = "LEADER", action = act.SplitVertical({ domain = "CurrentPaneDomain" }) },
-	{ key = "h", mods = "LEADER", action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
-	--Panes Move
+	{ key = "n", mods = "ALT", action = act.ActivateCopyMode },
+	{ key = "t", mods = "ALT", action = act.SpawnTab("CurrentPaneDomain") },
+	{ key = "x", mods = "ALT", action = act.CloseCurrentTab({ confirm = false }) },
+	{ key = "m", mods = "ALT", action = act.ActivateKeyTable({ name = "workspace" }) },
+	-- Pane splitting
+	{ key = ";", mods = "ALT", action = act.SplitVertical({ domain = "CurrentPaneDomain" }) },
+	{ key = "'", mods = "ALT", action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
+	-- Pane navigation
 	{ key = "h", mods = "ALT", action = act.ActivatePaneDirection("Left") },
 	{ key = "j", mods = "ALT", action = act.ActivatePaneDirection("Down") },
 	{ key = "k", mods = "ALT", action = act.ActivatePaneDirection("Up") },
 	{ key = "l", mods = "ALT", action = act.ActivatePaneDirection("Right") },
-	--Panes Zoom
-	{ key = "z", mods = "LEADER", action = act.TogglePaneZoomState },
-	--Panes Close
-	{ key = "x", mods = "LEADER", action = act.CloseCurrentPane({ confirm = true }) },
-	{ key = "X", mods = "LEADER", action = act.EmitEvent("close-all-other-panes") },
-	--Panes Rotate
-	{ key = "r", mods = "LEADER", action = act.RotatePanes("Clockwise") },
-	--Panes Resize
-	{ key = "s", mods = "LEADER", action = act.ActivateKeyTable({ name = "resize_pane", one_shot = false }) },
-	-- Workspace
-	{ key = "w", mods = "LEADER", action = act.ActivateKeyTable({ name = "workspace" }) },
-	-- Tabs
-	{ key = "t", mods = "LEADER", action = act.ActivateKeyTable({ name = "tab" }) },
-	{
-		key = "p",
-		mods = "LEADER",
-		action = wezterm.action_callback(function(window, pane)
-			local selection = window:get_selection_text_for_pane(pane)
-
-			-- If we have a selected text and it matches a URL pattern, open it
-			if selection and selection ~= "" then
-				local url_pattern = "https?://%S+"
-				if selection:match(url_pattern) then
-					wezterm.log_info("Opening: " .. selection)
-					wezterm.open_with(selection) -- Opens the URL in the default browser
-				else
-					wezterm.log_info("No URL selected!")
-				end
-			end
-		end),
-	},
 }
 config.mouse_bindings = {
 	-- Ctrl-click will open the link under the mouse cursor
@@ -197,17 +172,24 @@ config.key_tables = {
 		{ key = "Enter", action = "PopKeyTable" },
 	},
 	workspace = {
-		{ key = "f", action = act.ShowLauncherArgs({ flags = "FUZZY|WORKSPACES" }) },
+		-- Fuzzy workspace finder
+		{ 
+			key = "f", 
+			action = act.ShowLauncherArgs({ 
+				flags = "FUZZY|WORKSPACES",
+				title = "🔍 Find Workspace"
+			}) 
+		},
+		-- Create new workspace
 		{
 			key = "n",
 			action = act.PromptInputLine({
 				description = wezterm.format({
 					{ Attribute = { Intensity = "Bold" } },
-					{ Foreground = { AnsiColor = "Fuchsia" } },
-					{ Text = "Enter name for new workspace" },
+					{ Text = "🏗️  New workspace name: " },
 				}),
 				action = wezterm.action_callback(function(window, pane, line)
-					if line then
+					if line and line ~= "" then
 						window:perform_action(
 							act.SwitchToWorkspace({
 								name = line,
@@ -218,8 +200,40 @@ config.key_tables = {
 				end),
 			}),
 		},
-		{ key = "l", action = act.SwitchWorkspaceRelative(1) },
+		-- Rename current tab
+		{
+			key = "r",
+			action = act.PromptInputLine({
+				description = wezterm.format({
+					{ Attribute = { Intensity = "Bold" } },
+					{ Text = "Rename tab: " },
+				}),
+				action = wezterm.action_callback(function(window, pane, line)
+					if line and line ~= "" then
+						window:active_tab():set_title(line)
+					end
+				end),
+			}),
+		},
+		-- Show all workspaces and domains
+		{ 
+			key = "s", 
+			action = act.ShowLauncherArgs({ 
+				flags = "FUZZY|WORKSPACES|DOMAINS",
+				title = "📋 All Workspaces & Domains"
+			}) 
+		},
+		-- Previous/next workspace
 		{ key = "h", action = act.SwitchWorkspaceRelative(-1) },
+		{ key = "l", action = act.SwitchWorkspaceRelative(1) },
+		-- Help
+		{ 
+			key = "?", 
+			action = act.ShowLauncherArgs({ 
+				flags = "FUZZY|WORKSPACES",
+				title = "🔍 Workspace Manager"
+			}) 
+		},
 	},
 }
 --utils of panes
