@@ -465,7 +465,7 @@
         vpn.enabled = false;
       };
       paths = {
-        wallpaperDir = ../../wallpapers;
+        wallpaperDir = "/home/uylong/nixos-config/wallpapers";
         mediaGif = "";
       };
     };
