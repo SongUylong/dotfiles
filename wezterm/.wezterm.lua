@@ -4,21 +4,16 @@ local act = wezterm.action
 
 config.enable_wayland = false
 config.font_size = 16
-config.color_scheme = "UltraDark"
+config.color_scheme = "Catppuccin Mocha"
 config.enable_tab_bar = true
 config.window_decorations = "RESIZE"
 config.window_background_opacity = 1
 config.font = wezterm.font("CaskaydiaCove Nerd Font", { weight = "Regular", stretch = "Normal", style = "Normal" })
 config.window_close_confirmation = "AlwaysPrompt"
 config.harfbuzz_features = { "kern", "liga", "clig", "calt" }
-config.freetype_load_target = "Light" -- sharper text on Retina
-config.freetype_render_target = "HorizontalLcd" -- better LCD subpixel rendering
 
--- Performance / Smoothness settings (M4 optimized)
-config.max_fps = 120
-config.animation_fps = 120
 config.cursor_blink_rate = 0 -- disable blinking for fewer redraws
-config.front_end = "WebGpu"
+config.front_end = "OpenGL"
 config.webgpu_power_preference = "HighPerformance"
 config.enable_scroll_bar = false
 
