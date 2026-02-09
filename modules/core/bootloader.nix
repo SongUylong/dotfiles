@@ -2,8 +2,9 @@
 {
   boot = {
     loader = {
+      systemd-boot.enable = false;
       efi = {
-        canTouchEfiVariables = true;
+        canTouchEfiVariables = false;
         efiSysMountPoint = "/boot";
       };
       timeout = null;
@@ -13,6 +14,7 @@
         device = "nodev";
         efiSupport = true;
         useOSProber = true;
+        efiInstallAsRemovable = true;
         configurationLimit = 5;
         theme = pkgs.catppuccin-grub;
         # Increase timeout to select OS

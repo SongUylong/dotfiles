@@ -33,9 +33,15 @@
     ];
   };
 
-  # Link your nvim configuration
-  xdg.configFile."nvim" = {
-    source = ../../nvim;
-    recursive = true;
-  };
+  # Copy nvim configuration to make it writable for LazyVim
+  # This allows LazyVim to manage lazyvim.json and lazy-lock.json
+  home.activation.nvimConfig = config.lib.dag.entryAfter ["writeBoundary"] ''
+    # Create nvim config directory if it doesn't exist
+    mkdir -p ${config.home.homeDirectory}/.config/nvim
+    
+    # Sync the config from the repo, making files writable
+    ${pkgs.rsync}/bin/rsync -av --chmod=u+w \
+      ${../../nvim}/ \
+      ${config.home.homeDirectory}/.config/nvim/
+  '';
 }

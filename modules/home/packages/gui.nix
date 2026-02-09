@@ -30,5 +30,14 @@ in
     ## Level editor
     ldtk
     tiled
+
+    ## X11 libraries
+    xorg.libX11
+    xorg.libXcursor
+    xorg.libXrandr
+    xorg.libXi
+    xorg.libxcb
+    libxkbcommon
+    libGL
   ];
 }

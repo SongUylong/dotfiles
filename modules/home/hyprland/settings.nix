@@ -18,8 +18,8 @@
     general = {
       "$mainMod" = "SUPER";
       layout = "dwindle";
-      gaps_in = 4;
-      gaps_out = 16;
+      gaps_in = 8;
+      gaps_out = 24;
       border_size = 2;
       "col.active_border" = "rgb(cba6f7) rgb(89b4fa) 45deg"; # Catppuccin Mocha: mauve & blue
       "col.inactive_border" = "0x00000000";

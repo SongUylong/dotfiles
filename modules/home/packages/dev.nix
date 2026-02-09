@@ -32,6 +32,10 @@
 
     ## Code Editors
     code-cursor
+
+    ## Rust
+    rustc
+    cargo
   ];
 
   home.sessionVariables = {
