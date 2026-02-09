@@ -11,12 +11,9 @@ config.animation_fps = 120
 config.status_update_interval = 1000
 
 -- General settings
-config.font_size = 10
-config.color_scheme = "Catppuccin Macchiato"
 config.enable_tab_bar = true
 config.window_decorations = "NONE"
-config.window_background_opacity = 1
-config.font = wezterm.font("CaskaydiaCove Nerd Font", { weight = "Regular", stretch = "Normal", style = "Normal" })
+-- Note: font, font_size, and opacity are managed by Stylix
 config.window_close_confirmation = "AlwaysPrompt"
 config.harfbuzz_features = { "calt=0", "clig=0", "liga=0" }
 config.freetype_load_target = "Light"
@@ -26,52 +23,6 @@ config.scrollback_lines = 3000
 config.inactive_pane_hsb = {
 	saturation = 0.24,
 	brightness = 0.5,
-}
-
--- Colors (must be defined before tab_bar colors)
-config.colors = {
-	foreground = "#CBE0F0",
-	background = "#011423",
-	cursor_bg = "#47FF9C",
-	cursor_border = "#47FF9C",
-	cursor_fg = "#011423",
-	selection_bg = "#033259",
-	selection_fg = "#CBE0F0",
-	ansi = {
-		"#214969",
-		"#E52E2E",
-		"#44FFB1",
-		"#FFE073",
-		"#0FC5ED",
-		"#a277ff",
-		"#24EAF7",
-		"#24EAF7",
-	},
-	brights = {
-		"#214969",
-		"#E52E2E",
-		"#44FFB1",
-		"#FFE073",
-		"#A277FF",
-		"#a277ff",
-		"#24EAF7",
-		"#24EAF7",
-	},
-	tab_bar = {
-		background = "transparent",
-		active_tab = {
-			bg_color = "transparent",
-			fg_color = "#0FC5ED",
-		},
-		inactive_tab = {
-			bg_color = "transparent",
-			fg_color = "#24EAF7",
-		},
-		new_tab = {
-			bg_color = "transparent",
-			fg_color = "#44FFB1",
-		},
-	},
 }
 
 -- Custom status bar configuration

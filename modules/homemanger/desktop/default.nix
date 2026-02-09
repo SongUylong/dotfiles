@@ -3,11 +3,11 @@
   imports = [
     ./hyprland
     ./waybar
-    ./rofi
+    ./rofi/rofi.nix
     ./swaylock.nix
-    ./swaync
+    ./swaync/swaync.nix
     ./swayosd.nix
-    ./wezterm
+    ./wezterm/wezterm.nix
     ./waypaper.nix
     ./gtk.nix
   ];

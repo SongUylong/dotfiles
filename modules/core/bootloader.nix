@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 {
   boot = {
     loader = {
@@ -16,7 +16,7 @@
         useOSProber = true;
         efiInstallAsRemovable = true;
         configurationLimit = 5;
-        theme = pkgs.catppuccin-grub;
+        theme = lib.mkDefault pkgs.catppuccin-grub;
         # Increase timeout to select OS
         gfxmodeEfi = "2560x1440";
       };

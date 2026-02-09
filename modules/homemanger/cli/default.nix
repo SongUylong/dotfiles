@@ -6,7 +6,7 @@
     ./cava.nix
     ./fzf.nix
     ./lazygit.nix
-    ./yazi
+    ./yazi/yazi.nix
     ./packages
   ];
 }

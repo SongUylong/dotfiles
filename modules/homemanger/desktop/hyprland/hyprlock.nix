@@ -1,4 +1,4 @@
-{ host, ... }:
+{ host, lib, ... }:
 {
   programs.hyprlock = {
     enable = true;
@@ -10,9 +10,9 @@
         fractional_scaling = 0;
       };
 
-      background = [
+      background = lib.mkForce [
         {
-          path = "${../../../wallpapers/otherWallpaper/gruvbox/forest_road.jpg}";
+          path = "${../../../../wallpapers/catppuccin-mocha/city-horizon.jpg}";
 
           color = "rgba(29, 32, 33, 255)";
           blur_passes = 2;
@@ -20,7 +20,7 @@
         }
       ];
 
-      shape = [
+      shape = lib.mkForce [
         # User box
         {
           size = "300, 50";
@@ -36,7 +36,7 @@
         }
       ];
 
-      label = [
+      label = lib.mkForce [
         # Time
         {
           text = ''cmd[update:1000] echo "$(date +'%k:%M')"'';
@@ -80,7 +80,7 @@
         }
       ];
 
-      input-field = [
+      input-field = lib.mkForce [
         {
           size = "300, 50";
           rounding = 0;
@@ -108,7 +108,7 @@
         }
       ];
 
-      animation = [ "inputFieldColors, 0" ];
+      animation = lib.mkForce [ "inputFieldColors, 0" ];
     };
   };
 }

@@ -1,7 +1,17 @@
 { pkgs, ... }:
 {
+  stylix.targets.firefox = {
+    enable = true;
+    profileNames = [ "default" ];
+  };
+
   programs.firefox = {
     enable = true;
+    profiles.default = {
+      id = 0;
+      name = "default";
+      isDefault = true;
+    };
     policies = {
       ExtensionSettings = {
         # uBlock Origin

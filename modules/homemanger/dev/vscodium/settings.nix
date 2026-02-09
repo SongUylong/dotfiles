@@ -7,9 +7,7 @@
       "window.titleBarStyle" = "custom"; # needed otherwise vscode crashes, see https://github.com/NixOS/nixpkgs/issues/246509
 
       "window.menuBarVisibility" = "toggle";
-      "editor.fontFamily" = "'CaskaydiaCove Nerd Font', 'SymbolsNerdFont', 'monospace', monospace";
-      "terminal.integrated.fontFamily" = "'CaskaydiaCove Nerd Font', 'SymbolsNerdFont'";
-      "editor.fontSize" = 18;
+      # Fonts and fontSize managed by Stylix
       "material-icon-theme.folders.theme" = "classic";
       "vsicons.dontShowNewVersionMessage" = true;
       "explorer.confirmDragAndDrop" = false;

@@ -7,7 +7,7 @@
     base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-mocha.yaml";
     
     # Wallpaper
-    image = ../../wallpapers/wallpaper.png;
+    image = ../../wallpapers/catppuccin-mocha/city-horizon.jpg;
     
     # Force dark theme
     polarity = "dark";
@@ -22,7 +22,7 @@
     # Font configuration
     fonts = {
       monospace = {
-        package = pkgs.maple-mono-NF;
+        package = pkgs.maple-mono.NF;
         name = "Maple Mono NF";
       };
       sansSerif = {
@@ -54,34 +54,10 @@
     };
 
     # Which apps to theme (supported by Stylix)
+    # Note: Most targets are Home Manager only and configured in respective HM modules
     targets = {
-      # Desktop environment
+      # Desktop environment (system-level)
       gtk.enable = true;
-      gnome.enable = true;
-      hyprland.enable = true;
-      
-      # Launchers and bars
-      rofi.enable = true;
-      waybar.enable = true;
-      
-      # Terminals
-      wezterm.enable = true;
-      
-      # Editors
-      neovim.enable = true;
-      vim.enable = true;
-      vscode.enable = true;
-      
-      # Shell tools
-      tmux.enable = true;
-      fzf.enable = true;
-      
-      # Notifications and locks
-      mako.enable = true;
-      swaylock.enable = true;
-      
-      # Browsers
-      firefox.enable = true;
     };
   };
 }

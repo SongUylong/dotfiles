@@ -66,6 +66,8 @@
       "bordersize 0, floating:0, onworkspace:f[1]"
       "rounding 0, floating:0, onworkspace:f[1]"
 
+
+
       # "maxsize 1111 700, floating: 1"
       # "center, floating: 1"
 
@@ -73,6 +75,12 @@
       "opaque,class:^()$,title:^()$"
       "noshadow,class:^()$,title:^()$"
       "noblur,class:^()$,title:^()$"
+    ];
+
+    windowrulev2 = [
+      # Prevent Telegram from stealing focus (more aggressive rules)
+      "suppressevent activate, class:^(telegram-desktop)$"
+      "nofocus, class:^(telegram-desktop)$"
     ];
 
     layerrule = [

@@ -1,5 +1,7 @@
 { pkgs, ... }:
 {
+  stylix.targets.hyprland.enable = true;
+
   home.packages = with pkgs; [
     swww
     grimblast

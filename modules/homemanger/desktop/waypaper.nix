@@ -5,9 +5,9 @@
   xdg.configFile."waypaper/config.ini".text = ''
     [Settings]
     language = en
-    folder = ~/Pictures/wallpapers/others
+    folder = ~/Pictures/wallpapers/catppuccin-mocha
     monitors = All
-    wallpaper = ~/Pictures/wallpapers/others/nixos.png
+    wallpaper = ~/Pictures/wallpapers/catppuccin-mocha/city-horizon.jpg
     backend = swww
     fill = fill
     sort = name

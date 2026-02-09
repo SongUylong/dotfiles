@@ -1,4 +1,4 @@
-{ ... }:
+{ lib, ... }:
 {
   wayland.windowManager.hyprland.settings = {
     input = {
@@ -21,8 +21,8 @@
       gaps_in = 8;
       gaps_out = 24;
       border_size = 2;
-      "col.active_border" = "rgb(cba6f7) rgb(89b4fa) 45deg"; # Catppuccin Mocha: mauve & blue
-      "col.inactive_border" = "0x00000000";
+      "col.active_border" = lib.mkDefault "rgb(cba6f7) rgb(89b4fa) 45deg"; # Catppuccin Mocha: mauve & blue
+      "col.inactive_border" = lib.mkDefault "0x00000000";
       # border_part_of_window = false;
       no_border_on_floating = false;
     };
@@ -33,7 +33,7 @@
       layers_hog_keyboard_focus = true;
       animate_manual_resizes = false;
       enable_swallow = true;
-      focus_on_activate = true;
+      focus_on_activate = false;
       new_window_takes_over_fullscreen = 2;
       middle_click_paste = false;
     };
@@ -77,7 +77,7 @@
         offset = "0 2";
         range = 20;
         render_power = 3;
-        color = "rgba(00000055)";
+        color = lib.mkDefault "rgba(00000055)";
       };
     };
 

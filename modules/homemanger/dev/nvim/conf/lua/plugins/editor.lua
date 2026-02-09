@@ -28,4 +28,47 @@ return {
   {
     "mg979/vim-visual-multi",
   },
+
+  -- Code screenshot utility
+  {
+    "mistricky/codesnap.nvim",
+    build = "make",
+    keys = {
+      { "<leader>cy", "<cmd>CodeSnap<cr>", mode = "x", desc = "Save selected code snapshot into clipboard" },
+      { "<leader>cs", "<cmd>CodeSnapSave<cr>", mode = "x", desc = "Save selected code snapshot" },
+    },
+    opts = {
+      save_path = "~/Pictures/Screenshots",
+      show_line_number = false,
+      snapshot_config = {
+        theme = "candy",
+        window = {
+          mac_window_bar = false,
+          shadow = {
+            radius = 0,
+            color = "#00000000",
+          },
+          margin = {
+            x = 0,
+            y = 0,
+          },
+          border = {
+            width = 0,
+            color = "#00000000",
+          },
+          radius = 0,
+        },
+        code_config = {
+          font_family = "CaskaydiaCove Nerd Font",
+          breadcrumbs = {
+            enable = false,
+          },
+        },
+        watermark = {
+          content = "",
+        },
+        background = "#00000000",
+      },
+    },
+  },
 }

@@ -1,8 +1,9 @@
 { config, pkgs, inputs, ... }:
 let
-  nvimConfDir = "${config.home.homeDirectory}/nixos-config/modules/homemanger/nvim/conf";
+  nvimConfDir = "${config.home.homeDirectory}/nixos-config/modules/homemanger/dev/nvim/conf";
 in
 {
+  stylix.targets.neovim.enable = false;
   home = {
     sessionVariables = {
       EDITOR = "nvim";

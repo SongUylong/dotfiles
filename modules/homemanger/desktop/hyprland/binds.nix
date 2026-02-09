@@ -40,9 +40,9 @@
       "$mainMod, equal, exec, woomer"
 
       # screenshot
-      "$mainMod SHIFT, S, exec, screenshot --copy && screenshot --save"
+      "$mainMod SHIFT, S, exec, screenshot --copy-save"
       "$mainMod SHIFT ALT, S, exec, screenshot --swappy"
-      ",Print, exec, screenshot --copy && screenshot --save"
+      ",Print, exec, screenshot --copy-save"
       "SHIFT, Print, exec, screenshot --swappy"
 
       # screen recording
