@@ -4,7 +4,7 @@
     enable = true;
     config = {
       pager = "less -FR";
-      theme = "Catppuccin Mocha";
+      # Theme handled by Stylix
     };
     extraPackages = with pkgs.bat-extras; [
       batman

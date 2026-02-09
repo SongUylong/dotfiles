@@ -1,5 +1,5 @@
 {
-  description = "FrostPhoenix's nixos configuration";
+  description = "Nixos config flake";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -26,38 +26,40 @@
       url = "github:Gerg-L/spicetify-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    
+
+    stylix = {
+      url = "github:nix-community/stylix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs =
-    { nixpkgs, self, ... }@inputs:
-    let
-      username = "uylong";
-      system = "x86_64-linux";
-      pkgs = import nixpkgs {
-        inherit system;
-        config.allowUnfree = true;
+  outputs = { nixpkgs, ... } @ inputs: let
+    system = "x86_64-linux";
+    username = "uylong";
+
+    pkgs = import nixpkgs {
+      inherit system;
+      config.allowUnfree = true;
+    };
+
+    lib = nixpkgs.lib;
+
+    sharedModules = [
+      inputs.stylix.nixosModules.stylix
+    ];
+  in {
+    nixosConfigurations = {
+      desktop = nixpkgs.lib.nixosSystem {
+        inherit lib system;
+        specialArgs = { inherit inputs username; host = "desktop"; };
+        modules = sharedModules ++ [ ./hosts/desktop ];
       };
-      lib = nixpkgs.lib;
-    in
-    {
-      nixosConfigurations = {
-        desktop = nixpkgs.lib.nixosSystem {
-          inherit system;
-          modules = [ ./hosts/desktop ];
-          specialArgs = {
-            host = "desktop";
-            inherit self inputs username;
-          };
-        };
-        laptop = nixpkgs.lib.nixosSystem {
-          inherit system;
-          modules = [ ./hosts/laptop ];
-          specialArgs = {
-            host = "laptop";
-            inherit self inputs username;
-          };
-        };
+
+      laptop = nixpkgs.lib.nixosSystem {
+        inherit lib system;
+        specialArgs = { inherit inputs username; host = "laptop"; };
+        modules = sharedModules ++ [ ./hosts/laptop ];
       };
     };
+  };
 }

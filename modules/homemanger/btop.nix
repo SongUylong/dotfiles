@@ -4,8 +4,7 @@
     enable = true;
 
     settings = {
-      color_theme = "TTY";
-      theme_background = false;
+      # Theme handled by Stylix
       update_ms = 500;
       rounded_corners = false;
     };

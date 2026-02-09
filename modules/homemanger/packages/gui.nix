@@ -5,6 +5,7 @@ in
 {
   home.packages = with pkgs; [
     ## Multimedia
+    ffmpeg  # For GIF conversion
     media-downloader
     obs-studio
     pavucontrol

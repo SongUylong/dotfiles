@@ -8,16 +8,14 @@
     ./discord.nix                     # discord
     ./fastfetch/fastfetch.nix         # fetch tool
     ./fzf.nix                         # fuzzy finder
-    ./ghostty/ghostty.nix             # terminal
     ./git.nix                         # version control
     ./gnome.nix                       # gnome apps
     ./gtk.nix                         # gtk theme
     ./hyprland                        # window manager
-    ./kitty.nix                       # terminal
     ./lazygit.nix
     ./micro.nix                       # nano replacement
     ./nemo.nix                        # file manager
-    ./nvim.nix                        # neovim editor
+    ./nvim/nvim.nix                   # neovim editor
     ./p10k/p10k.nix
     ./packages                        # other packages
     ./rofi/rofi.nix                   # launcher

@@ -45,28 +45,6 @@ if ! command -v whiptail &> /dev/null; then
     exit $?
 fi
 
-#---------------------#
-#   Greating banner   #
-#---------------------#
-
-clear
-
-echo -E "$CYAN
-      _____              _   ____  _                      _        
-     |  ___| __ ___  ___| |_|  _ \| |__   ___   ___ _ __ (_)_  __  
-     | |_ | '__/ _ \/ __| __| |_) | '_ \ / _ \ / _ \ '_ \| \ \/ /  
-     |  _|| | | (_) \__ \ |_|  __/| | | | (_) |  __/ | | | |>  <   
-     |_|  |_|  \___/|___/\__|_|   |_| |_|\___/ \___|_| |_|_/_/\_\  
-     _   _ _       ___        ___           _        _ _           
-    | \ | (_)_  __/ _ \ ___  |_ _|_ __  ___| |_ __ _| | | ___ _ __ 
-    |  \| | \ \/ / | | / __|  | || '_ \/ __| __/ _' | | |/ _ \ '__|
-    | |\  | |>  <| |_| \__ \  | || | | \__ \ || (_| | | |  __/ |   
-    |_| \_|_/_/\_\\\\___/|___/ |___|_| |_|___/\__\__,_|_|_|\___|_| 
-
-
-       ${BLUE} ─── https://github.com/Frost-Phoenix/nixos-config ─── ${RESET}
-"
-
 #------------------#
 #   Get username   #
 #------------------#
@@ -107,13 +85,6 @@ while true; do
     fi
 done
 
-#------------------------#
-#   pkgs configuration   #
-#------------------------#
-
-# No additional package configuration needed
-# Aseprite has been removed from this configuration
-
 #---------------------------#
 #   Recap of user choices   #
 #---------------------------#
@@ -139,14 +110,6 @@ fi
 
 echo -e "${INFO}Changing username to ${GREEN}$username${RESET}"
 find ./hosts ./modules flake.nix -type f -exec sed -i -e "s/${CURRENT_USERNAME}/${username}/g" {} +
-
-#----------------------#
-#   Clear git config   #
-#----------------------#
-
-echo -e "${INFO}Clearing git config"
-sed -i 's/"Frost-Phoenix"/""/g' modules/home/git.nix
-sed -i 's/"67cyril6767@gmail.com"/""/g' modules/home/git.nix
 
 #------------------------------#
 #   Prepare the environement   #
@@ -178,6 +141,32 @@ if [ ! -f /etc/nixos/hardware-configuration.nix ]; then
 fi
 echo -e "${INFO}Copying ${MAGENTA}/etc/nixos/hardware-configuration.nix${RESET} to ${MAGENTA}./hosts/${HOST}/${RESET}"
 cp /etc/nixos/hardware-configuration.nix hosts/${HOST}/hardware-configuration.nix
+
+#------------#
+#   GitHub   #
+#------------#
+
+echo -e "${INFO}Setting up GitHub"
+echo -e "${INFO}Please enter your GitHub credentials:"
+
+git_username=$(whiptail --inputbox "GitHub username:" 9 40 --title "GitHub" 3>&1 1>&2 2>&3)
+git_email=$(whiptail --inputbox "GitHub email:" 9 40 --title "GitHub" 3>&1 1>&2 2>&3)
+
+# Update git.nix with user info
+sed -i "s/name = \"uylong\"/name = \"$git_username\"/g" modules/homemanger/git.nix
+sed -i "s/email = \"songuylong24@gmail.com\"/email = \"$git_email\"/g" modules/homemanger/git.nix
+
+echo -e "${OK}GitHub configuration complete"
+
+#---------------------------#
+#   Generate SSH key        #
+#---------------------------#
+
+if [ ! -f ~/.ssh/id_ed25519 ]; then
+    echo -e "${INFO}Generating SSH key"
+    ssh-keygen -t ed25519 -C "$git_email" -f ~/.ssh/id_ed25519 -N ""
+    echo -e "${OK}SSH key generated"
+fi
 
 #------------------#
 #   Installation   #
