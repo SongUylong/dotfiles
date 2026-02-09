@@ -55,10 +55,25 @@ sudo nixos-rebuild switch --flake .#desktop
 
 ## What Gets Replaced
 
-When using Caelestia:
+When using Caelestia, these modules are **disabled**:
 - **Waybar** → Caelestia bar
 - **Rofi** → Caelestia launcher
-- Other components (Hyprland, Wezterm, etc.) continue working as normal
+- **SwayNC** → Caelestia notifications
+
+These modules are **kept** (compatible):
+- **Hyprland** - Window manager (required, with updated config)
+- **Swaylock** - Lock screen
+- **SwayOSD** - Volume/brightness OSD
+- **Wezterm** - Terminal emulator
+- **Waypaper** - Wallpaper picker
+- **GTK** - Theming
+
+## Keybinding Changes
+
+- `Super + Space` → Caelestia launcher (was: Rofi)
+- `Super + Escape` → Caelestia power menu (was: custom power-menu)
+- `Super + Shift + B` → Disabled (was: toggle-waybar)
+- `Super + Shift + N` → Disabled (was: SwayNC toggle)
 
 ## Customization
 
