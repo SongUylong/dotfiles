@@ -3,11 +3,14 @@
   stylix = {
     enable = true;
 
-    # Color scheme (using base16)
+    # Color scheme (Catppuccin Mocha)
     base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-mocha.yaml";
-
-    # Wallpaper (optional - comment out if you don't want one)
+    
+    # Wallpaper
     image = ../../wallpapers/wallpaper.png;
+    
+    # Force dark theme
+    polarity = "dark";
 
     # Cursor theme
     cursor = {
@@ -30,6 +33,10 @@
         package = pkgs.noto-fonts;
         name = "Noto Serif";
       };
+      emoji = {
+        package = pkgs.noto-fonts-color-emoji;
+        name = "Noto Color Emoji";
+      };
       sizes = {
         applications = 12;
         terminal = 12;
@@ -46,27 +53,35 @@
       popups = 0.9;
     };
 
-    # Which apps to theme
+    # Which apps to theme (supported by Stylix)
     targets = {
+      # Desktop environment
       gtk.enable = true;
       gnome.enable = true;
       hyprland.enable = true;
+      
+      # Launchers and bars
       rofi.enable = true;
       waybar.enable = true;
-      firefox.enable = true;
+      
+      # Terminals
+      wezterm.enable = true;
+      
+      # Editors
       neovim.enable = true;
-      tmux.enable = true;
-      zellij.enable = true;
-      fzf.enable = true;
-      lazygit.enable = true;
-      bat.enable = true;
-      btop.enable = true;
-      dunst.enable = true;
-      mako.enable = true;
       vim.enable = true;
       vscode.enable = true;
-      wezterm.enable = true;
+      
+      # Shell tools
+      tmux.enable = true;
+      fzf.enable = true;
+      
+      # Notifications and locks
+      mako.enable = true;
       swaylock.enable = true;
+      
+      # Browsers
+      firefox.enable = true;
     };
   };
 }
