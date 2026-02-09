@@ -17,7 +17,7 @@ quit="<span color='${gray}'>✘</span>"
 yes="<span color='${green}'>✔</span>"
 no="<span color='${red}'>✘</span>"
 
-theme="$HOME/.config/rofi/powermenu-theme.rasi"
+theme="$HOME/.config/rofi/config.rasi"
 
 rofi_cmd() {
     rofi -dmenu -theme ${theme} -markup-rows

@@ -33,11 +33,11 @@ in
     tiled
 
     ## X11 libraries
-    xorg.libX11
-    xorg.libXcursor
-    xorg.libXrandr
-    xorg.libXi
-    xorg.libxcb
+    libx11
+    libxcursor
+    libxrandr
+    libxi
+    libxcb
     libxkbcommon
     libGL
   ];

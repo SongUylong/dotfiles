@@ -41,7 +41,7 @@ in
     defaultEditor = true;
 
     # Inline init.lua - just bootstraps lazy.nvim
-    extraLuaConfig = ''
+    initLua = ''
       -- bootstrap lazy.nvim, LazyVim and your plugins
       require("config.lazy")
     '';
