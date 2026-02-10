@@ -18,6 +18,11 @@
   systemd.user.targets.hyprland-session.Unit.Wants = [
     "xdg-desktop-autostart.target"
   ];
+
+  # Disable hyprpaper service (we use swww instead)
+  systemd.user.services.hyprpaper = {
+    Unit.ConditionPathExists = "/dev/null";
+  };
   wayland.windowManager.hyprland = {
     enable = true;
     package = null;

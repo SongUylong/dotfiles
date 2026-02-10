@@ -1,6 +1,6 @@
 { ... }:
 {
-  stylix.targets.waybar.enable = true;
+  stylix.targets.waybar.enable = false;
 
   programs.waybar = {
     enable = true;

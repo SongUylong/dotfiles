@@ -16,7 +16,7 @@
         useOSProber = true;
         efiInstallAsRemovable = true;
         configurationLimit = 5;
-        theme = lib.mkDefault pkgs.catppuccin-grub;
+        # theme = lib.mkDefault pkgs.catppuccin-grub;
         # Increase timeout to select OS
         gfxmodeEfi = "2560x1440";
       };

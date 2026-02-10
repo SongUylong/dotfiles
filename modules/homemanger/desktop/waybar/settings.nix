@@ -3,11 +3,12 @@
   programs.waybar.settings.mainBar = {
     position = "top";
     layer = "top";
-    height = 24;
+    height = 28;
     margin-top = 0;
     margin-bottom = 0;
     margin-left = 0;
     margin-right = 0;
+    spacing = 4;
     modules-left = [
       "custom/launcher"
       "hyprland/workspaces"
