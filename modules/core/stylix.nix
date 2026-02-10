@@ -5,10 +5,10 @@
 
     # Color scheme (Catppuccin Mocha)
     base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-mocha.yaml";
-    
+
     # Wallpaper
     image = ../../wallpapers/catppuccin-mocha/city-horizon.jpg;
-    
+
     # Force dark theme
     polarity = "dark";
 
@@ -53,11 +53,18 @@
       popups = 0.9;
     };
 
+    icons = {
+      enable = true;
+      package = pkgs.tela-circle-icon-theme;
+      dark = "Tela-circle-dark";
+      light = "Tela-circle-light";
+    };
     # Which apps to theme (supported by Stylix)
     # Note: Most targets are Home Manager only and configured in respective HM modules
     targets = {
       # Desktop environment (system-level)
       gtk.enable = true;
+      grub.enable = false; # Disable GRUB theming - using custom Star Wars theme
     };
   };
 }

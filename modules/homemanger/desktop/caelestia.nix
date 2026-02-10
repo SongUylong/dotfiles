@@ -263,7 +263,7 @@
           }
           {
             id = "power";
-            enabled = false;
+            enabled = true;
           }
         ];
         persistent = false;

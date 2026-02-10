@@ -8,7 +8,9 @@
     bind = [
       # show keybinds list
       "$mainMod, F1, exec, show-keybinds"
-
+      # OCR
+      "Super+Shift, T, exec, bash -c 'grim -g \"$(slurp $SLURP_ARGS)\" /tmp/ocr.png && tesseract -l eng /tmp/ocr.png - | wl-copy && rm /tmp/ocr.png'"
+      "Ctrl+Super+Shift, S, exec, bash -c 'grim -g \"$(slurp $SLURP_ARGS)\" /tmp/ocr.png && tesseract /tmp/ocr.png - | wl-copy && rm /tmp/ocr.png'"
       # keybindings
       "$mainMod, Return, exec, wezterm"
       "ALT, Return, exec, [float; size 1111 700] wezterm"
@@ -17,12 +19,12 @@
       "$mainMod, F, fullscreen, 1"
       "$mainMod ALT, F, fullscreen, 0"
       "$mainMod SHIFT, F, exec, nemo"
-      "$mainMod, Space, exec, caelestia shell launcher open" # Use Caelestia launcher
+      "$mainMod, Space, global, caelestia:launcher" # Use Caelestia launcher via global shortcut
       "$mainMod SHIFT, Space, exec, browser-search"
       "$mainMod SHIFT, D, exec, webcord --enable-features=UseOzonePlatform --ozone-platform=wayland"
       "$mainMod SHIFT, Escape, exec, swaylock"
       "ALT, Escape, exec, hyprlock"
-      "$mainMod, Escape, exec, caelestia shell launcher open --category power" # Use Caelestia power menu
+      "$mainMod, Escape, exec, caelestia shell drawers toggle session" # Power menu via Caelestia session drawer
       "$mainMod, P, pseudo,"
       "$mainMod, X, togglesplit,"
       "$mainMod, T, exec, wezterm"
@@ -30,7 +32,7 @@
       "$mainMod, E, exec, toggle-float"
       "ALT, E, exec, hyprctl dispatch exec '[float; size 1111 700] nemo'"
       # "$mainMod SHIFT, B, exec, toggle-waybar"  # Disabled for Caelestia
-      "$mainMod, C ,exec, hyprpicker -a"
+      "$mainMod SHIFT, C ,exec, hyprpicker -a"
       "$mainMod, S, exec, spotify"
       "$mainMod, W,exec, wallpaper-picker"
       "$mainMod SHIFT, W,exec, hyprctl dispatch exec '[float; size 925 615] waypaper'"
@@ -40,7 +42,8 @@
       "$mainMod, equal, exec, woomer"
 
       # screenshot
-      "$mainMod SHIFT, S, exec, screenshot --copy-save"
+      # "$mainMod SHIFT, S, exec, screenshot --copy-save"
+      "$mainMod SHIFT, S,global, caelestia:screenshotFreezeClip"
       "$mainMod SHIFT ALT, S, exec, screenshot --swappy"
       ",Print, exec, screenshot --copy-save"
       "SHIFT, Print, exec, screenshot --swappy"

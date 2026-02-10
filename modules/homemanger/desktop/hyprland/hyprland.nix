@@ -8,6 +8,7 @@
     hyprpicker
     grim
     slurp
+    tesseract
     wl-clip-persist
     cliphist
     wf-recorder
