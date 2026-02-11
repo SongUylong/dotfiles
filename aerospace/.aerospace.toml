@@ -55,12 +55,6 @@ inner.horizontal = 30
 inner.vertical = 30
 outer.bottom = 30
 outer.top = [{ monitor.main = 30 }, 30]
-#                 See: https://nikitabobko.github.io/AeroSpace/guide#assign-workspaces-to-monitors
-[gaps]
-inner.horizontal = 30
-inner.vertical = 30
-outer.bottom = 30
-outer.top = [{ monitor.main = 30 }, 30]
 outer.right = 30
 outer.left = 30
 
