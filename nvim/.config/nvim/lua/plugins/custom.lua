@@ -7,15 +7,4 @@ return {
       rocks = { "magick" },
     },
   },
-  -- {
-  --   "3rd/image.nvim",
-  --   dependencies = { "luarocks.nvim" },
-  --   opts = {},
-  -- },
-  -- {
-  --   "sphamba/smear-cursor.nvim",
-  --   opts = {
-  --     cursor_color = "",
-  --   },
-  -- },
 }

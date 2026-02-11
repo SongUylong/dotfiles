@@ -2,152 +2,133 @@ local wezterm = require("wezterm")
 local config = wezterm.config_builder()
 local act = wezterm.action
 
-config.enable_wayland = false
-config.font_size = 16
-config.color_scheme = "Catppuccin Mocha"
+-- General settings
 config.enable_tab_bar = true
 config.window_decorations = "RESIZE"
-config.window_background_opacity = 1
-config.font = wezterm.font("CaskaydiaCove Nerd Font", { weight = "Regular", stretch = "Normal", style = "Normal" })
+-- Note: font, font_size, and opacity are managed by Stylix
 config.window_close_confirmation = "AlwaysPrompt"
-config.harfbuzz_features = { "kern", "liga", "clig", "calt" }
+config.harfbuzz_features = { "calt=0", "clig=0", "liga=0" }
+config.freetype_load_target = "Light"
+config.freetype_render_target = "Light"
+config.scrollback_lines = 3000
+config.font_size = 16
 
-config.cursor_blink_rate = 0 -- disable blinking for fewer redraws
-config.front_end = "OpenGL"
-config.webgpu_power_preference = "HighPerformance"
-config.enable_scroll_bar = false
-
--- Additional M4 optimizations
-config.unicode_version = 14
-config.scrollback_lines = 10000 -- reasonable scrollback without memory bloat
-config.use_resize_increments = false -- smoother window resizing
-config.adjust_window_size_when_changing_font_size = false
-config.check_for_updates = false -- disable update checks
-config.default_cursor_style = "SteadyBlock" -- no cursor animation overhead
+-- Catppuccin Mocha theme
+config.color_scheme = "Catppuccin Mocha"
 
 config.inactive_pane_hsb = {
 	saturation = 0.24,
 	brightness = 0.5,
 }
 
--- Plugin: bar.wezterm
+-- Custom status bar configuration
+config.tab_bar_at_bottom = false
+config.use_fancy_tab_bar = false
+config.tab_max_width = 22
 
-local moon = "🌙"
-local bar = wezterm.plugin.require("https://github.com/adriankarlen/bar.wezterm")
-bar.apply_to_config(config, {
-	position = "top",
-	max_width = 22,
-	padding = { left = 1, right = 1 },
-	modules = {
-		leader = {
-			enabled = true,
-			icon = moon,
-			color = 4,
-		},
-		tab = {
-			enabled = true,
-			icon = wezterm.nerdfonts.oct_file_directory,
-			color = 2,
-		},
-		clock = {
-			enabled = true,
-			icon = wezterm.nerdfonts.fa_clock,
-			format = "%I:%M",
-			color = 6,
-		},
-		workspace = {
-			enabled = true,
-			icon = wezterm.nerdfonts.fa_briefcase,
-			color = 6,
-			format = function()
-				local name = wezterm.mux.get_active_workspace()
-				return string.format(" %s ", name)
-			end,
-		},
-		zoom = {
-			enabled = true,
-			icon = wezterm.nerdfonts.md_fullscreen,
-			color = 4,
-		},
-		pane = {
-			enabled = false,
-			icon = wezterm.nerdfonts.cod_multiple_windows,
-			color = 7,
-		},
-		username = {
-			enabled = false,
-			icon = wezterm.nerdfonts.fa_user,
-			color = 6,
-		},
-		hostname = {
-			enabled = false,
-			icon = wezterm.nerdfonts.cod_server,
-			color = 2,
-		},
-		cwd = {
-			enabled = true,
-			icon = wezterm.nerdfonts.oct_file_directory,
-			color = 2,
-		},
-	},
-})
+-- Format tab titles
+wezterm.on("format-tab-title", function(tab, tabs, panes, conf, hover, max_width)
+	local title = tab.tab_index + 1 .. " " .. wezterm.nerdfonts.fa_long_arrow_right .. " "
+
+	if tab.active_pane.title then
+		title = title .. tab.active_pane.title
+	end
+
+	if #title > max_width then
+		title = wezterm.truncate_right(title, max_width - 1) .. "…"
+	end
+
+	return {
+		{ Text = " " .. title .. " " },
+	}
+end)
+
+-- Throttle status updates to prevent flickering
+local last_update = 0
+local update_interval = 1 -- seconds
+
+-- Left status (workspace, leader, zoom)
+wezterm.on("update-status", function(window, pane)
+	local now = os.time()
+	if now - last_update < update_interval and not window:leader_is_active() then
+		return
+	end
+	last_update = now
+
+	local left_cells = {}
+	local right_cells = {}
+
+	local palette = window:effective_config().resolved_palette
+
+	-- Left status: workspace/leader indicator
+	local workspace = window:active_workspace()
+	local leader_icon = "🌙"
+
+	if window:leader_is_active() then
+		table.insert(left_cells, { Foreground = { Color = palette.ansi[4] } })
+		table.insert(left_cells, { Text = " " .. leader_icon .. " " })
+	else
+		table.insert(left_cells, { Foreground = { Color = palette.ansi[6] } })
+		table.insert(left_cells, { Text = " " .. wezterm.nerdfonts.fa_briefcase .. " " .. workspace .. " " })
+	end
+
+	-- Check if zoomed
+	local tab = pane:tab()
+	if tab then
+		local panes_with_info = tab:panes_with_info()
+		for _, p in ipairs(panes_with_info) do
+			if p.is_active and p.is_zoomed then
+				table.insert(left_cells, { Foreground = { Color = palette.ansi[4] } })
+				table.insert(left_cells, { Text = wezterm.nerdfonts.md_fullscreen .. " zoom " })
+			end
+		end
+	end
+
+	window:set_left_status(wezterm.format(left_cells))
+
+	-- Right status: cwd and clock
+	local cwd = pane:get_current_working_dir()
+	if cwd then
+		cwd = cwd.file_path:gsub(os.getenv("HOME"), "~")
+		local basename = cwd:match("([^/]+)/?$") or cwd
+		table.insert(right_cells, { Foreground = { Color = palette.ansi[7] } })
+		table.insert(right_cells, { Text = basename .. " " })
+		table.insert(right_cells, { Foreground = { Color = palette.brights[1] } })
+		table.insert(
+			right_cells,
+			{ Text = wezterm.nerdfonts.fa_long_arrow_left .. " " .. wezterm.nerdfonts.oct_file_directory .. " " }
+		)
+	end
+
+	local time = wezterm.time.now():format("%I:%M")
+	table.insert(right_cells, { Foreground = { Color = palette.ansi[5] } })
+	table.insert(right_cells, { Text = time .. " " })
+	table.insert(right_cells, { Foreground = { Color = palette.brights[1] } })
+	table.insert(
+		right_cells,
+		{ Text = wezterm.nerdfonts.fa_long_arrow_left .. " " .. wezterm.nerdfonts.fa_clock .. " " }
+	)
+
+	window:set_right_status(wezterm.format(right_cells))
+end)
 
 config.disable_default_mouse_bindings = false
 
--- config.colors = {
--- 	foreground = "#CBE0F0",
--- 	background = "#011423",
--- 	cursor_bg = "#47FF9C",
--- 	cursor_border = "#47FF9C",
--- 	cursor_fg = "#011423",
--- 	selection_bg = "#033259",
--- 	selection_fg = "#CBE0F0",
--- 	ansi = {
--- 		"#214969",
--- 		"#E52E2E",
--- 		"#44FFB1",
--- 		"#FFE073",
--- 		"#0FC5ED",
--- 		"#a277ff",
--- 		"#24EAF7",
--- 		"#24EAF7",
--- 	},
--- 	brights = {
--- 		"#214969",
--- 		"#E52E2E",
--- 		"#44FFB1",
--- 		"#FFE073",
--- 		"#A277FF",
--- 		"#a277ff",
--- 		"#24EAF7",
--- 		"#24EAF7",
--- 	},
--- }
---
-local act = wezterm.action
 config.leader = { key = "w", mods = "ALT", timeout_milliseconds = math.maxinteger }
 
 config.keys = {
-	{ key = "c", mods = "SUPER", action = act.ActivateCopyMode },
+	{ key = "n", mods = "SUPER", action = act.ActivateCopyMode },
+	{ key = "t", mods = "SUPER", action = act.SpawnTab("CurrentPaneDomain") },
 	{ key = "x", mods = "SUPER", action = act.CloseCurrentTab({ confirm = false }) },
-	{
-		key = "p",
-		mods = "LEADER",
-		action = wezterm.action_callback(function(window, pane)
-			local selection = window:get_selection_text_for_pane(pane)
-
-			-- If we have a selected text and it matches a URL pattern, open it
-			if selection and selection ~= "" then
-				local url_pattern = "https?://%S+"
-				if selection:match(url_pattern) then
-					wezterm.log_info("Opening: " .. selection)
-					wezterm.open_with(selection) -- Opens the URL in the default browser
-				else
-					wezterm.log_info("No URL selected!")
-				end
-			end
-		end),
-	},
+	{ key = "m", mods = "SUPER", action = act.ActivateKeyTable({ name = "workspace" }) },
+	-- Pane splitting
+	{ key = ";", mods = "SUPER", action = act.SplitVertical({ domain = "CurrentPaneDomain" }) },
+	{ key = "'", mods = "SUPER", action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
+	-- Pane navigation
+	{ key = "h", mods = "SUPER", action = act.ActivatePaneDirection("Left") },
+	{ key = "j", mods = "SUPER", action = act.ActivatePaneDirection("Down") },
+	{ key = "k", mods = "SUPER", action = act.ActivatePaneDirection("Up") },
+	{ key = "l", mods = "SUPER", action = act.ActivatePaneDirection("Right") },
 }
 config.mouse_bindings = {
 	-- Ctrl-click will open the link under the mouse cursor
@@ -187,17 +168,24 @@ config.key_tables = {
 		{ key = "Enter", action = "PopKeyTable" },
 	},
 	workspace = {
-		{ key = "f", action = act.ShowLauncherArgs({ flags = "FUZZY|WORKSPACES" }) },
+		-- Fuzzy workspace finder
+		{
+			key = "f",
+			action = act.ShowLauncherArgs({
+				flags = "FUZZY|WORKSPACES",
+				title = "🔍 Find Workspace",
+			}),
+		},
+		-- Create new workspace
 		{
 			key = "n",
 			action = act.PromptInputLine({
 				description = wezterm.format({
 					{ Attribute = { Intensity = "Bold" } },
-					{ Foreground = { AnsiColor = "Fuchsia" } },
-					{ Text = "Enter name for new workspace" },
+					{ Text = "🏗️  New workspace name: " },
 				}),
 				action = wezterm.action_callback(function(window, pane, line)
-					if line then
+					if line and line ~= "" then
 						window:perform_action(
 							act.SwitchToWorkspace({
 								name = line,
@@ -208,8 +196,40 @@ config.key_tables = {
 				end),
 			}),
 		},
-		{ key = "l", action = act.SwitchWorkspaceRelative(1) },
+		-- Rename current tab
+		{
+			key = "r",
+			action = act.PromptInputLine({
+				description = wezterm.format({
+					{ Attribute = { Intensity = "Bold" } },
+					{ Text = "Rename tab: " },
+				}),
+				action = wezterm.action_callback(function(window, pane, line)
+					if line and line ~= "" then
+						window:active_tab():set_title(line)
+					end
+				end),
+			}),
+		},
+		-- Show all workspaces and domains
+		{
+			key = "s",
+			action = act.ShowLauncherArgs({
+				flags = "FUZZY|WORKSPACES|DOMAINS",
+				title = "📋 All Workspaces & Domains",
+			}),
+		},
+		-- Previous/next workspace
 		{ key = "h", action = act.SwitchWorkspaceRelative(-1) },
+		{ key = "l", action = act.SwitchWorkspaceRelative(1) },
+		-- Help
+		{
+			key = "?",
+			action = act.ShowLauncherArgs({
+				flags = "FUZZY|WORKSPACES",
+				title = "🔍 Workspace Manager",
+			}),
+		},
 	},
 }
 --utils of panes

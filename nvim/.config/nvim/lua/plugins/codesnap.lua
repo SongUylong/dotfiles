@@ -5,14 +5,13 @@ return {
     keys = {
       -- Map <leader>sc to our custom PNG copy function
       {
-        "<leader>sc",
+        "<leader>cs",
         function()
           require("codesnap-custom").copy_as_png()
         end,
         mode = "v",
         desc = "CodeSnap PNG to clipboard",
       },
-      { "<leader>sC", ":CodeSnapSave<CR>", mode = "v", desc = "CodeSnap save to file" },
     },
     config = function()
       -- 1. DEFINE CUSTOM COPY FUNCTION
