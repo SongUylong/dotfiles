@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+CONFIG_DIR="$HOME/.config/sketchybar"
+
 sid=$1
 NAME="space.$sid"
 
