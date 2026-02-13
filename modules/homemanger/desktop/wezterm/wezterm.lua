@@ -20,6 +20,13 @@ config.freetype_load_target = "Light"
 config.freetype_render_target = "Light"
 config.scrollback_lines = 3000
 
+-- Font configuration
+config.font_shaper = "Harfbuzz"
+config.font = wezterm.font_with_fallback({
+	"CaskaydiaCove Nerd Font",
+})
+config.use_ime = true
+
 config.inactive_pane_hsb = {
 	saturation = 0.24,
 	brightness = 0.5,
@@ -173,12 +180,12 @@ config.key_tables = {
 	},
 	workspace = {
 		-- Fuzzy workspace finder
-		{ 
-			key = "f", 
-			action = act.ShowLauncherArgs({ 
+		{
+			key = "f",
+			action = act.ShowLauncherArgs({
 				flags = "FUZZY|WORKSPACES",
-				title = "🔍 Find Workspace"
-			}) 
+				title = "🔍 Find Workspace",
+			}),
 		},
 		-- Create new workspace
 		{
@@ -216,23 +223,23 @@ config.key_tables = {
 			}),
 		},
 		-- Show all workspaces and domains
-		{ 
-			key = "s", 
-			action = act.ShowLauncherArgs({ 
+		{
+			key = "s",
+			action = act.ShowLauncherArgs({
 				flags = "FUZZY|WORKSPACES|DOMAINS",
-				title = "📋 All Workspaces & Domains"
-			}) 
+				title = "📋 All Workspaces & Domains",
+			}),
 		},
 		-- Previous/next workspace
 		{ key = "h", action = act.SwitchWorkspaceRelative(-1) },
 		{ key = "l", action = act.SwitchWorkspaceRelative(1) },
 		-- Help
-		{ 
-			key = "?", 
-			action = act.ShowLauncherArgs({ 
+		{
+			key = "?",
+			action = act.ShowLauncherArgs({
 				flags = "FUZZY|WORKSPACES",
-				title = "🔍 Workspace Manager"
-			}) 
+				title = "🔍 Workspace Manager",
+			}),
 		},
 	},
 }

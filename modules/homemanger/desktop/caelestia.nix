@@ -209,7 +209,7 @@
       };
 
       border = {
-        rounding = 16;
+        rounding = 0;
         thickness = 8;
       };
 
@@ -266,7 +266,7 @@
             enabled = true;
           }
         ];
-        persistent = false;
+        persistent = true;
       };
       launcher = {
         actions = [

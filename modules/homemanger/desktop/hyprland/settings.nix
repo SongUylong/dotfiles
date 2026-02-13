@@ -11,7 +11,7 @@
       follow_mouse = 0;
       float_switch_override_focus = 0;
       mouse_refocus = 0;
-      sensitivity = 0;
+      sensitivity = -1;
       touchpad = {
         natural_scroll = true;
       };
@@ -73,7 +73,6 @@
 
       shadow = {
         enabled = true;
-
         ignore_window = true;
         offset = "0 2";
         range = 20;
