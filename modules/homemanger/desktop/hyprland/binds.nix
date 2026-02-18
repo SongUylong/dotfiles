@@ -49,7 +49,7 @@
       "SHIFT, Print, exec, screenshot --swappy"
 
       # screen recording
-      "$mainMod SHIFT, R, exec, screen-record"
+      "$mainMod SHIFT, R, exec, caelestia record -c -r"
 
       # switch focus
       "$mainMod, left,  movefocus, l"

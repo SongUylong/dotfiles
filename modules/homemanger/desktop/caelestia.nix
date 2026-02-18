@@ -206,6 +206,13 @@
             "yazi"
           ];
         };
+        idle = {
+          lockTimeout = 7200;
+          dpmsTimeout = 7200;
+          sleepTimeout = 7200;
+          lockBeforeSleep = true;
+          inhibitWhenAudio = true;
+        };
       };
 
       border = {

@@ -6,6 +6,7 @@
     "systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
 
     "hyprlock"
+    # "hypridle"  # Disabled - Caelestia handles idle
 
     "nm-applet &"
     "poweralertd &"

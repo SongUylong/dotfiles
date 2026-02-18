@@ -11,6 +11,7 @@
     ./program.nix
     ./security.nix
     ./services.nix
+    ./ollama.nix
     ./stylix.nix
     ./system.nix
     ./flatpak.nix
