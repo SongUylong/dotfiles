@@ -207,11 +207,26 @@
           ];
         };
         idle = {
-          lockTimeout = 7200;
-          dpmsTimeout = 7200;
-          sleepTimeout = 7200;
           lockBeforeSleep = true;
           inhibitWhenAudio = true;
+          timeouts = [
+            {
+              timeout = 180;
+              idleAction = "lock";
+            }
+            {
+              timeout = 300;
+              idleAction = "dpms off";
+              returnAction = "dpms on";
+            }
+            {
+              timeout = 7200;
+              idleAction = [
+                "systemctl"
+                "suspend-then-hibernate"
+              ];
+            }
+          ];
         };
       };
 
