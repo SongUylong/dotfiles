@@ -73,7 +73,45 @@ sketchybar --add item kanika left \
   background.drawing=on \
   script="" \
   click_script="" \
-  update_freq=0
+  update_freq=0 \
+  \
+  --add item bluetooth left \
+  --set bluetooth icon="󰂯" \
+  label.drawing=on \
+  icon.padding_left=8 \
+  icon.padding_right=4 \
+  label.padding_right=8 \
+  background.color=0xff3c3e4f \
+  background.corner_radius=8 \
+  background.height=28 \
+  background.drawing=on \
+  script="$PLUGIN_DIR/bluetooth.sh" \
+  click_script="open 'x-apple.systempreferences:com.apple.preferences.Bluetooth'" \
+  update_freq=10 \
+  \
+  --add item network left \
+  --set network \
+  icon.padding_left=8 \
+  icon.padding_right=4 \
+  label.padding_right=8 \
+  background.color=0xff3c3e4f \
+  background.corner_radius=8 \
+  background.height=28 \
+  background.drawing=on \
+  script="$PLUGIN_DIR/network.sh" \
+  update_freq=2 \
+  \
+  --add item monitor left \
+  --set monitor \
+  icon.padding_left=8 \
+  icon.padding_right=4 \
+  label.padding_right=8 \
+  background.color=0xff3c3e4f \
+  background.corner_radius=8 \
+  background.height=28 \
+  background.drawing=on \
+  script="$PLUGIN_DIR/monitor.sh" \
+  update_freq=10
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -115,20 +153,6 @@ sketchybar --add item clock right \
   background.drawing=on \
   --subscribe volume volume_change \
   \
-  --add item bluetooth right \
-  --set bluetooth icon="󰂯" \
-  label.drawing=on \
-  icon.padding_left=8 \
-  icon.padding_right=4 \
-  label.padding_right=8 \
-  background.color=0xff3c3e4f \
-  background.corner_radius=8 \
-  background.height=28 \
-  background.drawing=on \
-  script="$PLUGIN_DIR/bluetooth.sh" \
-  click_script="open 'x-apple.systempreferences:com.apple.preferences.Bluetooth'" \
-  update_freq=10 \
-  \
   --add item wifi right \
   --set wifi icon="󰤨" \
   label.drawing=on \
@@ -141,6 +165,30 @@ sketchybar --add item clock right \
   background.drawing=on \
   script="$PLUGIN_DIR/wifi.sh" \
   click_script="open 'x-apple.systempreferences:com.apple.preference.network?Wi-Fi'" \
-  update_freq=10
+  update_freq=10 \
+  \
+  --add item cpu right \
+  --set cpu \
+  icon.padding_left=8 \
+  icon.padding_right=4 \
+  label.padding_right=8 \
+  background.color=0xff3c3e4f \
+  background.corner_radius=8 \
+  background.height=28 \
+  background.drawing=on \
+  script="$PLUGIN_DIR/cpu.sh" \
+  update_freq=5 \
+  \
+  --add item ram right \
+  --set ram \
+  icon.padding_left=8 \
+  icon.padding_right=4 \
+  label.padding_right=8 \
+  background.color=0xff3c3e4f \
+  background.corner_radius=8 \
+  background.height=28 \
+  background.drawing=on \
+  script="$PLUGIN_DIR/ram.sh" \
+  update_freq=5
 
 sketchybar --update

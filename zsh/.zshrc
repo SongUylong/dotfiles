@@ -156,6 +156,7 @@ function y() {
 eval $(thefuck --alias fk)
 eval "$(pyenv init -)"
 alias cursor='open -a Cursor'
+alias webai='open-webui serve --port 1234'
 export PATH="$PATH:/Users/eric/.composer/vendor/bin"
 # The following lines have been added by Docker Desktop to enable Docker CLI completions.
 fpath=(/Users/eric/.docker/completions $fpath)
@@ -184,10 +185,12 @@ load-nvmrc() {
       nvm use
     fi
   elif [ "$node_version" != "$(nvm version default)" ]; then
-    echo "Reverting to nvm default version"
-    nvm use default
+    nvm use default 2>/dev/null
   fi
 }
 add-zsh-hook chpwd load-nvmrc
 load-nvmrc
 export NODE_OPTIONS=--openssl-legacy-provider
+
+# Ollama models on external drive
+export OLLAMA_MODELS=/Volumes/TRANSCEND/.ollama/models

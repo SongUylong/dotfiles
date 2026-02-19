@@ -4,6 +4,9 @@
 PERCENTAGE=$(pmset -g batt | grep -Eo "\d+%" | cut -d% -f1)
 CHARGING=$(pmset -g batt | grep 'AC Power')
 
+# Get time remaining
+TIME_REMAINING=$(pmset -g batt | grep -Eo '\d+:\d+' | head -1)
+
 # Determine icon based on percentage and charging status
 if [ -n "$CHARGING" ]; then
   ICON="󰂄"  # Charging icon
@@ -23,4 +26,11 @@ else
   fi
 fi
 
-sketchybar --set "$NAME" icon="$ICON" label="${PERCENTAGE}%"
+# Format time remaining for display
+if [ -n "$TIME_REMAINING" ]; then
+  LABEL="${PERCENTAGE}% (${TIME_REMAINING})"
+else
+  LABEL="${PERCENTAGE}%"
+fi
+
+sketchybar --set "$NAME" icon="$ICON" label="$LABEL"
