@@ -211,11 +211,11 @@
           inhibitWhenAudio = true;
           timeouts = [
             {
-              timeout = 180;
+              timeout = 7200;
               idleAction = "lock";
             }
             {
-              timeout = 300;
+              timeout = 7200;
               idleAction = "dpms off";
               returnAction = "dpms on";
             }
@@ -248,6 +248,16 @@
         };
         tray = {
           compact = true;
+        };
+        popouts = {
+          activeWindow = true;
+          statusIcons = true;
+          tray = true;
+        };
+        scrollActions = {
+          brightness = true;
+          volume = true;
+          workspaces = true;
         };
         showOnHover = true;
         entries = [
@@ -477,6 +487,15 @@
       services = {
         useFahrenheit = false;
         useTwelveHourClock = true;
+        brightnessIncrement = 0.05;
+      };
+      osd = {
+        enabled = true;
+        enableBrightness = true;
+        hideDelay = 2000;
+      };
+      sidebar = {
+        enabled = true;
       };
       utilities = {
         toasts = {
