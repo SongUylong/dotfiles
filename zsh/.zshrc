@@ -108,6 +108,12 @@ alias lgit='lsd -l --git --group-dirs first'
 alias lt='tree -a'
 alias cursor='~/Applications/cursor.AppImage --no-sandbox'
 alias nvid='neovide & disown && exit'
+alias zl='zellij list-sessions'
+alias za='zellij attach -c'
+alias zk='zellij kill-session'
+alias zd='zellij delete-session'
+alias zda='zellij delete-all-sessions'
+alias zka='zellij kill-all-sessions'
 # ------------------------------------------------------------------------------
 # Fzf Integration
 # ------------------------------------------------------------------------------

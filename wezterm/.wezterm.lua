@@ -12,7 +12,8 @@ config.freetype_load_target = "Light"
 config.freetype_render_target = "Light"
 config.scrollback_lines = 3000
 config.font_size = 16
-
+config.use_ime = true
+config.send_composed_key_when_left_alt_is_pressed = true
 -- Catppuccin Mocha theme
 config.color_scheme = "Catppuccin Mocha"
 
@@ -119,16 +120,16 @@ config.leader = { key = "w", mods = "ALT", timeout_milliseconds = math.maxintege
 config.keys = {
 	{ key = "n", mods = "SUPER", action = act.ActivateCopyMode },
 	{ key = "t", mods = "SUPER", action = act.SpawnTab("CurrentPaneDomain") },
-	{ key = "x", mods = "SUPER", action = act.CloseCurrentTab({ confirm = false }) },
+	{ key = "x", mods = "SUPER", action = act.CloseCurrentPane({ confirm = false }) },
 	{ key = "m", mods = "SUPER", action = act.ActivateKeyTable({ name = "workspace" }) },
 	-- Pane splitting
 	{ key = ";", mods = "SUPER", action = act.SplitVertical({ domain = "CurrentPaneDomain" }) },
 	{ key = "'", mods = "SUPER", action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
 	-- Pane navigation
-	{ key = "h", mods = "SUPER", action = act.ActivatePaneDirection("Left") },
-	{ key = "j", mods = "SUPER", action = act.ActivatePaneDirection("Down") },
-	{ key = "k", mods = "SUPER", action = act.ActivatePaneDirection("Up") },
-	{ key = "l", mods = "SUPER", action = act.ActivatePaneDirection("Right") },
+	{ key = "h", mods = "SUPER", action = wezterm.action.SendKey({ key = "h", mods = "ALT" }) },
+	{ key = "j", mods = "SUPER", action = wezterm.action.SendKey({ key = "j", mods = "ALT" }) },
+	{ key = "k", mods = "SUPER", action = wezterm.action.SendKey({ key = "k", mods = "ALT" }) },
+	{ key = "l", mods = "SUPER", action = wezterm.action.SendKey({ key = "l", mods = "ALT" }) },
 }
 config.mouse_bindings = {
 	-- Ctrl-click will open the link under the mouse cursor
