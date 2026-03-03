@@ -21,25 +21,32 @@ logout="󰍃  Logout"
 # Inline rofi theme
 rofi_theme="
 * {
-    font: \"Maple Mono NF Bold 13\";
+    font: \"Maple Mono Bold 16\";
     background-color: ${base};
     text-color: ${text};
+    fg-col: ${text};
+    fg-col2: ${base};
+    selected-col: ${blue};
+    green: ${green};
+    border-col: ${blue};
+    grey: #6c7086;
+    element-bg: ${surface};
+    element-alternate-bg: ${base};
 }
 
 window {
-    width: 100%;
     border: 2px;
-    border-radius: 14px;
-    border-color: ${blue};
-    padding: 12px;
+    border-color: @border-col;
     background-color: ${base};
     location: center;
     anchor: center;
+    width: 600px;
+    height: 150px;
 }
 
 mainbox {
-    spacing: 8px;
-    background-color: transparent;
+    background-color: ${base};
+    padding: 8px;
 }
 
 inputbar {
@@ -47,26 +54,26 @@ inputbar {
 }
 
 listview {
-    columns: 6;
+    columns: 5;
     lines: 1;
     spacing: 8px;
     background-color: transparent;
     fixed-height: true;
     fixed-columns: true;
+    cycle: true;
 }
 
 element {
-    padding: 16px 4px;
-    border-radius: 10px;
-    background-color: ${surface};
-    text-color: ${text};
+    padding: 20px 8px;
+    background-color: @element-bg;
+    text-color: @fg-col;
     orientation: vertical;
     cursor: pointer;
 }
 
 element selected {
-    background-color: ${blue};
-    text-color: ${base};
+    background-color: @selected-col;
+    text-color: @fg-col2;
 }
 
 element-text {
@@ -78,28 +85,28 @@ element-text {
 "
 
 chosen=$(echo -e "$shutdown\n$reboot\n$lock\n$suspend\n$logout" |
-  rofi -dmenu \
-    -p "" \
-    -theme-str "${rofi_theme}" \
-    -no-custom)
+	rofi -dmenu \
+		-p "" \
+		-theme-str "${rofi_theme}" \
+		-no-custom)
 
 case "$chosen" in
 "$shutdown")
-  systemctl poweroff
-  ;;
+	systemctl poweroff
+	;;
 "$reboot")
-  systemctl reboot
-  ;;
+	systemctl reboot
+	;;
 "$lock")
-  sleep 0.1
-  swaylock
-  ;;
+	sleep 0.1
+	swaylock
+	;;
 "$suspend")
-  sleep 0.1
-  swaylock &
-  systemctl suspend
-  ;;
+	sleep 0.1
+	swaylock &
+	systemctl suspend
+	;;
 "$logout")
-  hyprctl dispatch exit
-  ;;
+	hyprctl dispatch exit
+	;;
 esac
