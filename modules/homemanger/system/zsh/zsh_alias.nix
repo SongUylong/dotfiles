@@ -27,7 +27,7 @@
       tree = "eza --icons --tree --group-directories-first";
 
       # Nixos
-      nixconfig = "cd ~/nixos-config && nvim ~/nixos-config";
+      nixconfig = "cd ~/dotfiles && nvim ~/dotfiles";
       ns = "nom-shell --run zsh";
       nd = "nom develop --command zsh";
       nb = "nom build";

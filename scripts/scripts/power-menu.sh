@@ -16,7 +16,6 @@ shutdown="󰐥  Shutdown"
 reboot="󰜉  Reboot"
 lock="󰌾  Lock"
 suspend="󰤄  Suspend"
-hibernate="󰒲  Hibernate"
 logout="󰍃  Logout"
 
 # Inline rofi theme
@@ -78,34 +77,29 @@ element-text {
 }
 "
 
-chosen=$(echo -e "$shutdown\n$reboot\n$lock\n$suspend\n$hibernate\n$logout" |
-	rofi -dmenu \
-		-p "" \
-		-theme-str "${rofi_theme}" \
-		-no-custom)
+chosen=$(echo -e "$shutdown\n$reboot\n$lock\n$suspend\n$logout" |
+  rofi -dmenu \
+    -p "" \
+    -theme-str "${rofi_theme}" \
+    -no-custom)
 
 case "$chosen" in
 "$shutdown")
-	systemctl poweroff
-	;;
+  systemctl poweroff
+  ;;
 "$reboot")
-	systemctl reboot
-	;;
+  systemctl reboot
+  ;;
 "$lock")
-	sleep 0.1
-	swaylock
-	;;
+  sleep 0.1
+  swaylock
+  ;;
 "$suspend")
-	sleep 0.1
-	swaylock &
-	systemctl suspend
-	;;
-"$hibernate")
-	sleep 0.1
-	swaylock &
-	systemctl hibernate
-	;;
+  sleep 0.1
+  swaylock &
+  systemctl suspend
+  ;;
 "$logout")
-	hyprctl dispatch exit
-	;;
+  hyprctl dispatch exit
+  ;;
 esac
