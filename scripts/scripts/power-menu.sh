@@ -11,17 +11,22 @@ yellow="#f9e2af"
 peach="#fab387"
 mauve="#cba6f7"
 
-# Options
-shutdown="󰐥  Shutdown"
-reboot="󰜉  Reboot"
-lock="󰌾  Lock"
-suspend="󰤄  Suspend"
-logout="󰍃  Logout"
+# Options with icon above text (using larger icon font)
+shutdown="󰐥
+Shutdown"
+reboot="󰜉
+Reboot"
+lock="󰌾
+Lock"
+suspend="󰤄
+Suspend"
+logout="󰍃
+Logout"
 
 # Inline rofi theme
 rofi_theme="
 * {
-    font: \"Maple Mono Bold 16\";
+    font: \"Maple Mono Bold 12\";
     background-color: ${base};
     text-color: ${text};
     fg-col: ${text};
@@ -40,13 +45,13 @@ window {
     background-color: ${base};
     location: center;
     anchor: center;
-    width: 600px;
-    height: 150px;
+    width: 700px;
+    height: 220px;
 }
 
 mainbox {
     background-color: ${base};
-    padding: 8px;
+    padding: 12px;
 }
 
 inputbar {
@@ -56,7 +61,7 @@ inputbar {
 listview {
     columns: 5;
     lines: 1;
-    spacing: 8px;
+    spacing: 12px;
     background-color: transparent;
     fixed-height: true;
     fixed-columns: true;
@@ -64,11 +69,12 @@ listview {
 }
 
 element {
-    padding: 20px 8px;
+    padding: 28px 16px;
     background-color: @element-bg;
     text-color: @fg-col;
     orientation: vertical;
     cursor: pointer;
+    border-radius: 8px;
 }
 
 element selected {
@@ -77,6 +83,15 @@ element selected {
 }
 
 element-text {
+    font: \"Maple Mono Bold 11\";
+    horizontal-align: 0.5;
+    vertical-align: 0.5;
+    background-color: transparent;
+    text-color: inherit;
+}
+
+element-icon {
+    size: 48px;
     horizontal-align: 0.5;
     vertical-align: 0.5;
     background-color: transparent;
