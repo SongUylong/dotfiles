@@ -21,7 +21,7 @@ logout="󰍃"
 # Inline rofi theme
 rofi_theme="
 * {
-    font: \"Maple Mono NF Bold 48\";
+    font: \"Maple Mono NF Bold 72\";
     background-color: ${base};
     text-color: ${text};
     fg-col: ${text};
@@ -40,13 +40,13 @@ window {
     background-color: ${base};
     location: center;
     anchor: center;
-    width: 600px;
-    height: 140px;
+    width: 700px;
+    height: 180px;
 }
 
 mainbox {
     background-color: ${base};
-    padding: 12px;
+    padding: 16px;
 }
 
 inputbar {
@@ -56,7 +56,7 @@ inputbar {
 listview {
     columns: 5;
     lines: 1;
-    spacing: 12px;
+    spacing: 16px;
     background-color: transparent;
     fixed-height: true;
     fixed-columns: true;
@@ -64,7 +64,7 @@ listview {
 }
 
 element {
-    padding: 20px 16px;
+    padding: 28px 20px;
     background-color: @element-bg;
     text-color: @fg-col;
     orientation: vertical;
