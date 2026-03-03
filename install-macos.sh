@@ -66,18 +66,7 @@ link "$MACOS/fastfetch/.config/fastfetch" "$CONFIG/fastfetch"
 echo ""
 echo "── Zsh ──"
 link "$SHARED/zsh/shared.zsh" "$CONFIG/zsh/shared.zsh"
-
-ZSHRC="$HOME/.zshrc"
-SOURCE_LINE="source \"$CONFIG/zsh/shared.zsh\""
-
-if grep -qF "$SOURCE_LINE" "$ZSHRC" 2>/dev/null; then
-	echo "  shared.zsh already sourced in ~/.zshrc"
-else
-	echo "" >>"$ZSHRC"
-	echo "# nixos-config shared zsh" >>"$ZSHRC"
-	echo "$SOURCE_LINE" >>"$ZSHRC"
-	echo "  added source line to ~/.zshrc"
-fi
+link "$SHARED/zsh/.zshrc" "$HOME/.zshrc"
 
 echo ""
 echo "Done. Restart your shell or run: source ~/.zshrc"

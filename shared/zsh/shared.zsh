@@ -116,6 +116,7 @@ if [[ "$(uname)" == "Darwin" ]]; then
   alias webai='open-webui serve --port 1234'
   export PATH="/opt/homebrew/bin:$PATH"
   export PATH="$HOME/.local/bin:$PATH"
+  export PATH="$HOME/bin:$PATH"
   export PATH="$PATH:$HOME/.config/composer/vendor/bin"
   export PATH="$PATH:/Users/eric/.composer/vendor/bin"
   export PATH="$PATH:/Users/eric/.spicetify"
@@ -154,6 +155,12 @@ if [[ "$(uname)" == "Darwin" ]]; then
   # Docker completions
   fpath=(/Users/eric/.docker/completions $fpath)
   autoload -Uz compinit && compinit
+
+  # Miniconda
+  export PATH="$HOME/miniconda3/condabin:$PATH"
+
+  # Antigravity
+  export PATH="$HOME/.antigravity/antigravity/bin:$PATH"
 
 else
   # NixOS / Linux
