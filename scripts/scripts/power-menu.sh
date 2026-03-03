@@ -7,46 +7,35 @@ text="#cdd6f4"
 blue="#89b4fa"
 red="#f38ba8"
 green="#a6e3a1"
-yellow="#f9e2af"
-peach="#fab387"
-mauve="#cba6f7"
 
-# Options - icons only
-shutdown="󰐥"
-reboot="󰜉"
-lock="󰌾"
-suspend="󰤄"
-logout="󰍃"
+# Options
+shutdown="󰐥  Shutdown"
+reboot="󰜉  Reboot"
+lock="󰌾  Lock"
+suspend="󰤄  Suspend"
+logout="󰍃  Logout"
 
 # Inline rofi theme
 rofi_theme="
 * {
-    font: \"Maple Mono NF Bold 72\";
+    font: \"Maple Mono NF Bold 13\";
     background-color: ${base};
     text-color: ${text};
-    fg-col: ${text};
-    fg-col2: ${base};
-    selected-col: ${blue};
-    green: ${green};
-    border-col: ${blue};
-    grey: #6c7086;
-    element-bg: ${surface};
-    element-alternate-bg: ${base};
 }
 
 window {
     border: 2px;
-    border-color: @border-col;
+    border-radius: 10px;
+    border-color: ${blue};
+    padding: 12px;
     background-color: ${base};
     location: center;
     anchor: center;
-    width: 700px;
-    height: 180px;
 }
 
 mainbox {
-    background-color: ${base};
-    padding: 16px;
+    spacing: 8px;
+    background-color: transparent;
 }
 
 inputbar {
@@ -56,25 +45,24 @@ inputbar {
 listview {
     columns: 5;
     lines: 1;
-    spacing: 16px;
+    spacing: 8px;
     background-color: transparent;
     fixed-height: true;
     fixed-columns: true;
-    cycle: true;
 }
 
 element {
-    padding: 28px 20px;
-    background-color: @element-bg;
-    text-color: @fg-col;
+    padding: 16px 8px;
+    border-radius: 8px;
+    background-color: ${surface};
+    text-color: ${text};
     orientation: vertical;
     cursor: pointer;
-    border-radius: 8px;
 }
 
 element selected {
-    background-color: @selected-col;
-    text-color: @fg-col2;
+    background-color: ${blue};
+    text-color: ${base};
 }
 
 element-text {
