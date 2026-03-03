@@ -52,7 +52,7 @@ echo "── macOS-only configs ──"
 link "$MACOS/aerospace/.aerospace.toml" "$HOME/.aerospace.toml"
 
 # Borders
-link "$MACOS/borders/.config/borders/bordersrc" "$CONFIG/borders/bordersrc"
+link "$MACOS/borders/.config/borders" "$CONFIG/borders"
 
 # SketchyBar
 link "$MACOS/sketchybar/.config/sketchybar" "$CONFIG/sketchybar"
