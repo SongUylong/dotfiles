@@ -11,22 +11,17 @@ yellow="#f9e2af"
 peach="#fab387"
 mauve="#cba6f7"
 
-# Options with icon above text (using larger icon font)
-shutdown="󰐥
-Shutdown"
-reboot="󰜉
-Reboot"
-lock="󰌾
-Lock"
-suspend="󰤄
-Suspend"
-logout="󰍃
-Logout"
+# Options - icons only
+shutdown="󰐥"
+reboot="󰜉"
+lock="󰌾"
+suspend="󰤄"
+logout="󰍃"
 
 # Inline rofi theme
 rofi_theme="
 * {
-    font: \"Maple Mono Bold 12\";
+    font: \"Maple Mono NF Bold 48\";
     background-color: ${base};
     text-color: ${text};
     fg-col: ${text};
@@ -45,8 +40,8 @@ window {
     background-color: ${base};
     location: center;
     anchor: center;
-    width: 700px;
-    height: 220px;
+    width: 600px;
+    height: 140px;
 }
 
 mainbox {
@@ -69,7 +64,7 @@ listview {
 }
 
 element {
-    padding: 28px 16px;
+    padding: 20px 16px;
     background-color: @element-bg;
     text-color: @fg-col;
     orientation: vertical;
@@ -83,15 +78,6 @@ element selected {
 }
 
 element-text {
-    font: \"Maple Mono Bold 11\";
-    horizontal-align: 0.5;
-    vertical-align: 0.5;
-    background-color: transparent;
-    text-color: inherit;
-}
-
-element-icon {
-    size: 48px;
     horizontal-align: 0.5;
     vertical-align: 0.5;
     background-color: transparent;
