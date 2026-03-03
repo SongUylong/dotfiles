@@ -7,6 +7,9 @@ text="#cdd6f4"
 blue="#89b4fa"
 red="#f38ba8"
 green="#a6e3a1"
+yellow="#f9e2af"
+peach="#fab387"
+mauve="#cba6f7"
 
 # Options
 shutdown="󰐥  Shutdown"
@@ -24,8 +27,9 @@ rofi_theme="
 }
 
 window {
+    width: 100%;
     border: 2px;
-    border-radius: 10px;
+    border-radius: 14px;
     border-color: ${blue};
     padding: 12px;
     background-color: ${base};
@@ -43,7 +47,7 @@ inputbar {
 }
 
 listview {
-    columns: 5;
+    columns: 6;
     lines: 1;
     spacing: 8px;
     background-color: transparent;
@@ -52,8 +56,8 @@ listview {
 }
 
 element {
-    padding: 16px 8px;
-    border-radius: 8px;
+    padding: 16px 4px;
+    border-radius: 10px;
     background-color: ${surface};
     text-color: ${text};
     orientation: vertical;
@@ -74,28 +78,28 @@ element-text {
 "
 
 chosen=$(echo -e "$shutdown\n$reboot\n$lock\n$suspend\n$logout" |
-	rofi -dmenu \
-		-p "" \
-		-theme-str "${rofi_theme}" \
-		-no-custom)
+  rofi -dmenu \
+    -p "" \
+    -theme-str "${rofi_theme}" \
+    -no-custom)
 
 case "$chosen" in
 "$shutdown")
-	systemctl poweroff
-	;;
+  systemctl poweroff
+  ;;
 "$reboot")
-	systemctl reboot
-	;;
+  systemctl reboot
+  ;;
 "$lock")
-	sleep 0.1
-	swaylock
-	;;
+  sleep 0.1
+  swaylock
+  ;;
 "$suspend")
-	sleep 0.1
-	swaylock &
-	systemctl suspend
-	;;
+  sleep 0.1
+  swaylock &
+  systemctl suspend
+  ;;
 "$logout")
-	hyprctl dispatch exit
-	;;
+  hyprctl dispatch exit
+  ;;
 esac
