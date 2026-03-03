@@ -63,8 +63,6 @@
       "rounding 0, match:float 0, match:workspace w[t1]"
       "border_size 0, match:float 0, match:workspace w[tg1]"
       "rounding 0, match:float 0, match:workspace w[tg1]"
-      "border_size 0, match:float 0, match:workspace f[1]"
-      "rounding 0, match:float 0, match:workspace f[1]"
 
       # Remove context menu transparency in chromium based apps
       "opaque on, match:class ^()$, match:title ^()$"
@@ -83,9 +81,9 @@
 
     # No gaps when only
     workspace = [
-      "w[t1], gapsout:0, gapsin:0"
-      "w[tg1], gapsout:0, gapsin:0"
-      "f[1], gapsout:0, gapsin:0"
+      "w[t1], gapsout:4 8 8 8, gapsin:4"
+      "w[tg1], gapsout:4 8 8 8, gapsin:4"
+      "f[1], gapsout:4 8 8 8, gapsin:4"
     ];
   };
 }

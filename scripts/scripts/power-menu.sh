@@ -1,79 +1,111 @@
 #!/usr/bin/env bash
 
-red='#cc241d'
-green='#98971a'
-blue='#458588'
-yellow='#d79921'
-purple='#b16286'
-gray='#a89984'
+# Catppuccin Mocha colors
+base="#1e1e2e"
+surface="#313244"
+text="#cdd6f4"
+blue="#89b4fa"
+red="#f38ba8"
+green="#a6e3a1"
+yellow="#f9e2af"
+peach="#fab387"
+mauve="#cba6f7"
 
-shutdown="<span color='${red}'>󰐥</span>"
-reboot="<span color='${green}'>󰜉</span>"
-lock="<span color='${blue}'>󰌾</span>"
-suspend="<span color='${yellow}'>󰤄</span>"
-hibernate="<span color='${purple}'>󰒲</span>"
-quit="<span color='${gray}'>✘</span>"
+# Options
+shutdown="󰐥  Shutdown"
+reboot="󰜉  Reboot"
+lock="󰌾  Lock"
+suspend="󰤄  Suspend"
+hibernate="󰒲  Hibernate"
+logout="󰍃  Logout"
 
-yes="<span color='${green}'>✔</span>"
-no="<span color='${red}'>✘</span>"
-
-theme="$HOME/.config/rofi/config.rasi"
-
-rofi_cmd() {
-    rofi -dmenu -theme ${theme} -markup-rows
+# Inline rofi theme
+rofi_theme="
+* {
+    font: \"Maple Mono NF Bold 13\";
+    background-color: ${base};
+    text-color: ${text};
 }
 
-run_rofi() {
-    echo -e "$shutdown\n$reboot\n$lock\n$suspend\n$hibernate\n$quit" | rofi_cmd
+window {
+    width: 100%;
+    border: 2px;
+    border-radius: 14px;
+    border-color: ${blue};
+    padding: 12px;
+    background-color: ${base};
+    location: center;
+    anchor: center;
 }
 
-confirm_cmd() {
-    rofi -theme-str 'window {width: 200px;}' \
-        -theme-str 'listview { columns: 2; }' \
-        -dmenu -theme ${theme} -markup-rows
+mainbox {
+    spacing: 8px;
+    background-color: transparent;
 }
 
-rofi_confirm() {
-    # echo -e "$yes\n$no" | confirm_cmd
-    echo -e "$yes"
+inputbar {
+    enabled: false;
 }
 
-run_cmd() {
-    selected="$(rofi_confirm)"
-    if [[ "$selected" == "$yes" ]]; then
-        if [[ $1 == '--shutdown' ]]; then
-            systemctl poweroff
-        elif [[ $1 == '--reboot' ]]; then
-            systemctl reboot
-        elif [[ $1 == '--suspend' ]]; then
-            hyprlock &
-            systemctl suspend
-        elif [[ $1 == '--hibernate' ]]; then
-            systemctl hibernate
-        fi
-    else
-        exit 0
-    fi
+listview {
+    columns: 6;
+    lines: 1;
+    spacing: 8px;
+    background-color: transparent;
+    fixed-height: true;
+    fixed-columns: true;
 }
 
-chosen="$(run_rofi)"
-case ${chosen} in
-    $shutdown)
-        run_cmd --shutdown
-        ;;
-    $reboot)
-        run_cmd --reboot
-        ;;
-    $lock)
-        sleep 0.1
-        swaylock
-        ;;
-    $suspend)
-        sleep 0.1
-        run_cmd --suspend
-        ;;
-    $hibernate)
-        sleep 0.1
-        run_cmd --hibernate
-        ;;
+element {
+    padding: 16px 4px;
+    border-radius: 10px;
+    background-color: ${surface};
+    text-color: ${text};
+    orientation: vertical;
+    cursor: pointer;
+}
+
+element selected {
+    background-color: ${blue};
+    text-color: ${base};
+}
+
+element-text {
+    horizontal-align: 0.5;
+    vertical-align: 0.5;
+    background-color: transparent;
+    text-color: inherit;
+}
+"
+
+chosen=$(echo -e "$shutdown\n$reboot\n$lock\n$suspend\n$hibernate\n$logout" |
+	rofi -dmenu \
+		-p "" \
+		-theme-str "${rofi_theme}" \
+		-no-custom)
+
+case "$chosen" in
+"$shutdown")
+	systemctl poweroff
+	;;
+"$reboot")
+	systemctl reboot
+	;;
+"$lock")
+	sleep 0.1
+	swaylock
+	;;
+"$suspend")
+	sleep 0.1
+	swaylock &
+	systemctl suspend
+	;;
+"$hibernate")
+	sleep 0.1
+	swaylock &
+	systemctl hibernate
+	;;
+"$logout")
+	hyprctl dispatch exit
+	;;
 esac

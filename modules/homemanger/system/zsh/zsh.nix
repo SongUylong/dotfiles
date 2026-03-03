@@ -174,8 +174,7 @@
         zle -N zle-line-init
         zle -N zle-line-finish
       fi
-      export LANG=km_KH.UTF-8   # or en_US.UTF-8 if you prefer English UI
-      export LC_COLLATE=C
+      export LANG=en_US.UTF-8
       export PRISMA_CLIENT_ENGINE_TYPE="library"
       export PRISMA_CLI_QUERY_ENGINE_TYPE="library"
       export PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING="1"

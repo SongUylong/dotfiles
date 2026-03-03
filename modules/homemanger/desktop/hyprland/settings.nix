@@ -19,13 +19,11 @@
 
     general = {
       layout = "dwindle";
-      gaps_in = 8;
-      gaps_out = 24;
+      gaps_in = 4;
+      gaps_out = "4 8 8 8";
       border_size = 2;
-      "col.active_border" = lib.mkDefault "rgb(cba6f7) rgb(89b4fa) 45deg"; # Catppuccin Mocha: mauve & blue
+      "col.active_border" = lib.mkDefault "rgb(cba6f7) rgb(89b4fa) 45deg";
       "col.inactive_border" = lib.mkDefault "0x00000000";
-      # border_part_of_window = false;
-
     };
 
     misc = {
@@ -54,7 +52,7 @@
     };
 
     decoration = {
-      rounding = 0;
+      rounding = 10;
       # active_opacity = 0.90;
       # inactive_opacity = 0.90;
       # fullscreen_opacity = 1.0;
@@ -114,5 +112,9 @@
     xwayland = {
       force_zero_scaling = true;
     };
+
+    workspace = [
+      "w[tv1], gapsout:16, gapsin:8"
+    ];
   };
 }

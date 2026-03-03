@@ -1,6 +1,7 @@
 {
   inputs,
   config,
+  lib,
   pkgs,
   ...
 }:
@@ -9,7 +10,7 @@
     inputs.caelestia-shell.homeManagerModules.default
   ];
 
-  home = {
+  home = lib.mkIf config.desktop.useCaelestia {
     file = {
       "${config.xdg.stateHome}/caelestia/wallpaper/path.txt".text = toString config.stylix.image;
 
@@ -175,7 +176,7 @@
     };
   };
 
-  programs.caelestia = {
+  programs.caelestia = lib.mkIf config.desktop.useCaelestia {
     enable = true;
     systemd = {
       enable = true;

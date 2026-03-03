@@ -1,19 +1,23 @@
-{ host, ... }:
 {
+  host,
+  config,
+  lib,
+  ...
+}:
+lib.mkIf (!config.desktop.useCaelestia) {
   programs.waybar.settings.mainBar = {
     position = "top";
     layer = "top";
-    height = 24;
-    margin-top = 0;
+    height = 36;
+    margin-top = 4;
     margin-bottom = 0;
-    margin-left = 0;
-    margin-right = 0;
+    margin-left = 6;
+    margin-right = 6;
     modules-left = [
       "custom/launcher"
       "hyprland/workspaces"
-      "tray"
     ];
-    modules-center = [ "clock" ];
+    modules-center = [ "custom/clock" ];
     modules-right = [
       "pulseaudio"
       "bluetooth"
@@ -23,16 +27,13 @@
       "custom/notification"
       "custom/power-menu"
     ];
-    clock = {
-      calendar = {
-        format = {
-          today = "<b>{}</b>";
-        };
-      };
-      format = "  {:%H:%M}";
-      tooltip = "true";
-      tooltip-format = "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>";
-      format-alt = "  {:%d/%m}";
+    "custom/clock" = {
+      exec = "date +'%H:%M'";
+      interval = 10;
+      format = " {}";
+      tooltip = true;
+      tooltip-format = "{}";
+      exec-if = "true";
     };
     "hyprland/workspaces" = {
       active-only = false;
@@ -60,31 +61,28 @@
         "5" = [ ];
       };
     };
-    tray = {
-      icon-size = 16;
-      spacing = 6;
-    };
     bluetooth = {
-      format = " ";
-      format-disabled = " ";
-      format-connected = " ";
+      format = "󰂯 ";
+      format-disabled = "󰂲 ";
+      format-off = "󰂲 ";
+      format-connected = "󰂱 ";
       tooltip-format = "{controller_alias}\t{controller_address}";
       tooltip-format-connected = "{controller_alias}\t{controller_address}\n\n{device_enumerate}";
       tooltip-format-enumerate-connected = "{device_alias}\t{device_address}";
       on-click = "blueman-manager";
     };
     network = {
-      format-wifi = " {signalStrength}%";
+      format-wifi = "󰤨 {signalStrength}%";
       format-ethernet = "󰀂 ";
       tooltip-format = "Connected to {essid} {ifname} via {gwaddr}";
       format-linked = "{ifname} (No IP)";
-      format-disconnected = "󰖪 ";
+      format-disconnected = "󰤭 ";
     };
     pulseaudio = {
       format = "{icon} {volume}%";
-      format-muted = "  {volume}%";
+      format-muted = "󰝟 {volume}%";
       format-icons = {
-        default = [ "  " ];
+        default = [ "󰕾 " ];
       };
       scroll-step = 2;
       on-click = "pamixer -t";
@@ -93,15 +91,15 @@
     battery = {
       format = "{icon} {capacity}%";
       format-icons = [
-        " "
-        " "
-        " "
-        " "
-        " "
+        "󰁺"
+        "󰁼"
+        "󰁿"
+        "󰂁"
+        "󰁹"
       ];
-      format-charging = " {capacity}%";
-      format-full = " {capacity}%";
-      format-warning = " {capacity}%";
+      format-charging = "󰂄 {capacity}%";
+      format-full = "󰁹 {capacity}%";
+      format-warning = "󰁻 {capacity}%";
       interval = 5;
       states = {
         warning = 20;
@@ -110,17 +108,8 @@
       tooltip = true;
       tooltip-format = "{time}";
     };
-    "hyprland/language" = {
-      tooltip = true;
-      tooltip-format = "Keyboard layout";
-      format = " {}";
-      format-en = "US";
-      format-km = "KH";
-      format-kh = "KH";
-      on-click = "hyprctl switchxkblayout at-translated-set-2-keyboard next";
-    };
     "custom/language" = {
-      format = " {}";
+      format = "󰌌 {}";
       exec = "keyboard-layout";
       interval = 1;
       on-click = "hyprctl switchxkblayout at-translated-set-2-keyboard next";
@@ -128,25 +117,25 @@
       tooltip-format = "Keyboard layout - Click to switch";
     };
     "custom/launcher" = {
-      format = "";
+      format = "󱓞";
       on-click = "random-wallpaper";
       on-click-right = "rofi -show drun";
-      tooltip = "true";
-      tooltip-format = "Random Wallpaper";
+      tooltip = true;
+      tooltip-format = "Random Wallpaper / Right-click: App Launcher";
     };
     "custom/notification" = {
       tooltip = true;
       tooltip-format = "Notifications";
       format = "{icon}";
       format-icons = {
-        notification = "<sup></sup>";
-        none = "";
-        dnd-notification = "<sup></sup>";
-        dnd-none = "";
-        inhibited-notification = "<sup></sup>";
-        inhibited-none = "";
-        dnd-inhibited-notification = "<sup></sup>";
-        dnd-inhibited-none = "";
+        notification = "󰂚";
+        none = "󰂜";
+        dnd-notification = "󰂛";
+        dnd-none = "󰂛";
+        inhibited-notification = "󰂚";
+        inhibited-none = "󰂜";
+        dnd-inhibited-notification = "󰂛";
+        dnd-inhibited-none = "󰂛";
       };
       return-type = "json";
       exec-if = "which swaync-client";
@@ -158,7 +147,7 @@
     "custom/power-menu" = {
       tooltip = true;
       tooltip-format = "Power menu";
-      format = " ";
+      format = "󰐥";
       on-click = "power-menu";
     };
   };

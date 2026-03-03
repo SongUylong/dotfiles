@@ -28,6 +28,12 @@
 
   time.timeZone = "Asia/Phnom_Penh";
   i18n.defaultLocale = "en_US.UTF-8";
+  i18n.extraLocaleSettings = {
+    LC_COLLATE = "C";
+  };
+  i18n.supportedLocales = [
+    "en_US.UTF-8/UTF-8"
+  ];
   nixpkgs.config.allowUnfree = true;
   system.stateVersion = "26.05";
   programs.nix-ld.enable = true;

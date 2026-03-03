@@ -1,5 +1,10 @@
-{ pkgs, ... }:
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+lib.mkIf (!config.desktop.useCaelestia) {
   home.packages = with pkgs; [ swayosd ];
 
   wayland.windowManager.hyprland = {
