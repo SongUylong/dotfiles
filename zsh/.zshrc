@@ -200,3 +200,5 @@ export NODE_OPTIONS=--openssl-legacy-provider
 
 # Ollama models on external drive
 export OLLAMA_MODELS=/Volumes/TRANSCEND/.ollama/models
+
+export PATH=$PATH:/Users/eric/.spicetify

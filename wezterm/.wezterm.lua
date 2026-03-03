@@ -3,7 +3,7 @@ local config = wezterm.config_builder()
 local act = wezterm.action
 
 -- General settings
-config.enable_tab_bar = true
+config.enable_tab_bar = false
 config.window_decorations = "RESIZE"
 -- Note: font, font_size, and opacity are managed by Stylix
 config.window_close_confirmation = "AlwaysPrompt"
