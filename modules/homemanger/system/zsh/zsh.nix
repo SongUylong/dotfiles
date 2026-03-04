@@ -178,6 +178,9 @@
       export PRISMA_CLIENT_ENGINE_TYPE="library"
       export PRISMA_CLI_QUERY_ENGINE_TYPE="library"
       export PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING="1"
+
+      # Source shared zsh config (aliases and functions)
+      [[ -f "''${XDG_CONFIG_HOME:-$HOME/.config}/zsh/shared.zsh" ]] && source "''${XDG_CONFIG_HOME:-$HOME/.config}/zsh/shared.zsh"
     '';
   };
 

@@ -1,12 +1,17 @@
 { config, ... }:
 let
   sharedDir = "${config.home.homeDirectory}/nixos-config/shared";
+  dotfilesDir = "${config.home.homeDirectory}/dotfiles";
 in
 {
   home.file = {
     # Zellij
     "${config.xdg.configHome}/zellij".source =
-      config.lib.file.mkOutOfStoreSymlink "${sharedDir}/zellij";
+      config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/shared/zellij";
+
+    # Zsh — shared config for both NixOS and macOS
+    "${config.xdg.configHome}/zsh".source =
+      config.lib.file.mkOutOfStoreSymlink "${dotfilesDir}/shared/zsh";
 
     # OpenCode — shared config for both NixOS and macOS
     "${config.xdg.configHome}/opencode".source =
