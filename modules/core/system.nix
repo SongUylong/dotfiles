@@ -24,6 +24,7 @@
   environment.systemPackages = with pkgs; [
     wget
     git
+    libasound
   ];
 
   time.timeZone = "Asia/Phnom_Penh";
