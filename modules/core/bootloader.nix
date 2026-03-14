@@ -1,4 +1,22 @@
 { pkgs, lib, ... }:
+let
+  starWarsGrubTheme = pkgs.stdenv.mkDerivation {
+    name = "star-wars-grub-theme";
+    src = lib.cleanSourceWith {
+      src = ../../star-wars-posters-grub-theme;
+      filter =
+        path: type:
+        let
+          baseName = baseNameOf path;
+        in
+        baseName != ".git";
+    };
+    installPhase = ''
+      cp -r $src $out
+      chmod -R 755 $out
+    '';
+  };
+in
 {
   boot = {
     loader = {
@@ -16,10 +34,13 @@
         useOSProber = true;
         efiInstallAsRemovable = true;
         configurationLimit = 5;
-        # theme = lib.mkDefault pkgs.catppuccin-grub;
+        theme = starWarsGrubTheme;
         # Increase timeout to select OS
         gfxmodeEfi = "2560x1440";
       };
+    };
+    plymouth = {
+      enable = true;
     };
 
     kernelPackages = pkgs.linuxPackages_latest;

@@ -1,4 +1,7 @@
-{ ... }:
+{ config, lib, ... }:
+let
+  useCaelestia = config.desktop.useCaelestia;
+in
 {
   wayland.windowManager.hyprland.settings = {
     binds = {
@@ -9,7 +12,11 @@
       # show keybinds list
       "$mainMod, F1, exec, show-keybinds"
 
-      # keybindings
+      # OCR (shared)
+      "Super+Shift, T, exec, bash -c 'grim -g \"$(slurp $SLURP_ARGS)\" /tmp/ocr.png && tesseract -l eng /tmp/ocr.png - | wl-copy && rm /tmp/ocr.png'"
+      "Ctrl+Super+Shift, S, exec, bash -c 'grim -g \"$(slurp $SLURP_ARGS)\" /tmp/ocr.png && tesseract /tmp/ocr.png - | wl-copy && rm /tmp/ocr.png'"
+
+      # keybindings (shared)
       "$mainMod, Return, exec, wezterm"
       "ALT, Return, exec, [float; size 1111 700] wezterm"
       "$mainMod, B, exec, [workspace 1 silent] firefox"
@@ -17,36 +24,28 @@
       "$mainMod, F, fullscreen, 1"
       "$mainMod ALT, F, fullscreen, 0"
       "$mainMod SHIFT, F, exec, nemo"
-      "$mainMod, Space, exec, toggle-rofi rofi -show drun"
       "$mainMod SHIFT, Space, exec, browser-search"
       "$mainMod SHIFT, D, exec, webcord --enable-features=UseOzonePlatform --ozone-platform=wayland"
       "$mainMod SHIFT, Escape, exec, swaylock"
       "ALT, Escape, exec, hyprlock"
-      "$mainMod, Escape, exec, power-menu"
       "$mainMod, P, pseudo,"
       "$mainMod, X, togglesplit,"
       "$mainMod, T, exec, wezterm"
       "$mainMod ALT, T, exec, toggle-oppacity"
       "$mainMod, E, exec, toggle-float"
       "ALT, E, exec, hyprctl dispatch exec '[float; size 1111 700] nemo'"
-      "$mainMod SHIFT, B, exec, toggle-waybar"
-      "$mainMod, C ,exec, hyprpicker -a"
+      "$mainMod SHIFT, C ,exec, hyprpicker -a"
       "$mainMod, S, exec, spotify"
       "$mainMod, W,exec, wallpaper-picker"
       "$mainMod SHIFT, W,exec, hyprctl dispatch exec '[float; size 925 615] waypaper'"
       "$mainMod, N, exec, firefox https://www.notion.so"
-      "$mainMod SHIFT, N, exec, swaync-client -t -sw"
       "CTRL SHIFT, Escape, exec, hyprctl dispatch exec '[workspace 9] missioncenter'"
       "$mainMod, equal, exec, woomer"
 
-      # screenshot
-      "$mainMod SHIFT, S, exec, screenshot --copy-save"
+      # screenshot (shared fallback)
       "$mainMod SHIFT ALT, S, exec, screenshot --swappy"
       ",Print, exec, screenshot --copy-save"
       "SHIFT, Print, exec, screenshot --swappy"
-
-      # screen recording
-      "$mainMod SHIFT, R, exec, screen-record"
 
       # switch focus
       "$mainMod, left,  movefocus, l"
@@ -82,8 +81,7 @@
       "$mainMod, 9, workspace, 9"
       "$mainMod, 0, workspace, 10"
 
-      # same as above, but switch to the workspace
-      "$mainMod SHIFT, 1, movetoworkspacesilent, 1" # movetoworkspacesilent
+      "$mainMod SHIFT, 1, movetoworkspacesilent, 1"
       "$mainMod SHIFT, 2, movetoworkspacesilent, 2"
       "$mainMod SHIFT, 3, movetoworkspacesilent, 3"
       "$mainMod SHIFT, 4, movetoworkspacesilent, 4"
@@ -123,8 +121,7 @@
       "$mainMod ALT, k, moveactive, 0 -80"
       "$mainMod ALT, l, moveactive, 80 0"
 
-      # media and volume controls
-      # ",XF86AudioMute,exec, pamixer -t"
+      # media
       ",XF86AudioPlay,exec, playerctl play-pause"
       ",XF86AudioNext,exec, playerctl next"
       ",XF86AudioPrev,exec, playerctl previous"
@@ -135,6 +132,22 @@
 
       # clipboard manager
       "$mainMod, V, exec, toggle-rofi \"cliphist list | rofi -dmenu -theme-str 'window {width: 50%;} listview {columns: 1;}' | cliphist decode | wl-copy\""
+    ]
+    ++ lib.optionals useCaelestia [
+      # Caelestia: launcher, power menu, screenshot, screen recording
+      "$mainMod, Space, global, caelestia:launcher"
+      "$mainMod, Escape, exec, caelestia shell drawers toggle session"
+      "$mainMod SHIFT, S,global, caelestia:screenshotFreezeClip"
+      "$mainMod SHIFT, R, exec, caelestia record -c -r"
+    ]
+    ++ lib.optionals (!useCaelestia) [
+      # Classic: launcher, power menu, screenshot, screen recording, waybar toggle, notifications
+      "$mainMod, Space, exec, toggle-rofi rofi -show drun"
+      "$mainMod, Escape, exec, power-menu"
+      "$mainMod SHIFT, S, exec, screenshot --copy-save"
+      "$mainMod SHIFT, R, exec, screen-record"
+      "$mainMod SHIFT, B, exec, toggle-waybar"
+      "$mainMod SHIFT, N, exec, swaync-client -t -sw"
     ];
 
     # mouse binding

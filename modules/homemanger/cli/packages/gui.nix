@@ -1,11 +1,19 @@
-{ pkgs, inputs, system, ... }:
+{
+  pkgs,
+  inputs,
+  system,
+  ...
+}:
 let
   customPkgs = import ../../../../pkgs { inherit inputs pkgs system; };
 in
 {
   home.packages = with pkgs; [
+    ## Browsers
+    brave
+
     ## Multimedia
-    ffmpeg  # For GIF conversion
+    ffmpeg # For GIF conversion
     media-downloader
     obs-studio
     pavucontrol

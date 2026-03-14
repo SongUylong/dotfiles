@@ -1,5 +1,10 @@
-{ pkgs, ... }:
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+lib.mkIf (!config.desktop.useCaelestia) {
   home.packages = with pkgs; [ swaynotificationcenter ];
 
   xdg.configFile."swaync/style.css".source = ./style.css;

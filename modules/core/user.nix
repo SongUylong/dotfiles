@@ -13,10 +13,7 @@
     extraSpecialArgs = { inherit inputs username host; };
     users.${username} = {
       imports =
-        if (host == "desktop") then
-          [ ./../homemanger/default.desktop.nix ]
-        else
-          [ ./../homemanger ];
+        if (host == "desktop") then [ ./../homemanger/default.desktop.nix ] else [ ./../homemanger ];
       home.username = "${username}";
       home.homeDirectory = "/home/${username}";
       home.stateVersion = "26.05";
@@ -31,7 +28,8 @@
     extraGroups = [
       "networkmanager"
       "wheel"
-      "docker" # Add "docker" to this list for docker to work
+      "docker"
+      "i2c"
     ];
     shell = pkgs.zsh;
   };

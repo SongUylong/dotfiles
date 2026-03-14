@@ -1,4 +1,23 @@
 { pkgs, config, ... }:
+let
+  ddcutil-wrapper = pkgs.writeShellScriptBin "ddcutil" ''
+    REAL_DDCUTIL="${pkgs.ddcutil}/bin/ddcutil"
+
+    if [[ "$1" == "setvcp" && "$2" == "10" ]]; then
+        shift 2
+        value="$1"
+        
+        displays=$($REAL_DDCUTIL detect 2>/dev/null | grep "^Display" | sed 's/Display //')
+        
+        for display in $displays; do
+            $REAL_DDCUTIL --display $display setvcp 10 $value 2>/dev/null &
+        done
+        wait
+    else
+        exec $REAL_DDCUTIL "$@"
+    fi
+  '';
+in
 {
   hardware = {
     graphics = {
@@ -42,13 +61,28 @@
   # Bluetooth services
   services.blueman.enable = true;
 
-  # Fan control
-  environment.systemPackages = with pkgs; [
-    lm_sensors
-  ];
+  # Fan control and monitor brightness (ddcutil)
+  environment.systemPackages =
+    with pkgs;
+    [
+      lm_sensors
+    ]
+    ++ [ ddcutil-wrapper ];
 
-  # Enable kernel modules for fan control
-  boot.kernelModules = [ "coretemp" "nct6775" ];
+  # Create i2c group for ddcutil
+  users.groups.i2c = { };
+
+  # Udev rules for ddcutil (external monitor brightness control)
+  services.udev.extraRules = ''
+    SUBSYSTEM=="i2c-dev", GROUP="i2c", MODE="0660"
+  '';
+
+  # Enable kernel modules for fan control and ddcutil
+  boot.kernelModules = [
+    "coretemp"
+    "nct6775"
+    "i2c-dev"
+  ];
 
   # Set fan to constant PWM 135 (~2854 RPM)
   systemd.services.fan-pwm-set = {

@@ -5,5 +5,6 @@
     ./nvim/nvim.nix
     ./spicetify.nix
     ./vscodium
+    ./direnv.nix
   ];
 }

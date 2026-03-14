@@ -1,6 +1,11 @@
-{ config, pkgs, inputs, ... }:
+{
+  config,
+  pkgs,
+  inputs,
+  ...
+}:
 let
-  nvimConfDir = "${config.home.homeDirectory}/nixos-config/modules/homemanger/dev/nvim/conf";
+  nvimConfDir = "${config.home.homeDirectory}/dotfiles/modules/homemanger/dev/nvim/conf";
 in
 {
   stylix.targets.neovim.enable = false;

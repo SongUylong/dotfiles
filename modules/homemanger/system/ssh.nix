@@ -29,6 +29,14 @@
         identityFile = "~/.ssh/id_github";
         identitiesOnly = true;
       };
+
+      bitbucket = {
+        host = "bitbucket.org";
+        hostname = "bitbucket.org";
+        user = "git";
+        identityFile = "~/.ssh/id_ed25519_bitbucket";
+        identitiesOnly = true;
+      };
     };
   };
 
