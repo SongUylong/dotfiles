@@ -6,20 +6,16 @@
     eza # ls replacement
     fd # find replacement
     gping # ping with a graph
-    gtrash # rm replacement, put deleted files in system trash
     hexyl # hex viewer
     man-pages # extra man pages
-    ncdu # disk space
     ripgrep # grep replacement
     tldr
 
     ## Tools / useful cli
-    aoc-cli # Advent of Code command-line tool
     asciinema
     asciinema-agg
     binsider
     bitwise # cli tool for bit / hex manipulation
-    broot # tree files view
     caligula # User-friendly, lightweight TUI for disk imaging
     hyperfine # benchmarking tool
     pastel # cli to manipulate colors

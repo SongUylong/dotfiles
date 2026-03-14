@@ -5,7 +5,6 @@
       # Utils
       c = "clear";
       cd = "z";
-      tt = "gtrash put";
       cat = "bat";
       nano = "micro";
       code = "codium";
@@ -20,7 +19,6 @@
       dsize = "du -hs";
       pdf = "tdf";
       open = "xdg-open";
-      space = "ncdu";
       man = "batman";
 
       l = "eza --icons -a --group-directories-first -1 --no-user --long"; # EZA_ICON_SPACING=2
