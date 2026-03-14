@@ -30,19 +30,19 @@ set -e
 #------------------------------#
 
 if [[ $EUID -eq 0 ]]; then
-    echo -e "${ERROR}This script should ${RED}NOT${RESET} be executed as root!"
-    echo -e "${INFO}Exiting..."
-    exit 1
+	echo -e "${ERROR}This script should ${RED}NOT${RESET} be executed as root!"
+	echo -e "${INFO}Exiting..."
+	exit 1
 fi
 
 #------------------------------------#
 #   Check if whiptail is installed   #
 #------------------------------------#
 
-if ! command -v whiptail &> /dev/null; then
-    echo -e "${INFO}whiptail not found, downloading required packages"
-    nix-shell -p newt --run "$(realpath "$0")"
-    exit $?
+if ! command -v whiptail &>/dev/null; then
+	echo -e "${INFO}whiptail not found, downloading required packages"
+	nix-shell -p newt --run "$(realpath "$0")"
+	exit $?
 fi
 
 #------------------#
@@ -50,20 +50,20 @@ fi
 #------------------#
 
 while true; do
-    username=$(whiptail --inputbox "Enter your username:" 9 40 --title "Username" 3>&1 1>&2 2>&3)
+	username=$(whiptail --inputbox "Enter your username:" 9 40 --title "Username" 3>&1 1>&2 2>&3)
 
-    if [ $? != 0 ]; then
-        exit 1
-    fi
+	if [ $? != 0 ]; then
+		exit 1
+	fi
 
-    if ! [[ $username =~ ^[a-z][a-z0-9_-]{0,31}$ ]]; then
-        whiptail --msgbox "Invalid username: '$username'" 8 40 --title Error 3>&1 1>&2 2>&3
-        continue
-    fi
+	if ! [[ $username =~ ^[a-z][a-z0-9_-]{0,31}$ ]]; then
+		whiptail --msgbox "Invalid username: '$username'" 8 40 --title Error 3>&1 1>&2 2>&3
+		continue
+	fi
 
-    if (whiptail --yesno "Use '$username' as username?" 8 40 --title "Confirm Username"); then
-        break
-    fi
+	if (whiptail --yesno "Use '$username' as username?" 8 40 --title "Confirm Username"); then
+		break
+	fi
 done
 
 #-----------------#
@@ -71,18 +71,18 @@ done
 #-----------------#
 
 while true; do
-    HOST=$(whiptail --radiolist "Choose a host:" 10 48 2 \
-        "desktop" "Desktop configuration" ON \
-        "laptop" "Laptop configuration" OFF \
-        --title "Host" 3>&1 1>&2 2>&3)
+	HOST=$(whiptail --radiolist "Choose a host:" 10 48 2 \
+		"desktop" "Desktop configuration" ON \
+		"laptop" "Laptop configuration" OFF \
+		--title "Host" 3>&1 1>&2 2>&3)
 
-    if [ $? != 0 ]; then
-        exit 1
-    fi
+	if [ $? != 0 ]; then
+		exit 1
+	fi
 
-    if (whiptail --yesno "Use the '$HOST' host?" 8 40 --title "Confirm Host"); then
-        break
-    fi
+	if (whiptail --yesno "Use the '$HOST' host?" 8 40 --title "Confirm Host"); then
+		break
+	fi
 done
 
 #---------------------------#
@@ -101,7 +101,7 @@ whiptail --msgbox "$SUMMARY" 9 40 --title "Installation Summary"
 #-----------------------#
 
 if ! (whiptail --yesno "You are about to build the system for host '$HOST'. Proceed?" 9 40 --title "Final Confirmation"); then
-    exit 0
+	exit 0
 fi
 
 #---------------------#
@@ -118,25 +118,25 @@ find ./hosts ./modules flake.nix -type f -exec sed -i -e "s/${CURRENT_USERNAME}/
 ## Create common dirrectories
 echo -e "${INFO}Preparing the environment"
 for dir in ~/Music ~/Documents ~/Pictures/wallpapers/catppuccin-mocha; do
-    echo -e "${INFO}Creating folder: ${MAGENTA}${dir}${RESET}"
-    mkdir -p "$dir"
+	echo -e "${INFO}Creating folder: ${MAGENTA}${dir}${RESET}"
+	mkdir -p "$dir"
 done
 
 ## Copy wallpapers
 echo -e "${INFO}Copying wallpapers..."
 if cp -r wallpapers/catppuccin-mocha/* ~/Pictures/wallpapers/catppuccin-mocha/ &&
-    ln -sf $PWD/wallpapers/catppuccin-mocha/city-horizon.jpg ~/Pictures/wallpapers/wallpaper; then
-    echo -e "${OK}Wallpapers copied successfully."
+	ln -sf $PWD/wallpapers/catppuccin-mocha/city-horizon.jpg ~/Pictures/wallpapers/wallpaper; then
+	echo -e "${OK}Wallpapers copied successfully."
 else
-    echo -e "${WARN}Some wallpapers could not be copied!"
-    whiptail --msgbox "Some wallpapers failed to copy." 8 40 --title "Warning"
+	echo -e "${WARN}Some wallpapers could not be copied!"
+	whiptail --msgbox "Some wallpapers failed to copy." 8 40 --title "Warning"
 fi
 
 ## Get the hardware configuration
 if [ ! -f /etc/nixos/hardware-configuration.nix ]; then
-    echo -e "${ERROR} ${MAGENTA}/etc/nixos/hardware-configuration.nix${RESET} not found! Aborting."
-    whiptail --msgbox "/etc/nixos/hardware-configuration.nix not found! Aborting." 9 40 --title "Error"
-    exit 1
+	echo -e "${ERROR} ${MAGENTA}/etc/nixos/hardware-configuration.nix${RESET} not found! Aborting."
+	whiptail --msgbox "/etc/nixos/hardware-configuration.nix not found! Aborting." 9 40 --title "Error"
+	exit 1
 fi
 echo -e "${INFO}Copying ${MAGENTA}/etc/nixos/hardware-configuration.nix${RESET} to ${MAGENTA}./hosts/${HOST}/${RESET}"
 cp /etc/nixos/hardware-configuration.nix hosts/${HOST}/hardware-configuration.nix
@@ -152,8 +152,8 @@ git_username=$(whiptail --inputbox "GitHub username:" 9 40 --title "GitHub" 3>&1
 git_email=$(whiptail --inputbox "GitHub email:" 9 40 --title "GitHub" 3>&1 1>&2 2>&3)
 
 # Update git.nix with user info
-sed -i "s/name = \"uylong\"/name = \"$git_username\"/g" modules/homemanger/git.nix
-sed -i "s/email = \"songuylong24@gmail.com\"/email = \"$git_email\"/g" modules/homemanger/git.nix
+sed -i "s/name = \"uylong\"/name = \"$git_username\"/g" modules/homemanger/dev/git.nix
+sed -i "s/email = \"songuylong24@gmail.com\"/email = \"$git_email\"/g" modules/homemanger/dev/git.nix
 
 echo -e "${OK}GitHub configuration complete"
 
@@ -162,9 +162,9 @@ echo -e "${OK}GitHub configuration complete"
 #---------------------------#
 
 if [ ! -f ~/.ssh/id_ed25519 ]; then
-    echo -e "${INFO}Generating SSH key"
-    ssh-keygen -t ed25519 -C "$git_email" -f ~/.ssh/id_ed25519 -N ""
-    echo -e "${OK}SSH key generated"
+	echo -e "${INFO}Generating SSH key"
+	ssh-keygen -t ed25519 -C "$git_email" -f ~/.ssh/id_ed25519 -N ""
+	echo -e "${OK}SSH key generated"
 fi
 
 #------------------#

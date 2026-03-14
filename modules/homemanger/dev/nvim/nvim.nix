@@ -5,7 +5,7 @@
   ...
 }:
 let
-  nvimConfDir = "${config.home.homeDirectory}/dotfiles/modules/homemanger/dev/nvim/conf";
+  nvimConfDir = "${config.home.homeDirectory}/dotfiles/shared/nvim";
 in
 {
   stylix.targets.neovim.enable = false;
