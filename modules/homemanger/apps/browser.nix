@@ -74,12 +74,6 @@ in
           font-family: inherit !important;
         }
 
-        /* ── Hide unnecessary toolbar buttons ── */
-        #back-button,
-        #forward-button {
-          display: none !important;
-        }
-
         #tracking-protection-icon-container {
           display: none !important;
         }

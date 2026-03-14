@@ -25,7 +25,7 @@
 
   home.file.".local/share/applications/todo.desktop".text = ''
     [Desktop Entry]
-    Name=To Do
+    Name=Todo
     Comment=Open To Do
     Exec=firefox https://to-do.live.com/tasks/myday
     Icon=web-browser
