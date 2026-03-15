@@ -13,7 +13,12 @@
     extraSpecialArgs = { inherit inputs username host; };
     users.${username} = {
       imports =
-        if (host == "desktop") then [ ./../homemanger/default.desktop.nix ] else [ ./../homemanger ];
+        if (host == "desktop") then
+          [ ./../homemanger/default.desktop.nix ]
+        else if (host == "laptop") then
+          [ ./../homemanger/default.laptop.nix ]
+        else
+          [ ./../homemanger ];
       home.username = "${username}";
       home.homeDirectory = "/home/${username}";
       home.stateVersion = "26.05";

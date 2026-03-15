@@ -12,9 +12,6 @@
       float_switch_override_focus = 0;
       mouse_refocus = 0;
       sensitivity = -1;
-      touchpad = {
-        natural_scroll = true;
-      };
     };
 
     general = {
@@ -35,6 +32,8 @@
       focus_on_activate = false;
       on_focus_under_fullscreen = 2;
       middle_click_paste = false;
+      vrr = 0;
+      vfr = true;
     };
 
     dwindle = {

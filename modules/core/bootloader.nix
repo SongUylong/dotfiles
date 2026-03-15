@@ -43,7 +43,6 @@ in
       enable = true;
     };
 
-    kernelPackages = pkgs.linuxPackages_latest;
     supportedFilesystems = [ "ntfs" ];
 
     # Hibernate support

@@ -72,11 +72,12 @@ lib.mkIf (!config.desktop.useCaelestia) {
       on-click = "blueman-manager";
     };
     network = {
-      format-wifi = "󰤨 {signalStrength}%";
+      format-wifi = "󰤨 {essid} {signalStrength}%";
       format-ethernet = "󰀂 ";
       tooltip-format = "Connected to {essid} {ifname} via {gwaddr}";
       format-linked = "{ifname} (No IP)";
       format-disconnected = "󰤭 ";
+      on-click = "nm-connection-editor";
     };
     pulseaudio = {
       format = "{icon} {volume}%";
