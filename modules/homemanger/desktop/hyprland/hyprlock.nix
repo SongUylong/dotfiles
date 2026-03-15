@@ -12,7 +12,7 @@
 
       background = lib.mkForce [
         {
-          path = "${../../../../wallpapers/catppuccin-mocha/city-horizon.jpg}";
+          path = "${../../../../wallpapers/city-horizon.jpg}";
 
           color = "rgba(29, 32, 33, 255)";
           blur_passes = 2;

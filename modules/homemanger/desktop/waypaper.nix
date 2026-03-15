@@ -10,7 +10,7 @@
     language = en
     folder = ~/dotfiles/wallpapers
     monitors = All
-    wallpaper = ~/Pictures/wallpapers/wallpaper
+    wallpaper = ~/dotfiles/wallpapers
     backend = mpvpaper
     fill = fill
     sort = name

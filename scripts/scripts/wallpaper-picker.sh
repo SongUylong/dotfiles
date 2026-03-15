@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-wallpaper_path=$HOME/Pictures/wallpapers
-wallpapers_folder=$HOME/Pictures/wallpapers/catppuccin-mocha
+wallpaper_path=$HOME/dotfiles/wallpapers
+wallpapers_folder=$HOME/dotfiles/wallpapers
 wallpaper_name="$(ls $wallpapers_folder | rofi -dmenu || pkill rofi)"
 
 if [[ -f $wallpapers_folder/$wallpaper_name ]]; then

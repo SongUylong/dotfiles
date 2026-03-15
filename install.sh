@@ -115,22 +115,11 @@ find ./hosts ./modules flake.nix -type f -exec sed -i -e "s/${CURRENT_USERNAME}/
 #   Prepare the environement   #
 #------------------------------#
 
-## Create common dirrectories
+## Create common directories
 echo -e "${INFO}Preparing the environment"
-for dir in ~/Music ~/Documents ~/Pictures/wallpapers/catppuccin-mocha; do
-	echo -e "${INFO}Creating folder: ${MAGENTA}${dir}${RESET}"
+for dir in ~/Music ~/Documents; do
 	mkdir -p "$dir"
 done
-
-## Copy wallpapers
-echo -e "${INFO}Copying wallpapers..."
-if cp -r wallpapers/catppuccin-mocha/* ~/Pictures/wallpapers/catppuccin-mocha/ &&
-	ln -sf $PWD/wallpapers/catppuccin-mocha/city-horizon.jpg ~/Pictures/wallpapers/wallpaper; then
-	echo -e "${OK}Wallpapers copied successfully."
-else
-	echo -e "${WARN}Some wallpapers could not be copied!"
-	whiptail --msgbox "Some wallpapers failed to copy." 8 40 --title "Warning"
-fi
 
 ## Get the hardware configuration
 if [ ! -f /etc/nixos/hardware-configuration.nix ]; then
