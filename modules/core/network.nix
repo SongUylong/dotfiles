@@ -52,7 +52,6 @@
 
   environment.systemPackages = with pkgs; [
     networkmanagerapplet
-    nm-connection-editor
     mtr # Traceroute + Ping tool
     nload # Bandwidth monitor
   ];

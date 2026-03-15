@@ -5,7 +5,6 @@
     ./../../modules/core
   ];
 
-
   hardware.enableRedistributableFirmware = true;
 
   environment.systemPackages = with pkgs; [
@@ -16,12 +15,15 @@
     mangohud
     gamemode
     polychromatic
+    (pkgs.writeScriptBin "network" (builtins.readFile ../../scripts/scripts/network.sh))
   ];
 
   services = {
     power-profiles-daemon.enable = false;
 
-    # thermald.enable = true; # Disabled - AMD Ryzen doesn't need it
+    thermald.enable = true;
+
+    upower.enable = true;
 
     earlyoom.enable = true;
     earlyoom.extraArgs = [
@@ -32,8 +34,10 @@
     ];
 
     logind.settings.Login = {
-      HandleLidSwitch = "ignore";
-      HandleLidSwitchExternalPower = "ignore";
+      HoldoffTimeoutSec = "0s";
+      HandleLidSwitch = "suspend-then-hibernate";
+      HandleLidSwitchExternalPower = "suspend-then-hibernate";
+      HandleLidSwitchDocked = "ignore";
     };
 
     tlp.settings = {
@@ -61,6 +65,24 @@
   };
 
   powerManagement.cpuFreqGovernor = "performance";
+
+  systemd.sleep.extraConfig = "HibernateDelaySec=10min";
+
+  systemd.services.create-swapfile = {
+    description = "Create swapfile for hibernation";
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = "${pkgs.bash}/bin/bash -c '\
+        if [ ! -f /swapfile ]; then \
+          truncate -s 32G /swapfile; \
+          chmod 600 /swapfile; \
+          mkswap /swapfile; \
+        fi; \
+        swapon /swapfile 2>/dev/null || true'";
+    };
+  };
 
   boot = {
     kernelModules = [

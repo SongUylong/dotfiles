@@ -77,7 +77,7 @@ lib.mkIf (!config.desktop.useCaelestia) {
       tooltip-format = "Connected to {essid} {ifname} via {gwaddr}";
       format-linked = "{ifname} (No IP)";
       format-disconnected = "󰤭 ";
-      on-click = "nm-connection-editor";
+      on-click = "wezterm start --always-new-process network";
     };
     pulseaudio = {
       format = "{icon} {volume}%";
