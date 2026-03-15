@@ -36,7 +36,6 @@ in
       "ALT, E, exec, hyprctl dispatch exec '[float; size 1111 700] nemo'"
       "$mainMod SHIFT, C ,exec, hyprpicker -a"
       "$mainMod, S, exec, spotify"
-      "$mainMod, W,exec, wallpaper-picker"
       "$mainMod SHIFT, W,exec, hyprctl dispatch exec '[float; size 925 615] waypaper'"
       "$mainMod, N, exec, firefox https://www.notion.so"
       "CTRL SHIFT, Escape, exec, hyprctl dispatch exec '[workspace 9] missioncenter'"
