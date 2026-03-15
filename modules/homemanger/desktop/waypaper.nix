@@ -8,10 +8,10 @@
   xdg.configFile."waypaper/config.ini".text = ''
     [Settings]
     language = en
-    folder = ~/Pictures/wallpapers/catppuccin-mocha
+    folder = ~/dotfiles/wallpapers
     monitors = All
     wallpaper = ~/Pictures/wallpapers/wallpaper
-    backend = swww
+    backend = mpvpaper
     fill = fill
     sort = name
     color = #ffffff
@@ -26,5 +26,6 @@
     swww_transition_duration = 2
     swww_transition_fps = 60
     use_xdg_state = False
+    mpvpaper_options = --loop --no-audio
   '';
 }
