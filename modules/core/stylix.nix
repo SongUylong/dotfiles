@@ -6,9 +6,6 @@
     # Color scheme (Catppuccin Mocha)
     base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-mocha.yaml";
 
-    # Wallpaper
-    image = ../../wallpapers/city-horizon.jpg;
-
     # Force dark theme
     polarity = "dark";
 

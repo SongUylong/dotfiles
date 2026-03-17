@@ -9,7 +9,7 @@
     fg-col:  #cdd6f4;
     accent:  #cba6f7;
     
-    font: "JetBrainsMono Nerd Font 12";
+    font: "CaskaydiaCove Nerd Font";
     background-color: transparent;
     text-color: @fg-col;
     margin: 0;

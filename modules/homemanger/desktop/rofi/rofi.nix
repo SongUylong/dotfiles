@@ -11,5 +11,4 @@ lib.mkIf (!config.desktop.useCaelestia) {
 
   # Theme handled by Stylix
   xdg.configFile."rofi/config.rasi".source = ./config.rasi;
-  xdg.configFile."rofi/theme.rasi".source = ./theme.rasi;
 }

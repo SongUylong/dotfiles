@@ -1,8 +1,8 @@
-configuration{
+configuration {
     modi: "run,drun,window";
-    lines: 5;
+    lines: 6;
     cycle: false;
-    font: "Maple Mono Bold 16";
+    font: "Maple Mono 14";
     show-icons: true;
     icon-theme: "Papirus-dark";
     terminal: "wezterm";
@@ -10,100 +10,120 @@ configuration{
     location: 0;
     disable-history: false;
     hide-scrollbar: true;
-    display-drun: " Apps ";
-    display-run: " Run ";
-    display-window: " Window ";
+    display-drun: "   Apps ";
+    display-run: "   Run ";
+    display-window: " 﩯 Window ";
     sidebar-mode: true;
     sorting-method: "fzf";
 }
 
-@theme "theme"
-
-element-text, element-icon , mode-switcher {
-    background-color: inherit;
-    text-color:       inherit;
+* {
+    /* Unified Color Palette */
+    bg-col:  #1e1e2e;
+    bg-alt:  #313244;
+    fg-col:  #cdd6f4;
+    fg-col2: #11111b; /* Dark text for selected items */
+    accent:  #cba6f7; /* Matching the mauve accent */
+    grey:    #6c7086;
+    
+    background-color: transparent;
+    text-color: @fg-col;
+    margin: 0;
+    padding: 0;
 }
 
 window {
-    height: 539px;
-    width: 400px;
-    border: 2px;
-    border-color: @border-col;
+    width: 600px;
+    border: 2px solid;
+    border-color: @accent;
+    border-radius: 15px;
     background-color: @bg-col;
+    padding: 20px;
 }
 
 mainbox {
-    background-color: @bg-col;
+    background-color: transparent;
+    spacing: 15px; /* Adds space between search, list, and buttons */
+    children: [ inputbar, listview, mode-switcher ];
 }
 
 inputbar {
-    children: [prompt,entry];
-    background-color: @bg-col-light;
-    padding: 0px;
+    children: [prompt, entry];
+    background-color: transparent;
+    spacing: 15px;
 }
 
 prompt {
-    background-color: @green;
-    padding: 4px;
-    text-color: @bg-col-light;
-    margin: 10px 0px 10px 10px;
-}
-
-textbox-prompt-colon {
-    expand: false;
-    str: ":";
+    background-color: @accent;
+    text-color: @fg-col2;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font: "Maple Mono Bold 14";
 }
 
 entry {
-    padding: 6px;
-    margin: 10px 10px 10px 5px;
+    padding: 12px 16px;
+    background-color: @bg-alt;
     text-color: @fg-col;
-    background-color: @bg-col;
+    border-radius: 10px;
+    placeholder: "Search...";
+    placeholder-color: @grey;
 }
 
 listview {
-    border: 0px 0px 0px;
-    padding: 0px;
-    margin: 0px;
     columns: 1;
-    background-color: @bg-col;
+    lines: 6;
+    spacing: 8px; /* Spacing between rows */
+    background-color: transparent;
     cycle: true;
+    dynamic: true;
 }
 
 element {
-    padding: 8px 8px 8px 8px;
-    margin: 0px;
-    background-color: @element-bg;
-    text-color: @fg-col;
+    padding: 10px 15px;
+    background-color: transparent;
+    border-radius: 10px; /* Pill-shaped highlight */
+    spacing: 12px;
 }
 
 element-icon {
     size: 28px;
+    background-color: transparent;
+}
+
+element-text {
+    vertical-align: 0.5;
+    background-color: transparent;
+    text-color: inherit;
+}
+
+/* Hover/Selection Logic */
+element normal.normal, element alternate.normal {
+    background-color: transparent;
+    text-color: @fg-col;
 }
 
 element selected {
-    background-color:  @selected-col ;
-    text-color: @fg-col2  ;
+    background-color: @accent;
+    text-color: @fg-col2;
 }
 
-element alternate.normal {
-    background-color: @element-alternate-bg;
-    text-color:       @fg-col;
-}
-
+/* Bottom Tabs */
 mode-switcher {
-    spacing: 0;
+    spacing: 15px;
+    background-color: transparent;
 }
 
 button {
     padding: 10px;
-    background-color: @bg-col-light;
-    text-color: @grey;
+    background-color: @bg-alt;
+    text-color: @fg-col;
+    border-radius: 10px;
     vertical-align: 0.5;
     horizontal-align: 0.5;
 }
 
 button selected {
-    background-color: @bg-col;
-    text-color: @green;
+    background-color: @accent;
+    text-color: @fg-col2;
 }

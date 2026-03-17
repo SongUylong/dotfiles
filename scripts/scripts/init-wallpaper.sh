@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-# Use waypaper to restore the last wallpaper (supports both static images and videos)
-waypaper --restore &
+# Set the default wallpaper (supports both static images and videos)
+waypaper --wallpaper ~/dotfiles/wallpapers/lamborghini.mp4 &

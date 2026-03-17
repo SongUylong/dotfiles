@@ -10,7 +10,7 @@
     language = en
     folder = ~/dotfiles/wallpapers
     monitors = All
-    wallpaper = ~/dotfiles/wallpapers
+    wallpaper = ~/dotfiles/wallpapers/lamborghini.mp4
     backend = mpvpaper
     fill = fill
     sort = name
