@@ -40,7 +40,7 @@ prompt {
     background-color: @accent;
     text-color: #11111b;
     padding: 16px 20px;
-    font: "Maple Mono Bold 18";
+    font: "CaskaydiaCove Nerd Font";
     border-radius: 10px;
 }
 
@@ -48,7 +48,7 @@ entry {
     padding: 16px 20px;
     text-color: @fg-col;
     background-color: @bg-alt;
-    font: "Maple Mono 18";
+    font: "CaskaydiaCove Nerd Font";
     placeholder: "Search the web...";
     placeholder-color: #6c7086;
     border-radius: 10px;
