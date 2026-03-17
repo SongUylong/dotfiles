@@ -120,6 +120,13 @@ in
       "$mainMod ALT, k, moveactive, 0 -80"
       "$mainMod ALT, l, moveactive, 80 0"
 
+      # keyboard backlight (asusctl)
+      ",F2, exec, asusctl leds prev"
+      ",F3, exec, asusctl leds next"
+
+      # keyboard aura random effect
+      ",F4, exec, aura-random"
+
       # media
       ",XF86AudioPlay,exec, playerctl play-pause"
       ",XF86AudioNext,exec, playerctl next"

@@ -96,6 +96,11 @@
     };
   };
 
+  # "powersave" governor lets amd_pstate+EPP fully control frequency scaling.
+  # TLP sets CPU_ENERGY_PERF_POLICY_ON_BAT = "power" which provides the actual
+  # power/perf tradeoff; "powersave" governor is the correct companion for amd_pstate.
+  # On AC, TLP sets CPU_ENERGY_PERF_POLICY_ON_AC = "balance_performance" so
+  # performance is not sacrificed when plugged in.
   powerManagement.cpuFreqGovernor = "performance";
 
   systemd.sleep.extraConfig = "HibernateDelaySec=10min";
@@ -147,19 +152,41 @@
       # keeps the CPU warmer, and wastes power. AMD CPUs manage C-states well natively.
       "amd_pstate=active"
       "rtc_cmos.use_acpi_alarm=1"
+      "acpi_backlight=native"
+      "amdgpu.dcdebugmask=0x40000"
       "transparent_hugepage=always"
       "nohz_full=1-15"
       "rcu_nocbs=1-15"
       "isolcpus=1-15"
       "mitigations=off"
+      # TSC clocksource falls back to HPET at boot due to BIOS timing quirk on
+      # this Ryzen 4800H. tsc=reliable suppresses the instability check and keeps
+      # the faster TSC clocksource active throughout boot.
+      "tsc=reliable"
       "sysctl.fs.file-max=524288"
       "vm.swappiness=10"
       "vm.vfs_cache_pressure=50"
+      # Hibernate resume offset for /swapfile on ext4.
+      # Obtained via: sudo filefrag -v /swapfile | awk 'NR==4 { print $4 }' | tr -d '.'
+      "resume_offset=44120064"
     ];
 
     initrd = {
-      kernelModules = [ "amdgpu" ];
+      # amdgpu: loaded early for Plymouth DRM framebuffer
+      # nvme: must also be loaded early so udev finds the root NVMe disk before
+      # the 30-second wait timeout. Without this, amdgpu initialization delays
+      # udev enumeration and causes a ~23s stall waiting for the root device.
+      kernelModules = [
+        "amdgpu"
+        "nvme"
+      ];
     };
+
+    # Hibernate resume via swapfile on ext4 root partition.
+    # resumeDevice = root partition (where /swapfile lives).
+    # resume_offset = physical block offset of /swapfile; obtain with:
+    #   sudo filefrag -v /swapfile | awk 'NR==4 { print $4 }' | tr -d '.'
+    resumeDevice = "/dev/disk/by-uuid/e3ff8dfa-c841-499b-affc-773d85a372d3";
   };
 
   # Optimize NVIDIA for laptops (PRIME offload + fine-grained power management)
@@ -182,21 +209,11 @@
     };
   };
 
-  systemd.services.disable-usb-port = {
-    description = "Disable faulty USB port 3-4";
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      ExecStart = "${pkgs.bash}/bin/bash -c 'echo 3-4 > /sys/bus/usb/drivers/usb/unbind 2>/dev/null || true'";
-    };
-  };
-
-  services.udev = {
-    extraRules = ''
-      # Disable faulty USB port 3-4 on boot
-      ACTION=="add", SUBSYSTEM=="usb", ATTR{../port}=="3-4", ATTR{authorized}="0"
-    '';
+  # supergfxd references nvidia-powerd.service which doesn't exist in this config
+  # (nvidia-powerd is an NVIDIA daemon not packaged in nixpkgs). Masking it
+  # silences the repeated systemd dependency failures at boot.
+  systemd.services.nvidia-powerd = {
+    enable = false;
   };
 
   systemd.services.keyboard-backlight = {

@@ -12,4 +12,8 @@
     vial
     qmk-udev-rules
   ];
+
+  # qmk-udev-rules references the 'plugdev' group; create it so udevd
+  # doesn't log "Unknown group 'plugdev'" warnings on every udev reload.
+  users.groups.plugdev = { };
 }

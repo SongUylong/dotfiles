@@ -33,7 +33,7 @@ in
         efiSupport = true;
         useOSProber = true;
         efiInstallAsRemovable = true;
-        configurationLimit = 5;
+        configurationLimit = 3;
         theme = starWarsGrubTheme;
         # Increase timeout to select OS
         gfxmodeEfi = "2560x1440";
@@ -44,9 +44,6 @@ in
     };
 
     supportedFilesystems = [ "ntfs" ];
-
-    # Hibernate support
-    resumeDevice = "/dev/disk/by-uuid/b4c132d2-c0c2-4991-a3bd-32d04f62c370";
   };
 
   # Ensure os-prober can detect Windows

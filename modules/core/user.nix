@@ -35,6 +35,7 @@
       "wheel"
       "docker"
       "i2c"
+      "video"
     ];
     shell = pkgs.zsh;
   };

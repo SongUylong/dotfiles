@@ -17,9 +17,7 @@ in
     "udiskie --automount --notify --smart-tray &"
     "hyprctl setcursor Bibata-Modern-Ice 24 &"
     "init-wallpaper &"
-
-    "[workspace 1 silent] firefox"
-    "[workspace 2 silent] wezterm"
+    "[workspace 1 silent]"
   ]
   ++ lib.optionals (!useCaelestia) [
     # Classic stack: start bar, notifications, and idle daemon

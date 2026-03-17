@@ -11,11 +11,15 @@ lib.mkIf (!config.desktop.useCaelestia) {
     settings = {
       exec-once = [ "swayosd-server" ];
 
-      bind = [ ",XF86AudioMute, exec, swayosd-client --output-volume mute-toggle" ];
+      bind = [
+        ",XF86AudioMute, exec, swayosd-client --output-volume mute-toggle"
+        ",F7, exec, brightnessctl set 5%-"
+        ",F8, exec, brightnessctl set +5%"
+      ];
       # binds active in lockscreen
       bindl = [
-        ",XF86MonBrightnessUp, exec, swayosd-client --brightness raise 5%+"
-        ",XF86MonBrightnessDown, exec, swayosd-client --brightness lower 5%-"
+        ",XF86MonBrightnessUp, exec, swayosd-client --brightness +5"
+        ",XF86MonBrightnessDown, exec, swayosd-client --brightness -5"
         "$mainMod, XF86MonBrightnessUp, exec, brightnessctl set 100%"
         "$mainMod, XF86MonBrightnessDown, exec, brightnessctl set 0%"
       ];
@@ -25,6 +29,10 @@ lib.mkIf (!config.desktop.useCaelestia) {
 
         "$mainMod, f11, exec, swayosd-client --output-volume +2 --max-volume=100"
         "$mainMod, f12, exec, swayosd-client --output-volume -2"
+
+        # laptop screen brightness
+        ",F7, exec, brightnessctl -d amdgpu_bl1 set 5%-"
+        ",F8, exec, brightnessctl -d amdgpu_bl1 set +5%"
       ];
       bindr = [
         "CAPS,Caps_Lock,exec,swayosd-client --caps-lock"
