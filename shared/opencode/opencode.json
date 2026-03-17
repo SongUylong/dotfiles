@@ -1,6 +1,41 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "model": "minimax/minimax-m2.5-free",
+  "permission": {
+    "bash": "ask", // Asks for confirmation before running terminal commands
+    "edit": "allow" // Allows OpenCode to edit files automatically
+  },
+  "mcp": {
+    // 1. GITHUB: Allows OpenCode to read repos, check PRs, and review issues
+    "github": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-github"],
+      "enabled": true,
+      "environment": {
+        // Generate a classic Personal Access Token with 'repo' scope in GitHub
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "<YOUR_GITHUB_TOKEN_HERE>"
+      }
+    },
+
+    "perplexity": {
+      "type": "local",
+      "command": ["npx", "-y", "@perplexity-ai/mcp-server"],
+      "environment": {
+        "PERPLEXITY_API_KEY": "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"
+      },
+      "enabled": true
+    },
+    "vercel": {
+      "type": "local",
+      "command": ["npx", "mcp-remote", "https://mcp.vercel.com"]
+    },
+    // 4. PUPPETEER: Lets OpenCode spin up a headless browser to test your web app UI
+    "puppeteer": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-puppeteer"],
+      "enabled": true
+    }
+  },
   "default_agent": "build",
   "provider": {
     "ollama": {
