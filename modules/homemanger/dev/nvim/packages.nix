@@ -1,16 +1,17 @@
-{pkgs}:
-with pkgs; [
+{ pkgs }:
+with pkgs;
+[
   # Core tools
   fd
   fzf
   ripgrep
   lazygit
   wl-clipboard
-  
+
   # Lua runtime and tools
   lua5_1
   luajitPackages.luarocks
-  
+
   # Image support for image.nvim
   imagemagick
 

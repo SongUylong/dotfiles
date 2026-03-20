@@ -51,9 +51,7 @@
 
       lib = nixpkgs.lib;
 
-      sharedModules = [
-        inputs.stylix.nixosModules.stylix
-      ];
+      sharedModules = [ inputs.stylix.nixosModules.stylix ];
     in
     {
       nixosConfigurations = {

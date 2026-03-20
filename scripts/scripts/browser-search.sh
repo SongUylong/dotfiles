@@ -8,5 +8,5 @@ query=$(rofi -dmenu -p "🔎" -theme "$theme_path")
 
 # If user entered something, search with Firefox
 if [ -n "$query" ]; then
-  firefox --search "$query"
+    firefox --search "$query"
 fi

@@ -112,8 +112,6 @@
       force_zero_scaling = true;
     };
 
-    workspace = [
-      "w[tv1], gapsout:16, gapsin:8"
-    ];
+    workspace = [ "w[tv1], gapsout:16, gapsin:8" ];
   };
 }

@@ -6,13 +6,12 @@
   ...
 }:
 {
-  imports = [
-    inputs.caelestia-shell.homeManagerModules.default
-  ];
+  imports = [ inputs.caelestia-shell.homeManagerModules.default ];
 
   home = lib.mkIf config.desktop.useCaelestia {
     file = {
-      "${config.xdg.stateHome}/caelestia/wallpaper/path.txt".text = toString config.stylix.image;
+      "${config.xdg.stateHome}/caelestia/wallpaper/path.txt".text =
+        toString config.stylix.image;
 
       "${config.xdg.stateHome}/caelestia/scheme.json" = {
         text = builtins.toJSON {

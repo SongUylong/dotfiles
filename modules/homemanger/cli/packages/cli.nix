@@ -34,6 +34,7 @@
     zellij # terminal multiplexer
 
     ## Monitoring / fetch
+    bottom
     htop
     onefetch # fetch utility for git repo
     wavemon # monitoring for wireless network devices

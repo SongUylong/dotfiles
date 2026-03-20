@@ -6,5 +6,6 @@
     ./ssh.nix
     ./xdg-mimes.nix
     ./zsh
+    ../../homemanger/system/shared.nix
   ];
 }

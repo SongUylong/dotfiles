@@ -1,7 +1,10 @@
 { pkgs, username, ... }:
 {
   # Add user to libvirtd and docker groups
-  users.users.${username}.extraGroups = [ "libvirtd" "docker" ];
+  users.users.${username}.extraGroups = [
+    "libvirtd"
+    "docker"
+  ];
 
   # Install necessary packages
   environment.systemPackages = with pkgs; [

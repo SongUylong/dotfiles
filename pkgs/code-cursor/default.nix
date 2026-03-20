@@ -2,7 +2,7 @@
 
 pkgs.code-cursor.overrideAttrs (oldAttrs: rec {
   version = "2.2.44";
-  
+
   src = pkgs.fetchurl {
     url = "https://downloader.cursor.sh/linux/appImage/x64";
     name = "cursor-${version}.AppImage";

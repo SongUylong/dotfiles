@@ -5,8 +5,8 @@
 IFACE=$(route -n get default | grep interface | awk '{print $2}')
 
 if [ -z "$IFACE" ]; then
-  sketchybar --set "$NAME" icon="󰲛" label="0/0 KB/s"
-  exit 0
+    sketchybar --set "$NAME" icon="󰲛" label="0/0 KB/s"
+    exit 0
 fi
 
 # Get initial bytes
@@ -30,12 +30,12 @@ TX_KB=$((TX_DIFF / 1024))
 
 # Format with appropriate units
 format_speed() {
-  local speed=$1
-  if [ "$speed" -ge 1024 ]; then
-    echo "$(echo "scale=1; $speed/1024" | bc)M"
-  else
-    echo "${speed}K"
-  fi
+    local speed=$1
+    if [ "$speed" -ge 1024 ]; then
+        echo "$(echo "scale=1; $speed/1024" | bc)M"
+    else
+        echo "${speed}K"
+    fi
 }
 
 RX_FMT=$(format_speed $RX_KB)

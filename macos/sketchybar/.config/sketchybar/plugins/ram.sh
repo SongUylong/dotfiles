@@ -5,7 +5,7 @@
 VM_STATS=$(vm_stat)
 PAGE_SIZE=$(vm_stats | grep "page size" | awk '{print $8}')
 if [ -z "$PAGE_SIZE" ]; then
-  PAGE_SIZE=4096
+    PAGE_SIZE=4096
 fi
 
 PAGES_FREE=$(echo "$VM_STATS" | grep "Pages free" | awk '{print $3}' | tr -d '.')

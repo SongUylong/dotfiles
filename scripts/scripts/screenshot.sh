@@ -37,7 +37,7 @@ case "$1" in
     "--save")
         save
         ;;
-    "--copy-save"|"")
+    "--copy-save" | "")
         copy_and_save
         ;;
     "--swappy")

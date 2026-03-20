@@ -24,9 +24,7 @@
     # Force a safe MTU for your physical ethernet interface (eno1)
     # This prevents packet fragmentation which causes "hanging" websites
     # Only apply to desktop - laptop uses WiFi and may not have eno1
-    interfaces = lib.mkIf (host != "laptop") {
-      eno1.mtu = 1492;
-    };
+    interfaces = lib.mkIf (host != "laptop") { eno1.mtu = 1492; };
 
     nameservers = [
       "1.1.1.1" # Prioritizing Cloudflare (usually faster in SE Asia)

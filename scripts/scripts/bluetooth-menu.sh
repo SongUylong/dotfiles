@@ -14,14 +14,14 @@ green="#a6e3a1"
 overlay="#6c7086"
 
 # ── Gather state ──────────────────────────────────────────────
-bt_powered=$(bluetoothctl show 2>/dev/null | awk '/Powered:/{print $2}')
+bt_powered=$(bluetoothctl show 2> /dev/null | awk '/Powered:/{print $2}')
 
 if [[ "$bt_powered" != "yes" ]]; then
-	bt_status="󰂲  Bluetooth: OFF"
-	toggle_label="󰂯  Turn On"
+    bt_status="󰂲  Bluetooth: OFF"
+    toggle_label="󰂯  Turn On"
 else
-	bt_status="󰂯  Bluetooth: ON"
-	toggle_label="󰂲  Turn Off"
+    bt_status="󰂯  Bluetooth: ON"
+    toggle_label="󰂲  Turn Off"
 fi
 
 # Build device list: "icon  Name  [connected]"
@@ -30,20 +30,20 @@ declare -A device_mac  # label → MAC
 declare -A device_conn # label → yes/no
 
 while IFS= read -r line; do
-	mac=$(echo "$line" | awk '{print $2}')
-	name=$(echo "$line" | cut -d' ' -f3-)
-	connected=$(bluetoothctl info "$mac" 2>/dev/null | awk '/Connected:/{print $2}')
+    mac=$(echo "$line" | awk '{print $2}')
+    name=$(echo "$line" | cut -d' ' -f3-)
+    connected=$(bluetoothctl info "$mac" 2> /dev/null | awk '/Connected:/{print $2}')
 
-	if [[ "$connected" == "yes" ]]; then
-		label="󰂱  $name  ●"
-	else
-		label="󰂰  $name"
-	fi
+    if [[ "$connected" == "yes" ]]; then
+        label="󰂱  $name  ●"
+    else
+        label="󰂰  $name"
+    fi
 
-	device_labels+=("$label")
-	device_mac["$label"]="$mac"
-	device_conn["$label"]="$connected"
-done < <(bluetoothctl devices 2>/dev/null)
+    device_labels+=("$label")
+    device_mac["$label"]="$mac"
+    device_conn["$label"]="$connected"
+done < <(bluetoothctl devices 2> /dev/null)
 
 # ── Rofi theme (matches power-menu pill aesthetic) ────────────
 rofi_theme="
@@ -121,35 +121,35 @@ element-text {
 # ── Build menu ─────────────────────────────────────────────────
 menu_items="$toggle_label"
 if [[ ${#device_labels[@]} -gt 0 ]]; then
-	menu_items+="\n──────────────────"
-	for lbl in "${device_labels[@]}"; do
-		menu_items+="\n$lbl"
-	done
+    menu_items+="\n──────────────────"
+    for lbl in "${device_labels[@]}"; do
+        menu_items+="\n$lbl"
+    done
 fi
 
 # ── Show rofi ─────────────────────────────────────────────────
 chosen=$(echo -e "$menu_items" |
-	rofi -dmenu \
-		-p "" \
-		-mesg "$bt_status" \
-		-theme-str "$rofi_theme" \
-		-no-custom)
+    rofi -dmenu \
+        -p "" \
+        -mesg "$bt_status" \
+        -theme-str "$rofi_theme" \
+        -no-custom)
 
 [[ -z "$chosen" ]] && exit 0
 
 # ── Handle selection ──────────────────────────────────────────
 if [[ "$chosen" == "$toggle_label" ]]; then
-	if [[ "$bt_powered" == "yes" ]]; then
-		bluetoothctl power off
-	else
-		bluetoothctl power on
-	fi
+    if [[ "$bt_powered" == "yes" ]]; then
+        bluetoothctl power off
+    else
+        bluetoothctl power on
+    fi
 elif [[ -n "${device_mac[$chosen]+x}" ]]; then
-	mac="${device_mac[$chosen]}"
-	conn="${device_conn[$chosen]}"
-	if [[ "$conn" == "yes" ]]; then
-		bluetoothctl disconnect "$mac"
-	else
-		bluetoothctl connect "$mac"
-	fi
+    mac="${device_mac[$chosen]}"
+    conn="${device_conn[$chosen]}"
+    if [[ "$conn" == "yes" ]]; then
+        bluetoothctl disconnect "$mac"
+    else
+        bluetoothctl connect "$mac"
+    fi
 fi

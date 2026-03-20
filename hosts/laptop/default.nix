@@ -22,7 +22,9 @@
     gamemode
     polychromatic
     asusctl
-    (pkgs.writeScriptBin "network" (builtins.readFile ../../scripts/scripts/network.sh))
+    (pkgs.writeScriptBin "network" (
+      builtins.readFile ../../scripts/scripts/network.sh
+    ))
   ];
 
   services = {

@@ -10,11 +10,11 @@ pkgs.stdenv.mkDerivation {
 
   installPhase = ''
     mkdir -p $out/bin
-    
+
     # Install script
     cp fan-control.sh $out/bin/fan
     chmod +x $out/bin/fan
-    
+
     # Wrap with polkit in PATH
     wrapProgram $out/bin/fan \
       --prefix PATH : ${pkgs.polkit}/bin

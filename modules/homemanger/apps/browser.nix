@@ -8,6 +8,8 @@ in
     profileNames = [ "default" ];
   };
 
+  home.packages = with pkgs; [ google-chrome ];
+
   programs.firefox = {
     enable = true;
     profiles.default = {
