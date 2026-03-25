@@ -6,5 +6,6 @@
     ./spicetify.nix
     ./vscodium
     ./direnv.nix
+    ./postman.nix
   ];
 }

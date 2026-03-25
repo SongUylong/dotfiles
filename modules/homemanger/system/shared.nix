@@ -4,12 +4,9 @@ let
 in
 {
   home.file = {
-    # Zellij
-    "${config.xdg.configHome}/zellij".source =
-      config.lib.file.mkOutOfStoreSymlink "${sharedDir}/zellij";
-
     # Zsh — shared config for both NixOS and macOS
-    "${config.xdg.configHome}/zsh".source = config.lib.file.mkOutOfStoreSymlink "${sharedDir}/zsh";
+    "${config.xdg.configHome}/zsh".source =
+      config.lib.file.mkOutOfStoreSymlink "${sharedDir}/zsh";
 
     # OpenCode config file
     "${config.xdg.configHome}/opencode/opencode.json".source =

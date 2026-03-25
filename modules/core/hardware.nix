@@ -62,7 +62,12 @@ in
   services.blueman.enable = true;
 
   # Fan control and monitor brightness (ddcutil)
-  environment.systemPackages = with pkgs; [ lm_sensors ] ++ [ ddcutil-wrapper ];
+  environment.systemPackages =
+    with pkgs;
+    [
+      lm_sensors
+    ]
+    ++ [ ddcutil-wrapper ];
 
   # Create i2c group for ddcutil
   users.groups.i2c = { };
@@ -79,16 +84,12 @@ in
     "i2c-dev"
   ];
 
-  # Set fan to constant PWM 135 (~2854 RPM)
-  systemd.services.fan-pwm-set = {
-    description = "Set CPU fan to PWM 135";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "systemd-modules-load.service" ];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      # Find the correct hwmon device for nct6775 and set PWM
-      ExecStart = "${pkgs.bash}/bin/bash -c 'for hwmon in /sys/class/hwmon/hwmon*; do if [ -f $hwmon/pwm6_enable ]; then echo 1 > $hwmon/pwm6_enable && echo 135 > $hwmon/pwm6; break; fi; done'";
-    };
-  };
+  # Enable GPU fan control via Coolbits
+  environment.etc."X11/xorg.conf.d/10-nvidia-coolbits.conf".text = ''
+    Section "Device"
+        Identifier "NVIDIA GPU"
+        Driver "nvidia"
+        Option "Coolbits" "4"
+    EndSection
+  '';
 }

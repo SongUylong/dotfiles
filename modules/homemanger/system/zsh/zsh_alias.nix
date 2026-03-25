@@ -32,11 +32,14 @@
       nc = "nh-notify nh clean all --keep 5";
       nft = "nh-notify nh os test";
       nfs = "nh-notify nh os switch";
+      nfsf = "git add . && nh-notify nh os switch";
       nfu = "nh-notify nh os switch --update";
+
       nsearch = "nh search";
 
       # python
       piv = "python -m venv .venv";
+
       psv = "source .venv/bin/activate";
     };
   };

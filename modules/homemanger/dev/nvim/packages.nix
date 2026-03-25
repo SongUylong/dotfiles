@@ -17,6 +17,9 @@ with pkgs;
 
   tmux
   lsof
+  sesh
+  gum
+  rmpc
 
   # Hypr
   hyprls

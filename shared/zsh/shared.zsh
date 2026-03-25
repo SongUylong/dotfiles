@@ -90,12 +90,14 @@ alias ldate='eza -l --sort=modified --group-directories-first'
 alias lgit='eza -l --git --group-directories-first'
 alias lt='tree -a'
 alias nvid='neovide & disown && exit'
-alias zl='zellij list-sessions'
-alias za='zellij attach -c'
-alias zk='zellij kill-session'
-alias zd='zellij delete-session'
-alias zda='zellij delete-all-sessions'
-alias zka='zellij kill-all-sessions'
+alias tl='tmux ls 2>/dev/null || (tmux new-session -A -s main)'
+alias tk='tmux kill-session -t'
+alias tka='tmux kill-server'
+
+function ta() {
+  local name="${1:-main}"
+  tmux new-session -A -s "$name"
+}
 
 export EDITOR=nvim
 

@@ -73,5 +73,15 @@
           modules = sharedModules ++ [ ./hosts/laptop ];
         };
       };
+
+      devShells.${system}.default = pkgs.mkShell {
+        buildInputs = [
+          pkgs.nodejs
+          pkgs.chromium
+        ];
+        shellHook = ''
+          export AGENT_BROWSER_EXECUTABLE_PATH=${pkgs.chromium}/bin/chromium
+        '';
+      };
     };
 }

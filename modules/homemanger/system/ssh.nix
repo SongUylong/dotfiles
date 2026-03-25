@@ -37,6 +37,13 @@
         identityFile = "~/.ssh/id_ed25519_bitbucket";
         identitiesOnly = true;
       };
+
+      home_server = {
+        host = "home_server";
+        hostname = "192.168.0.116";
+        user = "home_server";
+        identityFile = "~/.ssh/id_github";
+      };
     };
   };
 

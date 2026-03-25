@@ -36,8 +36,8 @@ link "$SHARED/wezterm/wezterm.lua" "$HOME/.wezterm.lua"
 # Neovim
 link "$SHARED/nvim" "$CONFIG/nvim"
 
-# Zellij
-link "$SHARED/zellij" "$CONFIG/zellij"
+# Tmux
+link "$SHARED/tmux" "$CONFIG/tmux"
 
 # OpenCode
 link "$SHARED/opencode" "$CONFIG/opencode"

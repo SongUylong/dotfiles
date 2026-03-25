@@ -31,11 +31,10 @@
     epy # ebook reader
     gtt # google translate TUI
     programmer-calculator
-    zellij # terminal multiplexer
 
     ## Monitoring / fetch
     bottom
-    htop
+    btop
     onefetch # fetch utility for git repo
     wavemon # monitoring for wireless network devices
 
@@ -75,5 +74,6 @@
     wget
     wl-clipboard # clipboard utils for wayland (wl-copy, wl-paste)
     xdg-utils
+    gemini-cli
   ];
 }

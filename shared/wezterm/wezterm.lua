@@ -13,10 +13,13 @@ if is_linux then
 	config.webgpu_power_preference = "HighPerformance"
 	config.window_decorations = "NONE"
 	config.font = wezterm.font_with_fallback({ "CaskaydiaCove Nerd Font" })
+	-- Debugging
+	-- config.debug_key_events = true
 elseif is_mac then
 	config.window_decorations = "RESIZE"
 	config.font_size = 16
-	config.send_composed_key_when_left_alt_is_pressed = true
+	-- Important for Alt/Meta keys in tmux on macOS
+	config.send_composed_key_when_left_alt_is_pressed = false
 end
 
 -- ── Performance ──────────────────────────────────────────────────────────────
@@ -122,11 +125,6 @@ config.keys = {
 	{ key = "n", mods = mod, action = act.ActivateCopyMode },
 	{ key = "t", mods = mod, action = act.SpawnTab("CurrentPaneDomain") },
 	{ key = "x", mods = mod, action = act.CloseCurrentTab({ confirm = false }) },
-	-- Pane navigation (forward to zellij)
-	{ key = "h", mods = mod, action = wezterm.action.SendKey({ key = "h", mods = "ALT" }) },
-	{ key = "j", mods = mod, action = wezterm.action.SendKey({ key = "j", mods = "ALT" }) },
-	{ key = "k", mods = mod, action = wezterm.action.SendKey({ key = "k", mods = "ALT" }) },
-	{ key = "l", mods = mod, action = wezterm.action.SendKey({ key = "l", mods = "ALT" }) },
 }
 
 config.mouse_bindings = {
