@@ -16,15 +16,15 @@ echo "→ Repo: $REPO_DIR"
 
 # Helper: symlink with backup
 link() {
-    local src="$1"
-    local dst="$2"
-    mkdir -p "$(dirname "$dst")"
-    if [ -e "$dst" ] && [ ! -L "$dst" ]; then
-        echo "  backing up $dst → $dst.bak"
-        mv "$dst" "$dst.bak"
-    fi
-    ln -sfn "$src" "$dst"
-    echo "  linked $dst"
+	local src="$1"
+	local dst="$2"
+	mkdir -p "$(dirname "$dst")"
+	if [ -e "$dst" ] && [ ! -L "$dst" ]; then
+		echo "  backing up $dst → $dst.bak"
+		mv "$dst" "$dst.bak"
+	fi
+	ln -sfn "$src" "$dst"
+	echo "  linked $dst"
 }
 
 echo ""
@@ -38,6 +38,9 @@ link "$SHARED/nvim" "$CONFIG/nvim"
 
 # Tmux
 link "$SHARED/tmux" "$CONFIG/tmux"
+
+# Tmuxinator
+link "$SHARED/tmuxinator" "$HOME/.tmuxinator"
 
 # OpenCode
 link "$SHARED/opencode" "$CONFIG/opencode"

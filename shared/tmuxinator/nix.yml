@@ -1,0 +1,14 @@
+name: nix
+root: ~/dotfiles
+windows:
+  - shell:
+      command: zsh
+  - flake:
+      layout: even-horizontal
+      panes:
+        - nix flake show
+        - nix develop
+  - home-manager:
+      command: home-manager switch --flake .#uylong
+  - dev:
+      command: nix develop

@@ -1,0 +1,16 @@
+name: dev
+root: ~/projects
+windows:
+  - editor:
+      layout: main-vertical
+      panes:
+        - vim
+        - npm run dev
+  - server:
+      layout: tiled
+      panes:
+        - docker-compose up
+  - logs:
+      command: tail -f log/development.log
+  - shell:
+      command: zsh

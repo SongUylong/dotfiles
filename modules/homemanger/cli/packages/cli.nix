@@ -22,6 +22,7 @@
     scooter # Interactive find and replace in the terminal
     swappy # snapshot editing tool
     tdf # cli pdf viewer
+    tmuxinator
     tokei # project line counter
     translate-shell # cli translator
     woomer

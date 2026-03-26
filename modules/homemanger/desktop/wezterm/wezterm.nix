@@ -1,11 +1,15 @@
-{ ... }:
+{ config, lib, ... }:
+let
+  sharedDir = "${config.home.homeDirectory}/dotfiles/shared";
+in
 {
   stylix.targets.wezterm.enable = true;
 
   programs.wezterm = {
     enable = true;
     enableZshIntegration = true;
-    # Path corrected to reach root/shared/wezterm/wezterm.lua
-    extraConfig = builtins.readFile ../../../../shared/wezterm/wezterm.lua;
   };
+
+  home.file."${config.xdg.configHome}/wezterm/wezterm.lua".source =
+    lib.mkForce (config.lib.file.mkOutOfStoreSymlink "${sharedDir}/wezterm/wezterm.lua");
 }

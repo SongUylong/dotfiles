@@ -1,6 +1,7 @@
 {
   config,
   pkgs,
+  lib,
   inputs,
   ...
 }:
@@ -18,6 +19,9 @@ in
 
     # Symlink nvim config files (LazyVim needs writable lock files)
     file = {
+      "${config.xdg.configHome}/nvim/init.lua".source =
+        lib.mkForce (config.lib.file.mkOutOfStoreSymlink "${nvimConfDir}/init.lua");
+
       "${config.xdg.configHome}/nvim/lua" = {
         source = config.lib.file.mkOutOfStoreSymlink "${nvimConfDir}/lua";
         recursive = true;
@@ -34,6 +38,12 @@ in
 
       "${config.xdg.configHome}/nvim/.neoconf.json".source =
         config.lib.file.mkOutOfStoreSymlink "${nvimConfDir}/.neoconf.json";
+
+      "${config.xdg.configHome}/nvim/.prettierrc".source =
+        config.lib.file.mkOutOfStoreSymlink "${nvimConfDir}/.prettierrc";
+
+      "${config.xdg.configHome}/nvim/.clang-format".source =
+        config.lib.file.mkOutOfStoreSymlink "${nvimConfDir}/.clang-format";
     };
   };
 
@@ -44,11 +54,5 @@ in
     vimAlias = true;
     viAlias = true;
     defaultEditor = true;
-
-    # Inline init.lua - just bootstraps lazy.nvim
-    initLua = ''
-      -- bootstrap lazy.nvim, LazyVim and your plugins
-      require("config.lazy")
-    '';
   };
 }
