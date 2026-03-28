@@ -29,7 +29,11 @@
       "type": "local",
       "command": ["npx", "mcp-remote", "https://mcp.vercel.com"]
     },
-    // 4. PUPPETEER: Lets OpenCode spin up a headless browser to test your web app UI
+    "notion": {
+      "type": "local",
+      "command": ["npx", "-y", "mcp-remote", "https://mcp.notion.com/mcp"],
+      "enabled": true
+    }, // 4. PUPPETEER: Lets OpenCode spin up a headless browser to test your web app UI
     "puppeteer": {
       "type": "local",
       "command": ["npx", "-y", "@modelcontextprotocol/server-puppeteer"],
