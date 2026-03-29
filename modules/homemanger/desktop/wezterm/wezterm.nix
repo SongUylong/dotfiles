@@ -10,6 +10,7 @@ in
     enableZshIntegration = true;
   };
 
-  home.file."${config.xdg.configHome}/wezterm/wezterm.lua".source =
-    lib.mkForce (config.lib.file.mkOutOfStoreSymlink "${sharedDir}/wezterm/wezterm.lua");
+  home.file."${config.xdg.configHome}/wezterm/wezterm.lua".source = lib.mkForce (
+    config.lib.file.mkOutOfStoreSymlink "${sharedDir}/wezterm/wezterm.lua"
+  );
 }

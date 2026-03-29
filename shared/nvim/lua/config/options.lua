@@ -4,3 +4,4 @@
 --
 vim.g.snacks_animate = false
 vim.opt.expandtab = true
+vim.opt.swapfile = false

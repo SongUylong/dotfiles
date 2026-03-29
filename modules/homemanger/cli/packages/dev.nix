@@ -18,14 +18,13 @@
 
     ## Node.js
     nodejs_22 # or nodejs_20, nodejs_18
+    playwright-driver
+    chromium
     # nodePackages.npm  # included with nodejs
     # nodePackages.yarn
     nodePackages.pnpm
     bun
 
-    ## Prisma
-    nodePackages.prisma
-    prisma-engines_6
 
     ## AI Tools
     opencode
@@ -40,10 +39,8 @@
   ];
 
   home.sessionVariables = {
-    PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING = "1";
-    PRISMA_SCHEMA_ENGINE_BINARY = "${pkgs.prisma-engines_6}/bin/schema-engine";
-    PRISMA_QUERY_ENGINE_BINARY = "${pkgs.prisma-engines_6}/bin/query-engine";
-    PRISMA_QUERY_ENGINE_LIBRARY = "${pkgs.prisma-engines_6}/lib/libquery_engine.node";
-    PRISMA_FMT_BINARY = "${pkgs.prisma-engines_6}/bin/prisma-fmt";
+    PLAYWRIGHT_BROWSERS_PATH = "${pkgs.playwright-driver.browsers}";
+    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";
+    PUPPETEER_EXECUTABLE_PATH = "${pkgs.chromium}/bin/chromium";
   };
 }
