@@ -19,8 +19,9 @@ in
 
     # Symlink nvim config files (LazyVim needs writable lock files)
     file = {
-      "${config.xdg.configHome}/nvim/init.lua".source =
-        lib.mkForce (config.lib.file.mkOutOfStoreSymlink "${nvimConfDir}/init.lua");
+      "${config.xdg.configHome}/nvim/init.lua".source = lib.mkForce (
+        config.lib.file.mkOutOfStoreSymlink "${nvimConfDir}/init.lua"
+      );
 
       "${config.xdg.configHome}/nvim/lua" = {
         source = config.lib.file.mkOutOfStoreSymlink "${nvimConfDir}/lua";

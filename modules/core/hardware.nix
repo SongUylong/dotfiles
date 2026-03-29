@@ -62,12 +62,7 @@ in
   services.blueman.enable = true;
 
   # Fan control and monitor brightness (ddcutil)
-  environment.systemPackages =
-    with pkgs;
-    [
-      lm_sensors
-    ]
-    ++ [ ddcutil-wrapper ];
+  environment.systemPackages = with pkgs; [ lm_sensors ] ++ [ ddcutil-wrapper ];
 
   # Create i2c group for ddcutil
   users.groups.i2c = { };
