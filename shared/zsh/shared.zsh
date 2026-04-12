@@ -115,7 +115,6 @@ if [[ "$(uname)" == "Darwin" ]]; then
   export PATH="$PATH:$HOME/.config/composer/vendor/bin"
   export PATH="$PATH:/Users/eric/.composer/vendor/bin"
   export PATH="$PATH:/Users/eric/.spicetify"
-  export OLLAMA_MODELS=/Volumes/TRANSCEND/.ollama/models
   export NODE_EXTRA_CA_CERTS=$HOME/.ssl/system-certs.pem
   export NODE_OPTIONS=--openssl-legacy-provider
 

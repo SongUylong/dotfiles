@@ -66,6 +66,8 @@ return {
         },
       },
       servers = {
+        -- Use jdt-language-server from Nix (flake/direnv); Mason’s jdtls fails on NixOS
+        jdtls = { mason = false },
         vtsls = { settings = { typescript = { preferences = { importModuleSpecifier = "non-relative" } } } },
         biome = {},
       },
