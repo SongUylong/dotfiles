@@ -1,0 +1,29 @@
+#!/usr/bin/env zsh
+
+# A clean, visible location to avoid macOS permissions issues
+# Tesseract doesn't like /tmp, and screencapture doesn't like hidden files
+tmp_img="$HOME/Pictures/ocr_snap_temp.png"
+
+# Clean up any leftover file
+rm -f "$tmp_img"
+
+# Optional: Notification before capture
+# osascript -e 'display notification "Select an area to OCR" with title "OCR Snap"'
+
+# Capture interactive area without sound
+screencapture -i "$tmp_img"
+
+if [[ -f "$tmp_img" && -s "$tmp_img" ]]; then
+  # Perform OCR (--psm 3 is good for automatic segmentation)
+  ocr_text=$(/opt/homebrew/bin/tesseract "$tmp_img" stdout -l eng --psm 3 2>/dev/null)
+  
+  if [[ -n "${ocr_text//[[:space:]]/}" ]]; then
+    echo -n "$ocr_text" | pbcopy
+    osascript -e 'display notification "Text copied to clipboard!" with title "OCR Success"'
+  else
+    osascript -e 'display notification "No text found in selection." with title "OCR Failed"'
+  fi
+  
+  # Clean up
+  rm -f "$tmp_img"
+fi

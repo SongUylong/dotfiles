@@ -158,7 +158,9 @@ alt-shift-backspace = 'close-all-windows-but-current'
 
 #screencapture
 alt-shift-s = 'exec-and-forget bash -c "screencapture -c -i"'
+alt-shift-o = 'exec-and-forget /Users/eric/dotfiles/bin/ocr-snap'
 alt-shift-r = 'exec-and-forget bash -c "pkill -f \"ffmpeg.*avfoundation\" || ffmpeg -f avfoundation -r 30 -i \"1:0\" ~/Desktop/screenrecord-$(date +%Y%m%d-%H%M%S).mkv &> /dev/null & disown"'
+
 
 [mode.service.binding]
 

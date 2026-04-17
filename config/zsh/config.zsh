@@ -110,7 +110,6 @@ export EDITOR=nvim
 
 # ── SSL / Node ────────────────────────────────────────────────────────────────
 export NODE_EXTRA_CA_CERTS=$HOME/.ssl/system-certs.pem
-export NODE_OPTIONS=--openssl-legacy-provider
 
 # ── NVM (Lazy Loaded) ─────────────────────────────────────────────────────────
 export NVM_DIR="$HOME/.nvm"
