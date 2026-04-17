@@ -1,0 +1,16 @@
+fork = false
+frame = "transparent"
+idle = true
+maximized = false
+mouse-cursor-icon = "arrow"
+neovim-bin = "/opt/homebrew/bin/nvim"
+no-multigrid = false
+srgb = false
+tabs = true
+theme = "auto"
+title-hidden = true
+vsync = true
+
+[font]
+normal = ["CaskaydiaCove Nerd Font"]
+size = 15
