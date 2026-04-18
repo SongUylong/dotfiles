@@ -1,0 +1,33 @@
+# Shared extension IDs for Cursor, Antigravity, and VS Code–family editors.
+# Install:  ~/dotfiles/bin/install-editor-extensions
+# Lines starting with # and empty lines are ignored.
+
+dsznajder.es7-react-js-snippets
+bradlc.vscode-tailwindcss
+asvetliakov.vscode-neovim
+dbaeumer.vscode-eslint
+vscjava.vscode-java-pack
+golang.go
+llvm-vs-code-extensions.vscode-clangd
+ms-python.vscode-python-envs
+shopify.ruby-lsp
+vue.volar
+esbenp.prettier-vscode
+ms-python.python
+pkief.material-icon-theme
+devsense.profiler-php-vscode
+biomejs.biome
+devsense.composer-php-vscode
+ms-python.debugpy
+devsense.phptools-vscode
+devsense.intelli-php-vscode
+vscjava.vscode-java-dependency
+vscjava.vscode-java-debug
+vscjava.vscode-java-test
+vscjava.vscode-maven
+vscjava.vscode-gradle
+redhat.java
+eamodio.gitlens
+dracula-theme.theme-dracula
+catppuccin.catppuccin-vsc
+meta.pyrefly

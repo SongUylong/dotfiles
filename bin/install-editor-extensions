@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# Install extensions from editors/extensions.txt into Cursor, VS Code, and Antigravity.
+# Antigravity's CLI can crash headless; use SKIP_ANTIGRAVITY=1 to skip it.
+set -uo pipefail
+
+DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+LIST="$DOTFILES/editors/extensions.txt"
+
+# Prefer real app-bundle CLIs (avoid shell aliases like cursor='open -a Cursor').
+ANTIGRAVITY_BIN="${ANTIGRAVITY_BIN:-}"
+if [[ -z "$ANTIGRAVITY_BIN" || ! -x "$ANTIGRAVITY_BIN" ]]; then
+  for c in "/Applications/Antigravity.app/Contents/Resources/app/bin/antigravity" \
+           "$HOME/.antigravity/antigravity/bin/antigravity"; do
+    [[ -x "$c" ]] && ANTIGRAVITY_BIN="$c" && break
+  done
+fi
+if [[ -z "$ANTIGRAVITY_BIN" || ! -x "$ANTIGRAVITY_BIN" ]]; then
+  ANTIGRAVITY_BIN="$(command -v antigravity 2>/dev/null || true)"
+fi
+
+CURSOR_BIN="${CURSOR_BIN:-}"
+if [[ -z "$CURSOR_BIN" || ! -x "$CURSOR_BIN" ]]; then
+  CURSOR_BIN="/Applications/Cursor.app/Contents/Resources/app/bin/cursor"
+fi
+if [[ ! -x "$CURSOR_BIN" ]]; then
+  CURSOR_BIN="$(command -v cursor 2>/dev/null || true)"
+fi
+
+VSCODE_BIN="${VSCODE_BIN:-}"
+if [[ -z "$VSCODE_BIN" || ! -x "$VSCODE_BIN" ]]; then
+  VSCODE_BIN="/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code"
+fi
+if [[ ! -x "$VSCODE_BIN" ]]; then
+  VSCODE_BIN="$(command -v code 2>/dev/null || true)"
+fi
+
+install_with() {
+  local label="$1" bin="$2"
+  if [[ -z "$bin" || ! -x "$bin" ]]; then
+    echo "skip $label (CLI not found; set ANTIGRAVITY_BIN / CURSOR_BIN / VSCODE_BIN)" >&2
+    return 0
+  fi
+  echo "==> $label ($bin)"
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    [[ -z "${line// }" || "$line" =~ ^[[:space:]]*# ]] && continue
+    echo "    install $line"
+    if ! "$bin" --install-extension "$line"; then
+      echo "    !! failed: $line" >&2
+    fi
+  done < "$LIST"
+}
+
+[[ -f "$LIST" ]] || { echo "missing $LIST" >&2; exit 1; }
+
+install_with cursor "$CURSOR_BIN"
+install_with vscode "$VSCODE_BIN"
+if [[ "${SKIP_ANTIGRAVITY:-0}" != "1" ]]; then
+  install_with antigravity "$ANTIGRAVITY_BIN" || true
+else
+  echo "skip antigravity (SKIP_ANTIGRAVITY=1)" >&2
+fi
+echo "Done."

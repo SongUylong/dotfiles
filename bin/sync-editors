@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+# Build settings from editors/settings.shared.json (+ local + overrides) and symlink
+# keybindings, settings, and extension list into Cursor / VS Code / Antigravity User dirs.
+set -euo pipefail
+
+DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+INSTALL_EXT=0
+
+for arg in "$@"; do
+  case "$arg" in
+    --install-extensions) INSTALL_EXT=1 ;;
+    -h|--help)
+      echo "Usage: sync-editors [--install-extensions]"
+      echo "  Regenerates cursor|vscode|antigravity/settings.json from editors/settings.shared.json"
+      echo "  Symlinks keybindings + settings into ~/Library/Application Support/*/User/"
+      echo "  Optional: install extensions from editors/extensions.txt"
+      exit 0
+      ;;
+  esac
+done
+
+RESET="\033[0m"
+BOLD="\033[1m"
+GREEN="\033[0;32m"
+YELLOW="\033[0;33m"
+
+link() {
+  local src="$1" dst="$2"
+  mkdir -p "$(dirname "$dst")"
+  if [[ -e "$dst" && ! -L "$dst" ]]; then
+    echo -e "${BOLD}${YELLOW} ⚠ ${RESET} $dst exists — backing up to ${dst}.bak"
+    mv "$dst" "${dst}.bak"
+  fi
+  ln -sfn "$src" "$dst"
+  echo -e "${BOLD}${GREEN} ✔ ${RESET} $(basename "$dst") → $src"
+}
+
+python3 "$DOTFILES/bin/sync-editors.py" "$DOTFILES"
+
+KB="$DOTFILES/editors/keybindings.json"
+EXT="$DOTFILES/editors/extensions.txt"
+
+CURSOR_U="$HOME/Library/Application Support/Cursor/User"
+CODE_U="$HOME/Library/Application Support/Code/User"
+AG_U="$HOME/Library/Application Support/Antigravity/User"
+
+link "$KB" "$CURSOR_U/keybindings.json"
+link "$DOTFILES/cursor/settings.json" "$CURSOR_U/settings.json"
+
+link "$KB" "$CODE_U/keybindings.json"
+link "$DOTFILES/vscode/settings.json" "$CODE_U/settings.json"
+
+link "$KB" "$AG_U/keybindings.json"
+link "$DOTFILES/antigravity/settings.json" "$AG_U/settings.json"
+
+# Repo convenience: per-editor folders point at the same canonical files
+ln -sfn "$KB" "$DOTFILES/cursor/keybindings.json"
+ln -sfn "$KB" "$DOTFILES/vscode/keybindings.json"
+ln -sfn "$KB" "$DOTFILES/antigravity/keybindings.json"
+ln -sfn "$EXT" "$DOTFILES/cursor/extensions.txt"
+ln -sfn "$EXT" "$DOTFILES/vscode/extensions.txt"
+ln -sfn "$EXT" "$DOTFILES/antigravity/extensions.txt"
+
+if [[ "$INSTALL_EXT" == "1" ]]; then
+  echo "Installing extensions..."
+  SKIP_ANTIGRAVITY="${SKIP_ANTIGRAVITY:-1}" "$DOTFILES/bin/install-editor-extensions" || true
+fi
+
+echo -e "\n${BOLD}Done.${RESET} Edit ${BOLD}~/dotfiles/editors/settings.shared.json${RESET} then re-run ${BOLD}sync-editors${RESET}."

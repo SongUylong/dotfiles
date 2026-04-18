@@ -48,4 +48,10 @@ link "$DOTFILES/config/zsh/.zshrc"     "$HOME/.zshrc"
 # ── aerospace (also reads from HOME) ─────────────────────────────────────────
 link "$DOTFILES/config/aerospace/.aerospace.toml" "$HOME/.aerospace.toml"
 
+# ── Cursor / VS Code / Antigravity (shared keybindings, settings, extensions list) ──
+if [[ -x "$DOTFILES/bin/sync-editors" && "${SKIP_SYNC_EDITORS:-0}" != "1" ]]; then
+  echo -e "\n${BOLD} Editor configs ${RESET}\n"
+  "$DOTFILES/bin/sync-editors"
+fi
+
 echo -e "\n${BOLD}${GREEN} Done!${RESET} Run ${BOLD}exec zsh${RESET} to reload your shell.\n"

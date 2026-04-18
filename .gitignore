@@ -13,6 +13,7 @@
 .idea/
 *.swp
 *.swo
+editors/settings.local.json
 
 # ── Node (codeUtility only) ───────────────────────────────────────────────────
 node_modules/
