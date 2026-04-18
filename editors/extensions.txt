@@ -1,5 +1,5 @@
 # Shared extension IDs for Cursor, Antigravity, and VS Code–family editors.
-# Install:  ~/dotfiles/bin/install-editor-extensions
+# Install:  ~/dotfiles/scripts/install-editor-extensions
 # Lines starting with # and empty lines are ignored.
 
 dsznajder.es7-react-js-snippets

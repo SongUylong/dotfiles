@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Merge editors/settings.shared.json + optional local/overrides into per-app settings.json."""
+"""Merge editors/settings.shared.json (+ local + overrides) into editors/dist/settings.*.json."""
 from __future__ import annotations
 
 import json
@@ -57,24 +57,11 @@ def deep_copy(d: dict[str, Any]) -> dict[str, Any]:
     return json.loads(json.dumps(d))
 
 
-def migrate_shared_from_cursor(editors: Path, dotfiles: Path) -> None:
-    src = dotfiles / "cursor" / "settings.json"
-    dst = editors / "settings.shared.json"
-    if dst.exists():
-        return
-    if not src.is_file():
-        dst.write_text("{}\n", encoding="utf-8")
-        return
-    data = load_jsonc(src)
-    data.setdefault("workbench.colorTheme", "Catppuccin Macchiato")
-    dst.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
-    print(f"migrated {src} -> {dst}", file=sys.stderr)
-
-
 def main() -> None:
     dotfiles = Path(sys.argv[1]).resolve()
     editors = dotfiles / "editors"
-    migrate_shared_from_cursor(editors, dotfiles)
+    dist = editors / "dist"
+    dist.mkdir(parents=True, exist_ok=True)
 
     shared_path = editors / "settings.shared.json"
     if not shared_path.is_file():
@@ -93,8 +80,7 @@ def main() -> None:
             extra = load_jsonc(ov)
             if extra:
                 deep_merge(merged, extra)
-        out = dotfiles / app / "settings.json"
-        out.parent.mkdir(parents=True, exist_ok=True)
+        out = dist / f"settings.{app}.json"
         out.write_text(json.dumps(merged, indent=2) + "\n", encoding="utf-8")
         print(f"wrote {out}", file=sys.stderr)
 

@@ -14,6 +14,9 @@
 *.swp
 *.swo
 editors/settings.local.json
+# Generated from settings.shared.json + overrides (rebuilt by install.sh / sync-editors)
+editors/dist/*
+!editors/dist/.gitkeep
 
 # ── Node (codeUtility only) ───────────────────────────────────────────────────
 node_modules/

@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # ==============================================================================
-#  install.sh — symlink dotfiles to ~/.config
+#  install.sh — symlink dotfiles to ~/.config + editor apps (Cursor, VS Code, Antigravity)
+# ==============================================================================
+# Editor config: all sources under ~/dotfiles/editors/
+#   settings.shared.json, keybindings.json, extensions.txt, overrides/*.json
+# Optional: INSTALL_EDITOR_EXTENSIONS=1  — also install extensions from extensions.txt
+# Optional: SKIP_SYNC_EDITORS=1          — skip Cursor/VS Code/Antigravity linking
 # ==============================================================================
 set -euo pipefail
 
@@ -48,10 +53,18 @@ link "$DOTFILES/config/zsh/.zshrc"     "$HOME/.zshrc"
 # ── aerospace (also reads from HOME) ─────────────────────────────────────────
 link "$DOTFILES/config/aerospace/.aerospace.toml" "$HOME/.aerospace.toml"
 
-# ── Cursor / VS Code / Antigravity (shared keybindings, settings, extensions list) ──
-if [[ -x "$DOTFILES/bin/sync-editors" && "${SKIP_SYNC_EDITORS:-0}" != "1" ]]; then
-  echo -e "\n${BOLD} Editor configs ${RESET}\n"
-  "$DOTFILES/bin/sync-editors"
+# ── Cursor / VS Code / Antigravity (sources: ~/dotfiles/editors/) ─────────────
+if [[ -x "$DOTFILES/scripts/sync-editors" && "${SKIP_SYNC_EDITORS:-0}" != "1" ]]; then
+  echo -e "\n${BOLD} Editor apps (Cursor, VS Code, Antigravity) ${RESET}\n"
+  SYNC_ARGS=()
+  if [[ "${INSTALL_EDITOR_EXTENSIONS:-0}" == "1" ]]; then
+    SYNC_ARGS+=(--install-extensions)
+  fi
+  if ((${#SYNC_ARGS[@]} > 0)); then
+    "$DOTFILES/scripts/sync-editors" "${SYNC_ARGS[@]}"
+  else
+    "$DOTFILES/scripts/sync-editors"
+  fi
 fi
 
 echo -e "\n${BOLD}${GREEN} Done!${RESET} Run ${BOLD}exec zsh${RESET} to reload your shell.\n"
