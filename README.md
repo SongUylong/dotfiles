@@ -29,6 +29,14 @@ Fedora Workstation with **Hyprland**, **Waybar**, **Rofi**, **SwayNC**, plus **N
 
 4. Log out and start a **Hyprland** session, or run `Hyprland` from a TTY.
 
+### Why the login screen still looks like Fedora / GNOME
+
+**GDM** (the graphical login manager) is separate from your desktop. Until you sign in, you are still in Fedora’s **default greeter** (Workstation look, GNOME session list, etc.). **Hyprland only starts after you log in** — it does not replace the boot/login UI.
+
+- To land in Hyprland every time: pick **Hyprland** in the session menu (gear) before entering your password, or set a default session (see earlier README notes: `/var/lib/AccountsService/users/$USER` with `Session=hyprland`).
+- To **change how GDM looks** (theme, dark mode), you customize **GDM** (GTK/shell resources for the `gdm` user), not Hyprland — that is a separate, optional tweak.
+- To **skip the greeter** entirely (**automatic login**): run **`sudo ~/dotfiles/scripts/enable-gdm-autologin YOURUSERNAME`** (use your Linux login name, usually the same as `$USER`). It backs up `/etc/gdm/custom.conf`, sets `AutomaticLoginEnable=true` and `AutomaticLogin=…`, then **reboot** (or `sudo systemctl restart gdm.service` — you will be kicked off the graphical session). Ensure your **default graphical session is Hyprland** (`Session=hyprland` in `/var/lib/AccountsService/users/YOURUSERNAME` or pick it once in the session menu before enabling autologin). **Security:** anyone who can turn the machine on is logged in as that user — avoid on shared or laptops you do not control. To turn off: **`sudo ~/dotfiles/scripts/disable-gdm-autologin`**. Optional: **`ENABLE_GDM_AUTOLOGIN=1 ./install-fedora.sh`** runs the enable step after packages (still requires `sudo`).
+
 ### Editors (Cursor, VS Code, Antigravity)
 
 - Canonical JSON lives under **`editors/`**: `settings.shared.json`, `keybindings.json`, `overrides/{cursor,vscode,antigravity}.json`.
@@ -45,6 +53,8 @@ Fedora Workstation with **Hyprland**, **Waybar**, **Rofi**, **SwayNC**, plus **N
   ```
 
 - To skip editor linking: `SKIP_SYNC_EDITORS=1 ./install-fedora.sh`
+- **Antigravity (RPM)** on Fedora/RHEL-style systems: repo file is **`extras/yum.repos.d/antigravity.repo`**. Install with:
+  `INSTALL_ANTIGRAVITY=1 ./install-fedora.sh` (adds `/etc/yum.repos.d/antigravity.repo`, `dnf makecache`, `dnf install antigravity`). Settings still come from **`scripts/sync-editors`** → `~/.config/Antigravity/User`.
 
 ### Neovim
 

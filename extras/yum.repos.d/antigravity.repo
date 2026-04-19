@@ -1,0 +1,8 @@
+# Google Antigravity editor — RPM repo (Fedora/RHEL/SUSE family).
+# Installed by: INSTALL_ANTIGRAVITY=1 ./install-fedora.sh
+# Docs: https://antigravity.google/ (or upstream install instructions)
+[antigravity-rpm]
+name=Antigravity RPM Repository
+baseurl=https://us-central1-yum.pkg.dev/projects/antigravity-auto-updater-dev/antigravity-rpm
+enabled=1
+gpgcheck=0

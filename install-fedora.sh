@@ -56,6 +56,21 @@ else
   echo "Skipping COPR (ENABLE_COPR=0). Hyprland/WezTerm/swww are not from stock Fedora — enable COPR or install manually."
 fi
 
+if [[ "${INSTALL_ANTIGRAVITY:-0}" == "1" ]]; then
+  echo ""
+  echo "Antigravity editor (RPM repo from Google Artifact Registry; gpgcheck=0 per upstream)."
+  echo "To skip: INSTALL_ANTIGRAVITY=0 $0"
+  echo ""
+  if [[ -f "$REPO/extras/yum.repos.d/antigravity.repo" ]]; then
+    sudo install -m 644 "$REPO/extras/yum.repos.d/antigravity.repo" /etc/yum.repos.d/antigravity.repo
+    ensure_dnf_copr
+    sudo dnf makecache -y
+    sudo dnf install -y antigravity
+  else
+    echo "[warn] Missing $REPO/extras/yum.repos.d/antigravity.repo"
+  fi
+fi
+
 mkdir -p "$HOME/.config" "$HOME/.local/bin" "$HOME/.local/share/wayland-sessions" "$HOME/.ssh"
 
 # Extra Wayland session so GDM can list "Hyprland (direct)" if the system hyprland.desktop is hidden
@@ -107,6 +122,13 @@ fi
 
 if [[ ! -e "$HOME/dotfiles" && "$REPO" != "$HOME/dotfiles" ]]; then
   echo "Tip: clone or symlink this repo to ~/dotfiles so hyprlock wallpaper path matches."
+fi
+
+if [[ "${ENABLE_GDM_AUTOLOGIN:-0}" == "1" ]]; then
+  echo ""
+  echo "ENABLE_GDM_AUTOLOGIN=1: enabling GDM automatic login for $USER (no greeter)."
+  echo "To disable later: sudo $REPO/scripts/disable-gdm-autologin"
+  sudo "$REPO/scripts/enable-gdm-autologin" "$USER" || echo "[warn] GDM autologin step failed."
 fi
 
 echo "Done. Log out and back in (or reboot) so environment.d and Hyprland pick up changes."
