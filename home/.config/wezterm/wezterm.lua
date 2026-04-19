@@ -113,10 +113,30 @@ end)
 -- ── Keys ──────────────────────────────────────────────────────────────────────
 config.disable_default_mouse_bindings = false
 
+-- Alt+X: close split pane if any; otherwise close whole tab
+local function close_pane_or_tab(window, pane)
+	local tab = pane:tab()
+	if not tab then
+		return
+	end
+	if #tab:panes_with_info() > 1 then
+		window:perform_action(act.CloseCurrentPane({ confirm = false }), pane)
+	else
+		window:perform_action(act.CloseCurrentTab({ confirm = false }), pane)
+	end
+end
+
 config.keys = {
 	{ key = "n", mods = "SUPER", action = act.ActivateCopyMode },
 	{ key = "t", mods = "SUPER", action = act.SpawnTab("CurrentPaneDomain") },
 	{ key = "x", mods = "SUPER", action = act.CloseCurrentTab({ confirm = false }) },
+	-- Same actions with Alt (Super-only bindings are easy to miss on muscle memory / Linux)
+	{ key = "n", mods = "ALT", action = act.ActivateCopyMode },
+	{ key = "t", mods = "ALT", action = act.SpawnTab("CurrentPaneDomain") },
+	{ key = "x", mods = "ALT", action = wezterm.action_callback(close_pane_or_tab) },
+	{ key = "l", mods = "ALT", action = act.ActivatePaneDirection("Right") },
+	-- Alt+;: vertical split (two columns, like :vsp). WezTerm calls this SplitHorizontal.
+	{ key = ";", mods = "ALT", action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
 	-- Block Alt+e (used by AeroSpace)
 	{ key = "e", mods = "ALT", action = "Nop" },
 }
