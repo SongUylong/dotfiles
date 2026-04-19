@@ -1,0 +1,18 @@
+# Installed after COPR repos are enabled (see install-fedora.sh).
+# Hyprland stack — requires: dnf copr enable sdegler/hyprland
+hyprland
+hypridle
+hyprlock
+hyprpicker
+
+# Terminal — requires: dnf copr enable wezfurlong/wezterm-nightly
+# Install the RPM name "wezterm" (nightly COPR); not "wezterm-nightly" — see wezterm.org/install/linux.html
+wezterm
+
+# Wallpaper + portal (same COPR as Hyprland: sdegler/hyprland)
+swww
+xdg-desktop-portal-hyprland
+cliphist
+
+# Cursor theme — requires: dnf copr enable tx0su/bibata-cursor-theme-noarch
+bibata-cursor-theme

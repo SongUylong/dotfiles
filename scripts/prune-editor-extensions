@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+# Uninstall extensions not listed in editors/extensions.txt (same set as Antigravity / shared list).
+# Cursor: skips anysphere.* (IDE integration).
+# VS Code: no skips — prunes to the allowlist only.
+#
+# Remote-SSH: this only affects the local VS Code profile. On a remote host, open the remote
+# Extensions panel and uninstall extras, or remove ~/.vscode-server/extensions there.
+set -uo pipefail
+
+DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LIST="$DOTFILES/editors/extensions.txt"
+
+CURSOR_BIN="${CURSOR_BIN:-/Applications/Cursor.app/Contents/Resources/app/bin/cursor}"
+[[ -x "$CURSOR_BIN" ]] || CURSOR_BIN="$(command -v cursor 2>/dev/null || true)"
+
+VSCODE_BIN="${VSCODE_BIN:-/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code}"
+[[ -x "$VSCODE_BIN" ]] || VSCODE_BIN="$(command -v code 2>/dev/null || true)"
+
+if [[ ! -f "$LIST" ]]; then
+  echo "missing $LIST" >&2
+  exit 1
+fi
+
+ALLOW=()
+while IFS= read -r line; do
+  [[ -z "$line" ]] && continue
+  ALLOW+=("$line")
+done < <(grep -v '^[[:space:]]*#' "$LIST" | sed '/^[[:space:]]*$/d' | sed 's/[[:space:]]//g')
+
+in_allowlist() {
+  local e="$1"
+  local a
+  for a in "${ALLOW[@]}"; do
+    [[ "$e" == "$a" ]] && return 0
+  done
+  return 1
+}
+
+prune_one() {
+  local label="$1" bin="$2"
+  shift 2
+  if [[ -z "$bin" || ! -x "$bin" ]]; then
+    echo "skip $label (CLI not found)" >&2
+    return 0
+  fi
+  echo "==> prune $label"
+  local ext protected
+  while IFS= read -r ext; do
+    [[ -z "$ext" ]] && continue
+    if in_allowlist "$ext"; then
+      continue
+    fi
+    protected=0
+    for p in "$@"; do
+      [[ -n "$p" && "$ext" == $p* ]] && protected=1 && break
+    done
+    if [[ "$protected" == 1 ]]; then
+      echo "    keep (protected): $ext"
+      continue
+    fi
+    echo "    uninstall $ext"
+    "$bin" --uninstall-extension "$ext" || echo "    !! failed $ext" >&2
+  done < <("$bin" --list-extensions 2>/dev/null)
+}
+
+prune_one "cursor" "$CURSOR_BIN" "anysphere."
+prune_one "vscode" "$VSCODE_BIN"
+
+# VS Code: second pass with --force (e.g. GitHub Copilot marked built-in).
+if [[ -n "$VSCODE_BIN" && -x "$VSCODE_BIN" ]]; then
+  echo "==> prune vscode (second pass --force)"
+  while IFS= read -r ext; do
+    [[ -z "$ext" ]] && continue
+    in_allowlist "$ext" && continue
+    echo "    uninstall --force $ext"
+    "$VSCODE_BIN" --uninstall-extension "$ext" --force 2>/dev/null || true
+  done < <("$VSCODE_BIN" --list-extensions 2>/dev/null)
+fi
+
+echo "Done. Allowlist: $LIST (${#ALLOW[@]} ids)"
+echo "If something still blocks (e.g. Python Extension Pack + Pyrefly): uninstall meta.pyrefly, remove the pack, then: code --install-extension meta.pyrefly"
+echo "Re-apply allowlist: SKIP_ANTIGRAVITY=1 $SCRIPT_DIR/install-editor-extensions"

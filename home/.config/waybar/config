@@ -1,0 +1,151 @@
+{
+  "layer": "top",
+  "position": "top",
+  "height": 36,
+  "margin-top": 4,
+  "margin-bottom": 0,
+  "margin-left": 6,
+  "margin-right": 6,
+  "modules-left": [
+    "custom/launcher",
+    "hyprland/workspaces"
+  ],
+  "modules-center": [
+    "custom/clock"
+  ],
+  "modules-right": [
+    "pulseaudio",
+    "bluetooth",
+    "network",
+    "battery",
+    "custom/language",
+    "custom/notification",
+    "custom/power-menu"
+  ],
+  "custom/clock": {
+    "exec": "date +'%H:%M'",
+    "interval": 10,
+    "format": " {}",
+    "tooltip": true,
+    "tooltip-format": "{}",
+    "exec-if": "true"
+  },
+  "hyprland/workspaces": {
+    "active-only": false,
+    "disable-scroll": true,
+    "sort-by-number": true,
+    "format": "{icon}",
+    "on-click": "activate",
+    "format-icons": {
+      "1": "I",
+      "2": "II",
+      "3": "III",
+      "4": "IV",
+      "5": "V",
+      "6": "VI",
+      "7": "VII",
+      "8": "VIII",
+      "9": "IX",
+      "10": "X"
+    },
+    "persistent-workspaces": {
+      "1": [],
+      "2": [],
+      "3": [],
+      "4": [],
+      "5": []
+    }
+  },
+  "bluetooth": {
+    "format": "\udb80\udcaf ",
+    "format-disabled": "\udb80\udcb2 ",
+    "format-off": "\udb80\udcb2 ",
+    "format-connected": "\udb80\udcb1 ",
+    "tooltip-format": "{controller_alias}\t{controller_address}",
+    "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{device_enumerate}",
+    "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
+    "on-click": "blueman-manager"
+  },
+  "network": {
+    "format-wifi": "\udb82\udd28 {essid} {signalStrength}%",
+    "format-ethernet": "\udb80\udc02 ",
+    "tooltip-format": "Connected to {essid} {ifname} via {gwaddr}",
+    "format-linked": "{ifname} (No IP)",
+    "format-disconnected": "\udb82\udd2d ",
+    "on-click": "wezterm start --always-new-process network"
+  },
+  "pulseaudio": {
+    "format": "{icon} {volume}%",
+    "format-muted": "\udb81\udf5f {volume}%",
+    "format-icons": {
+      "default": [
+        "\udb81\udd7e "
+      ]
+    },
+    "scroll-step": 2,
+    "on-click": "pamixer -t",
+    "on-click-right": "pavucontrol"
+  },
+  "battery": {
+    "format": "{icon} {capacity}%",
+    "format-icons": [
+      "\udb80\udc7a",
+      "\udb80\udc7c",
+      "\udb80\udc7f",
+      "\udb80\udc81",
+      "\udb80\udc79"
+    ],
+    "format-charging": "\udb80\udc84 {capacity}%",
+    "format-full": "\udb80\udc79 {capacity}%",
+    "format-warning": "\udb80\udc7b {capacity}%",
+    "interval": 5,
+    "states": {
+      "warning": 20
+    },
+    "format-time": "{H}h{M}m",
+    "tooltip": true,
+    "tooltip-format": "{time}"
+  },
+  "custom/language": {
+    "format": "\udb80\udf0c {}",
+    "exec": "keyboard-layout",
+    "interval": 1,
+    "on-click": "hyprctl switchxkblayout at-translated-set-2-keyboard next",
+    "tooltip": true,
+    "tooltip-format": "Keyboard layout - Click to switch"
+  },
+  "custom/launcher": {
+    "format": "\udb85\udcde",
+    "on-click": "random-wallpaper",
+    "on-click-right": "rofi -show drun",
+    "tooltip": true,
+    "tooltip-format": "Random Wallpaper / Right-click: App Launcher"
+  },
+  "custom/notification": {
+    "tooltip": true,
+    "tooltip-format": "Notifications",
+    "format": "{icon}",
+    "format-icons": {
+      "notification": "\udb80\udc9a",
+      "none": "\udb80\udc9c",
+      "dnd-notification": "\udb80\udc9b",
+      "dnd-none": "\udb80\udc9b",
+      "inhibited-notification": "\udb80\udc9a",
+      "inhibited-none": "\udb80\udc9c",
+      "dnd-inhibited-notification": "\udb80\udc9b",
+      "dnd-inhibited-none": "\udb80\udc9b"
+    },
+    "return-type": "json",
+    "exec-if": "which swaync-client",
+    "exec": "swaync-client -swb",
+    "on-click": "swaync-client -t -sw",
+    "on-click-right": "swaync-client -d -sw",
+    "escape": true
+  },
+  "custom/power-menu": {
+    "tooltip": true,
+    "tooltip-format": "Power menu",
+    "format": "\udb81\udc25",
+    "on-click": "power-menu"
+  }
+}

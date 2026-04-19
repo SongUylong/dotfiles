@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Hyprland (direct)
+Comment=Hyprland compositor — use if the default Hyprland entry does not appear in GDM
+Exec=/usr/bin/Hyprland
+TryExec=/usr/bin/Hyprland
+Type=Application
+DesktopNames=Hyprland
+Keywords=tiling;wayland;compositor;

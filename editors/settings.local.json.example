@@ -1,0 +1,5 @@
+{
+  "_comment": "Copy to settings.local.json (gitignored) for machine-only paths and secrets.",
+  "vscode-neovim.neovimExecutablePaths.darwin": "/opt/homebrew/bin/nvim",
+  "dart.flutterSdkPath": "/Users/you/flutter"
+}

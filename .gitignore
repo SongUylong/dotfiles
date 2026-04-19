@@ -1,0 +1,19 @@
+.DS_Store
+.webui_secret_key
+.direnv/
+result
+*.swp
+
+# Editor generated (sync-editors)
+editors/settings.local.json
+editors/dist/*
+!editors/dist/.gitkeep
+
+# Secrets
+*.key
+*.pem
+*.env
+.env*
+
+# codeUtility
+codeUtility/**/node_modules/

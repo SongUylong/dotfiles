@@ -1,0 +1,84 @@
+/**
+ * Rofi dmenu — power / session actions (matches main rofi palette)
+ */
+configuration {
+  font: "JetBrainsMono Nerd Font 12";
+}
+
+* {
+  bg:       #1e1e2e;
+  surface:  #313244;
+  surface2: #45475a;
+  fg:       #cdd6f4;
+  accent:   #b4befe;
+
+  background-color: transparent;
+  text-color:       @fg;
+  border:           0;
+  margin:           0;
+  padding:          0;
+  spacing:          0;
+}
+
+window {
+  width:            280px;
+  border:           1px;
+  border-color:     @surface2;
+  border-radius:    12px;
+  background-color: @bg;
+  padding:          8px;
+  location:         center;
+  anchor:           center;
+}
+
+mainbox {
+  spacing:  6px;
+  children: [ inputbar, listview ];
+}
+
+inputbar {
+  padding:          0;
+  background-color: transparent;
+  children:         [ entry ];
+}
+
+entry {
+  placeholder:       "Filter…";
+  placeholder-color: #6c7086;
+  text-color:        @fg;
+  padding:           8px 12px;
+  border-radius:     8px;
+  background-color:  @surface;
+}
+
+listview {
+  lines:        8;
+  spacing:      4px;
+  scrollbar:    false;
+  fixed-height: false;
+  text-color:   @fg;
+}
+
+element {
+  padding:       8px 12px;
+  border-radius: 8px;
+  orientation:   horizontal;
+  children:      [ element-text ];
+}
+
+element normal.normal,
+element alternate.normal {
+  background-color: transparent;
+  text-color:       @fg;
+}
+
+element selected.normal,
+element selected.active {
+  background-color: @surface2;
+  text-color:       @fg;
+}
+
+element-text {
+  vertical-align: 0.5;
+  text-color:     inherit;
+}

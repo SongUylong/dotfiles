@@ -1,0 +1,41 @@
+# Packages available from Fedora official repositories (no COPR).
+# Use: dnf install --skip-unavailable $(grep -v '^#' ...)
+
+waybar
+# Use rofi-wayland (lbonn fork) on Hyprland — stock rofi is X11 and drun will not work on pure Wayland.
+rofi-wayland
+swaync
+swaylock
+grim
+slurp
+wl-clipboard
+wf-recorder
+playerctl
+pamixer
+pavucontrol
+network-manager-applet
+blueman
+firefox
+nemo
+bat
+eza
+fd
+fzf
+ripgrep
+jq
+git
+zoxide
+tmux
+micro
+neovim
+gcc
+cmake
+make
+nodejs
+tree
+xclip
+libnotify
+udisks2
+tesseract
+tesseract-langpack-eng
+ImageMagick

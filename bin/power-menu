@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Session / power menu (rofi dmenu). Theme: ~/.config/rofi/power-menu.rasi
+
+set -uo pipefail
+
+ROFI_THEME="${XDG_CONFIG_HOME:-$HOME/.config}/rofi/power-menu.rasi"
+if [[ ! -f "$ROFI_THEME" ]]; then
+  ROFI_THEME="${HOME}/dotfiles/home/.config/rofi/power-menu.rasi"
+fi
+
+lock="  Lock"
+suspend="  Suspend"
+logout="  Logout"
+reboot="  Reboot"
+shutdown="  Shutdown"
+
+options=$(printf '%s\n' "$lock" "$suspend" "$logout" "$reboot" "$shutdown")
+
+chosen=$(echo "$options" | rofi -dmenu -i -theme "$ROFI_THEME") || exit 0
+[[ -n "$chosen" ]] || exit 0
+
+# Match by keyword so font/icon quirks don’t break the case arm
+case "$chosen" in
+  *Lock*)
+    if command -v hyprlock &>/dev/null; then
+      hyprlock
+    elif command -v swaylock &>/dev/null; then
+      swaylock
+    fi
+    ;;
+  *Suspend*) systemctl suspend ;;
+  *Logout*) hyprctl dispatch exit ;;
+  *Reboot*) systemctl reboot ;;
+  *Shutdown*) systemctl poweroff ;;
+  *) exit 0 ;;
+esac

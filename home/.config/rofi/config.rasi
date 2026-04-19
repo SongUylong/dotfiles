@@ -1,0 +1,141 @@
+/**
+ * Rofi drun — simple, calm (Catppuccin Mocha)
+ * Font: JetBrainsMono Nerd Font (see packages-fedora-fonts-copr)
+ */
+configuration {
+  modi:                "drun,run,window";
+  show-icons:          true;
+  terminal:            "wezterm";
+  drun-display-format: "{name}";
+  font:                "JetBrainsMono Nerd Font 11";
+  icon-theme:          "Adwaita";
+  /* No “drun ▸” prefix — keeps the header minimal */
+  display-drun:        "";
+  display-run:         "";
+  display-window:      "";
+  cycle:               true;
+}
+
+* {
+  bg:       #1e1e2e;
+  surface:  #313244;
+  surface2: #45475a;
+  fg:       #cdd6f4;
+  muted:    #6c7086;
+  accent:   #b4befe;
+
+  background-color: transparent;
+  text-color:       @fg;
+  border:           0;
+  margin:           0;
+  padding:          0;
+  spacing:          0;
+}
+
+window {
+  width:            34%;
+  border:           1px;
+  border-color:     @surface2;
+  border-radius:    12px;
+  background-color: @bg;
+  padding:          10px;
+  location:         center;
+  anchor:           center;
+}
+
+mainbox {
+  spacing:  8px;
+  children: [ inputbar, listview ];
+}
+
+/* Single search field */
+inputbar {
+  spacing:          0;
+  padding:          0;
+  background-color: transparent;
+  children:         [ entry ];
+}
+
+entry {
+  placeholder:       "Search apps…";
+  placeholder-color: @muted;
+  text-color:        @fg;
+  padding:           10px 14px;
+  border-radius:     8px;
+  background-color:  @surface;
+  border:            0;
+  cursor:            text;
+}
+
+listview {
+  lines:        9;
+  spacing:      4px;
+  scrollbar:    false;
+  fixed-height: false;
+  text-color:   @fg;
+  background-color: transparent;
+}
+
+element {
+  padding:       6px 10px;
+  border-radius: 6px;
+  orientation:   horizontal;
+  children:      [ element-icon, element-text ];
+  spacing:       10px;
+}
+
+/* Odd rows */
+element normal.normal {
+  background-color: transparent;
+  text-color:       @fg;
+}
+
+/* Even rows — Rofi defaults these to a different (often white) strip; force same as odd */
+element alternate.normal {
+  background-color: transparent;
+  text-color:       @fg;
+}
+
+/* Soft highlight — keyboard selection (parity uses normal vs active) */
+element selected.normal {
+  background-color: @surface2;
+  text-color:       @fg;
+}
+
+element selected.active {
+  background-color: @surface2;
+  text-color:       @fg;
+}
+
+element-icon {
+  size:        1.1em;
+  cursor:      inherit;
+  text-color:  @fg;
+}
+
+element-text {
+  cursor:         inherit;
+  vertical-align: 0.5;
+  text-color:     @fg;
+}
+
+/* Rofi often defaults icons/labels to black — force readable on dark rows */
+element normal.normal element-icon,
+element alternate.normal element-icon {
+  text-color: #bac2de;
+}
+
+element normal.normal element-text,
+element alternate.normal element-text {
+  text-color: @fg;
+}
+
+element selected.normal element-icon,
+element selected.active element-icon {
+  text-color: @accent;
+}
+
+element selected.normal element-text,
+element selected.active element-text {
+  text-color: @fg;
+}

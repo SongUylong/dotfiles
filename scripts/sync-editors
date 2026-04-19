@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# Canonical editor config lives in ~/dotfiles/editors/:
+#   settings.shared.json, keybindings.json, extensions.txt, overrides/*.json
+# Builds editors/dist/settings.{cursor,vscode,antigravity}.json and symlinks them (plus
+# keybindings) into each app's User folder (macOS Application Support or Linux ~/.config).
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DOTFILES="$(cd "$SCRIPT_DIR/.." && pwd)"
+INSTALL_EXT=0
+
+for arg in "$@"; do
+  case "$arg" in
+    --install-extensions) INSTALL_EXT=1 ;;
+    -h|--help)
+      echo "Usage: sync-editors [--install-extensions]"
+      echo "  Source:  $DOTFILES/editors/{settings.shared.json,keybindings.json,extensions.txt}"
+      echo "  Output:  $DOTFILES/editors/dist/settings.{cursor,vscode,antigravity}.json"
+      echo "  Links:   Cursor / VS Code / Antigravity User folders (OS-specific)."
+      exit 0
+      ;;
+  esac
+done
+
+RESET="\033[0m"
+BOLD="\033[1m"
+GREEN="\033[0;32m"
+YELLOW="\033[0;33m"
+
+link() {
+  local src="$1" dst="$2"
+  mkdir -p "$(dirname "$dst")"
+  if [[ -e "$dst" && ! -L "$dst" ]]; then
+    echo -e "${BOLD}${YELLOW} ⚠ ${RESET} $dst exists — backing up to ${dst}.bak"
+    mv "$dst" "${dst}.bak"
+  fi
+  ln -sfn "$src" "$dst"
+  echo -e "${BOLD}${GREEN} ✔ ${RESET} $(basename "$dst") → $src"
+}
+
+python3 "$SCRIPT_DIR/sync-editors.py" "$DOTFILES"
+
+KB="$DOTFILES/editors/keybindings.json"
+DIST="$DOTFILES/editors/dist"
+
+OS="$(uname -s)"
+if [[ "$OS" == "Darwin" ]]; then
+  CURSOR_U="${CURSOR_USER_DIR:-$HOME/Library/Application Support/Cursor/User}"
+  CODE_U="${VSCODE_USER_DIR:-$HOME/Library/Application Support/Code/User}"
+  AG_U="${ANTIGRAVITY_USER_DIR:-$HOME/Library/Application Support/Antigravity/User}"
+else
+  # Linux (Fedora): standard XDG paths
+  CURSOR_U="${CURSOR_USER_DIR:-$HOME/.config/Cursor/User}"
+  CODE_U="${VSCODE_USER_DIR:-$HOME/.config/Code/User}"
+  AG_U="${ANTIGRAVITY_USER_DIR:-$HOME/.config/Antigravity/User}"
+fi
+
+link "$KB" "$CURSOR_U/keybindings.json"
+link "$DIST/settings.cursor.json" "$CURSOR_U/settings.json"
+
+link "$KB" "$CODE_U/keybindings.json"
+link "$DIST/settings.vscode.json" "$CODE_U/settings.json"
+
+link "$KB" "$AG_U/keybindings.json"
+link "$DIST/settings.antigravity.json" "$AG_U/settings.json"
+
+if [[ "$INSTALL_EXT" == "1" ]]; then
+  echo "Installing extensions..."
+  SKIP_ANTIGRAVITY="${SKIP_ANTIGRAVITY:-1}" "$SCRIPT_DIR/install-editor-extensions" || true
+fi
+
+echo -e "\n${BOLD}Done.${RESET} Edit ${BOLD}$DOTFILES/editors/settings.shared.json${RESET} then re-run ${BOLD}$SCRIPT_DIR/sync-editors${RESET}."

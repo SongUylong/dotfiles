@@ -1,0 +1,7 @@
+# This file is split for Fedora 43+ (Hyprland / WezTerm / swww need COPR).
+#
+#   packages-fedora-base.txt   — official Fedora repos only
+#   packages-fedora-copr.txt   — after COPRs are enabled (see install-fedora.sh)
+#
+# Run:  ./install-fedora.sh
+# Skip COPR:  ENABLE_COPR=0 ./install-fedora.sh

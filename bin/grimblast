@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# Minimal grim + slurp shim (grimblast-like) for Fedora / non-Nix systems.
+set -euo pipefail
+
+notify() {
+  command -v notify-send &>/dev/null && notify-send -a grimblast "$1" || true
+}
+
+GRIMBLAST_HIDE_CURSOR="${GRIMBLAST_HIDE_CURSOR:-0}"
+export GRIMBLAST_HIDE_CURSOR
+
+MODE=""
+SUB=""
+OUT=""
+NOTIFY=false
+FREEZE=false
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --notify) NOTIFY=true; shift ;;
+    --freeze) FREEZE=true; shift ;; # optional delay before capture
+    copy) MODE=copy; shift ;;
+    save) MODE=save; shift ;;
+    area) SUB=area; shift ;;
+    *) break ;;
+  esac
+done
+
+if [[ $MODE == save ]]; then
+  OUT="${1:-}"
+fi
+
+if [[ $SUB != area ]]; then
+  echo "grimblast shim: only 'copy area' and 'save area <file>' are supported" >&2
+  exit 1
+fi
+
+if [[ $FREEZE == true ]]; then
+  sleep 0.15
+fi
+
+GEOM=$(slurp 2>/dev/null) || exit 1
+
+case "$MODE" in
+  copy)
+    grim -g "$GEOM" - | wl-copy
+    [[ $NOTIFY == true ]] && notify "Selection copied"
+    ;;
+  save)
+    if [[ -z "${OUT:-}" ]]; then
+      echo "grimblast shim: save requires output path" >&2
+      exit 1
+    fi
+    grim -g "$GEOM" "$OUT"
+    [[ $NOTIFY == true ]] && notify "Saved to $OUT"
+    ;;
+  *)
+    echo "grimblast shim: need copy or save" >&2
+    exit 1
+    ;;
+esac

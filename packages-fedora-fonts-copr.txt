@@ -1,0 +1,5 @@
+# After: dnf copr enable komapro/nerd-fonts && dnf copr enable aquacash5/nerd-fonts
+# JetBrains Mono Nerd — zsh / Powerlevel10k, general UI
+jetbrainsmono-nerd-font
+# Cascadia → Caskaydia Cove Nerd — matches editors/settings.shared.json + neovide
+cascadia-code-nerd-fonts

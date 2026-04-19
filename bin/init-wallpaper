@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Start swww and set a default wallpaper (Fedora-friendly; no waypaper required).
+WALL="${HOME}/dotfiles/wallpapers/clouds-5.jpg"
+
+if command -v swww >/dev/null 2>&1; then
+  swww-daemon >/dev/null 2>&1 &
+  sleep 0.3
+  swww img "$WALL" >/dev/null 2>&1 &
+elif command -v waypaper >/dev/null 2>&1; then
+  waypaper --wallpaper "$WALL" &
+else
+  echo "install swww (dnf install swww) or pip install --user waypaper for wallpapers" >&2
+fi
