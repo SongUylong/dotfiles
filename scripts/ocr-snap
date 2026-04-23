@@ -1,5 +1,11 @@
 #!/usr/bin/env zsh
 
+lang="${1:-eng}"
+
+# Ensure UTF-8 when launched from window manager keybinds
+export LANG="en_US.UTF-8"
+export LC_CTYPE="en_US.UTF-8"
+
 # A clean, visible location to avoid macOS permissions issues
 # Tesseract doesn't like /tmp, and screencapture doesn't like hidden files
 tmp_img="$HOME/Pictures/ocr_snap_temp.png"
@@ -15,10 +21,10 @@ screencapture -i "$tmp_img"
 
 if [[ -f "$tmp_img" && -s "$tmp_img" ]]; then
   # Perform OCR (--psm 3 is good for automatic segmentation)
-  ocr_text=$(/opt/homebrew/bin/tesseract "$tmp_img" stdout -l eng --psm 3 2>/dev/null)
+  ocr_text=$(/opt/homebrew/bin/tesseract "$tmp_img" stdout -l "$lang" --psm 3 2>/dev/null)
   
   if [[ -n "${ocr_text//[[:space:]]/}" ]]; then
-    echo -n "$ocr_text" | pbcopy
+    printf '%s' "$ocr_text" | /usr/bin/pbcopy
     osascript -e 'display notification "Text copied to clipboard!" with title "OCR Success"'
   else
     osascript -e 'display notification "No text found in selection." with title "OCR Failed"'
