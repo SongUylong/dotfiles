@@ -39,6 +39,13 @@ while [ "$(yabai -m query --spaces | jq 'length')" -gt 5 ]; do
   yabai -m space "$last_idx" --destroy >/dev/null 2>&1 || break
 done
 
+# Assign space 4 to external monitor (display 2) if connected.
+# Fails silently on laptop-only — safe to leave in permanently.
+display_count=$(yabai -m query --displays | jq 'length')
+if [ "$display_count" -ge 2 ]; then
+  yabai -m space 4 --display 2 2>/dev/null || true
+fi
+
 # Remove any previously registered signals to avoid duplicates on restart.
 yabai -m signal --remove sketchybar_space_changed   2>/dev/null || true
 yabai -m signal --remove sketchybar_window_created  2>/dev/null || true
