@@ -8,11 +8,11 @@ yabai -m config layout bsp
 yabai -m config window_placement second_child
 yabai -m config split_ratio 0.50
 yabai -m config auto_balance off
-yabai -m config top_padding 30
-yabai -m config bottom_padding 30
-yabai -m config left_padding 30
-yabai -m config right_padding 30
-yabai -m config window_gap 30
+yabai -m config top_padding 10
+yabai -m config bottom_padding 10
+yabai -m config left_padding 10
+yabai -m config right_padding 10
+yabai -m config window_gap 10
 
 yabai -m config mouse_follows_focus on
 yabai -m config focus_follows_mouse off
@@ -22,6 +22,11 @@ yabai -m config window_opacity off
 yabai -m rule --add app="^Adobe Illustrator$" manage=off
 yabai -m rule --add app="^System Settings$" manage=off
 yabai -m rule --add app="^Finder$" title="Preferences" manage=off
+
+# Pin messaging apps to space 3
+yabai -m rule --add app="^Telegram$" space=3
+yabai -m rule --add app="^WhatsApp$" space=3
+yabai -m rule --add app="^WeChat$"   space=3
 
 # Keep exactly 5 numbered spaces.
 # Create missing spaces.
@@ -40,6 +45,9 @@ yabai -m signal --remove sketchybar_window_created  2>/dev/null || true
 yabai -m signal --remove sketchybar_window_destroyed 2>/dev/null || true
 yabai -m signal --remove sketchybar_app_launched    2>/dev/null || true
 yabai -m signal --remove sketchybar_app_terminated  2>/dev/null || true
+yabai -m signal --remove messaging_layout_telegram  2>/dev/null || true
+yabai -m signal --remove messaging_layout_whatsapp  2>/dev/null || true
+yabai -m signal --remove messaging_layout_wechat    2>/dev/null || true
 
 refresh_bar="$HOME/.config/sketchybar/plugins/update_workspace_icons.sh"
 yabai -m signal --add label=sketchybar_space_changed    event=space_changed        action="$refresh_bar"
@@ -47,6 +55,12 @@ yabai -m signal --add label=sketchybar_window_created   event=window_created    
 yabai -m signal --add label=sketchybar_window_destroyed event=window_destroyed     action="$refresh_bar"
 yabai -m signal --add label=sketchybar_app_launched     event=application_launched action="$refresh_bar"
 yabai -m signal --add label=sketchybar_app_terminated   event=application_terminated action="$refresh_bar"
+
+# Trigger messaging layout when Telegram/WhatsApp/WeChat opens
+msg_layout="$HOME/.config/yabai/plugins/messaging_layout.sh"
+yabai -m signal --add label=messaging_layout_telegram event=window_created app='^Telegram$' action="$msg_layout"
+yabai -m signal --add label=messaging_layout_whatsapp event=window_created app='^WhatsApp$' action="$msg_layout"
+yabai -m signal --add label=messaging_layout_wechat   event=window_created app='^WeChat$'   action="$msg_layout"
 
 # Reload sketchybar so space items are rebuilt with the current space list.
 sketchybar --reload
