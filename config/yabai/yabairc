@@ -28,22 +28,42 @@ yabai -m rule --add app="^Telegram$"  space=3
 yabai -m rule --add app="WhatsApp"    space=3
 yabai -m rule --add app="^WeChat$"    space=3
 
-# Keep exactly 5 numbered spaces.
-# Create missing spaces.
-while [ "$(yabai -m query --spaces | jq 'length')" -lt 5 ]; do
+# Space layout depends on display count:
+#   1 display  → 5 spaces on built-in (1-5)
+#   2 displays → 3 spaces on built-in (1-3) + 2 spaces on external (4-5)
+#                so that space 4 is always the external monitor workspace
+display_count=$(yabai -m query --displays | jq 'length')
+
+if [ "$display_count" -ge 2 ]; then
+  target_total=5
+  target_d1=3
+else
+  target_total=5
+  target_d1=5
+fi
+
+# Ensure we have exactly target_total spaces
+while [ "$(yabai -m query --spaces | jq 'length')" -lt "$target_total" ]; do
   yabai -m space --create >/dev/null 2>&1 || break
 done
-# Remove excess spaces (keep only first 5).
-while [ "$(yabai -m query --spaces | jq 'length')" -gt 5 ]; do
+while [ "$(yabai -m query --spaces | jq 'length')" -gt "$target_total" ]; do
   last_idx=$(yabai -m query --spaces | jq 'length')
   yabai -m space "$last_idx" --destroy >/dev/null 2>&1 || break
 done
 
-# Assign space 4 to external monitor (display 2) if connected.
-# Fails silently on laptop-only — safe to leave in permanently.
-display_count=$(yabai -m query --displays | jq 'length')
+# On dual display: move spaces 4 & 5 to display 2 (external monitor)
 if [ "$display_count" -ge 2 ]; then
-  yabai -m space 4 --display 2 2>/dev/null || true
+  yabai -m space --focus 1 2>/dev/null || true
+  sleep 0.2
+  # Move spaces to external only if not already there
+  d1_count=$(yabai -m query --spaces | jq '[.[] | select(.display == 1)] | length')
+  while [ "$d1_count" -gt "$target_d1" ]; do
+    # Find highest-indexed space still on d1 and move it to d2
+    last_d1=$(yabai -m query --spaces | jq '[.[] | select(.display == 1)] | last | .index')
+    yabai -m space "$last_d1" --display 2 2>/dev/null || break
+    sleep 0.2
+    d1_count=$(yabai -m query --spaces | jq '[.[] | select(.display == 1)] | length')
+  done
 fi
 
 # Remove any previously registered signals to avoid duplicates on restart.
