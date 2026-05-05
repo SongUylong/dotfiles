@@ -41,7 +41,7 @@ mkdir -p "$CONFIG"
 for dir in \
   nvim opencode tmux tmuxinator \
   wezterm yazi zellij \
-  aerospace borders fastfetch neovide sketchybar; do
+  yabai skhd borders fastfetch neovide sketchybar; do
   link "$DOTFILES/config/$dir" "$CONFIG/$dir"
 done
 
@@ -50,8 +50,14 @@ mkdir -p "$CONFIG/zsh"
 link "$DOTFILES/config/zsh/config.zsh" "$CONFIG/zsh/config.zsh"
 link "$DOTFILES/config/zsh/.zshrc"     "$HOME/.zshrc"
 
-# ── aerospace (also reads from HOME) ─────────────────────────────────────────
-link "$DOTFILES/config/aerospace/.aerospace.toml" "$HOME/.aerospace.toml"
+# ── yabai / skhd (also read from HOME) ───────────────────────────────────────
+link "$DOTFILES/config/yabai/yabairc" "$HOME/.yabairc"
+link "$DOTFILES/config/skhd/skhdrc" "$HOME/.skhdrc"
+
+if [[ -L "$HOME/.aerospace.toml" ]]; then
+  rm "$HOME/.aerospace.toml"
+  warn "Removed ~/.aerospace.toml symlink; yabai is now the active WM config"
+fi
 
 # ── Cursor / VS Code / Antigravity (sources: ~/dotfiles/editors/) ─────────────
 if [[ -x "$DOTFILES/scripts/sync-editors" && "${SKIP_SYNC_EDITORS:-0}" != "1" ]]; then

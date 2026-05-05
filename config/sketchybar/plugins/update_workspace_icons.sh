@@ -1,27 +1,51 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-CONFIG_DIR="$HOME/.config/sketchybar"
+CONFIG_DIR="${CONFIG_DIR:-$HOME/.config/sketchybar}"
 
-update_space_icons() {
-    local sid=$1
-    local apps=$(aerospace list-windows --workspace "$sid" | awk -F'|' '{gsub(/^ *| *$/, "", $2); print $2}')
+spaces_json="$(yabai -m query --spaces 2>/dev/null)"
+windows_json="$(yabai -m query --windows 2>/dev/null)"
 
-    sketchybar --set space.$sid drawing=on
+update_space() {
+  local sid="$1"
+  local display_id="$2"
+  local focused="$3"
+  local first_app icon
 
-    if [ "${apps}" != "" ]; then
-        icon_strip=" "
-        while read -r app; do
-            icon_strip+=" $($CONFIG_DIR/plugins/icon_map_fn.sh "$app")"
-        done <<< "${apps}"
-    else
-        icon_strip=""
-    fi
-    sketchybar --set space.$sid label="$icon_strip"
+  first_app="$(jq -r --argjson sid "$sid" '.[] | select(.space == $sid and ."is-minimized" == false) | .app' <<< "$windows_json" | head -n 1)"
+
+  if [ -n "$first_app" ]; then
+    icon="$("$CONFIG_DIR/plugins/icon_map_fn.sh" "$first_app")"
+  else
+    icon="󰘔"
+  fi
+
+  if [ "$focused" = "true" ]; then
+    sketchybar --set "space.$sid" \
+      display="$display_id" \
+      icon="$icon" \
+      label.drawing=off \
+      background.color=0xff1e1e2e \
+      background.corner_radius=14 \
+      background.border_width=0 \
+      background.drawing=on \
+      icon.drawing=on \
+      icon.color=0xff89b4fa \
+      icon.shadow.drawing=on
+  else
+    sketchybar --set "space.$sid" \
+      display="$display_id" \
+      icon="$icon" \
+      label.drawing=off \
+      background.color=0xff3c3e4f \
+      background.corner_radius=14 \
+      background.border_width=0 \
+      background.drawing=on \
+      icon.drawing=on \
+      icon.color=0xffffffff \
+      icon.shadow.drawing=off
+  fi
 }
 
-# Update all workspaces to ensure clean state
-for monitor in $(aerospace list-monitors --format "%{monitor-appkit-nsscreen-screens-id}"); do
-    for sid in $(aerospace list-workspaces --monitor "$monitor"); do
-        update_space_icons "$sid"
-    done
+jq -r '.[] | select(.index <= 7) | [.index, .display, ."has-focus"] | @tsv' <<< "$spaces_json" | while IFS=$'\t' read -r sid display_id focused; do
+  update_space "$sid" "$display_id" "$focused"
 done

@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SRC="$SCRIPT_DIR/../scripts/color-picker.swift"
+CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/dotfiles-color-picker"
+BIN="$CACHE_DIR/color-picker"
+MODULE_CACHE="$CACHE_DIR/module-cache"
+
+mkdir -p "$CACHE_DIR" "$MODULE_CACHE"
+
+if [[ ! -x "$BIN" || "$SRC" -nt "$BIN" ]]; then
+  swiftc \
+    -module-cache-path "$MODULE_CACHE" \
+    -framework AppKit \
+    "$SRC" \
+    -o "$BIN"
+fi
+
+exec "$BIN"

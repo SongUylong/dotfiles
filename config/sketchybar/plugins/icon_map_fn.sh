@@ -6,7 +6,7 @@ case "$app" in
     "Safari") echo "" ;;
     "Google Chrome") echo "" ;;
     "Arc") echo "󰈹" ;;
-    "Firefox") echo "󰈹" ;;
+    "Brave Browser") echo "󰈹" ;;
 
     # Terminals
     "WezTerm") echo "" ;;

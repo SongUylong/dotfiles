@@ -125,6 +125,9 @@ done
 # Auto-switch node version from .nvmrc
 autoload -U add-zsh-hook
 load-nvmrc() {
+  # nvm_find_nvmrc and friends exist only after nvm.sh is sourced (lazy load above).
+  [ -s "$NVM_DIR/nvm.sh" ] || return
+  _lazy_load_nvm
   local node_version="$(nvm version)"
   local nvmrc_path="$(nvm_find_nvmrc)"
   if [ -n "$nvmrc_path" ]; then

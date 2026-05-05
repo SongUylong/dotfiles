@@ -3,12 +3,12 @@
 # Derive the workspace id from the item name (space.<id>)
 sid="${NAME#space.}"
 
-# If FOCUSED_WORKSPACE wasn't provided by the event, detect it via aerospace
+# If FOCUSED_WORKSPACE wasn't provided by the event, detect it via yabai
 if [ -z "$FOCUSED_WORKSPACE" ]; then
-    FOCUSED_WORKSPACE=$(aerospace list-workspaces --format "%{id} %{workspace-is-focused}" | awk '$2=="true"{print $1; exit}')
+    FOCUSED_WORKSPACE=$(yabai -m query --spaces --space | jq -r '.index')
 fi
 
-# Reflect focused workspace using Aerospace-provided env from the trigger
+# Reflect focused workspace using yabai-provided state
 if [ -n "$FOCUSED_WORKSPACE" ]; then
     if [ "$FOCUSED_WORKSPACE" = "$sid" ]; then
         sketchybar --set "$NAME" background.drawing=on background.color=0xff3c3e4f background.corner_radius=8 background.height=28
@@ -19,7 +19,7 @@ fi
 
 # Update label icons for this space when workspace changes or on any trigger
 if [ -n "$sid" ]; then
-    apps=$(aerospace list-windows --workspace "$sid" | awk -F'|' '{gsub(/^ *| *$/, "", $2); print $2}')
+    apps=$(yabai -m query --windows --space "$sid" | jq -r '.[] | select(.["is-minimized"] == false) | .app')
     if [ "${apps}" != "" ]; then
         icon_strip=" "
         while read -r app; do
