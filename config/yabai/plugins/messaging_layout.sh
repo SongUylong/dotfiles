@@ -4,9 +4,9 @@ export PATH="/opt/homebrew/bin:$PATH"
 sleep 0.8  # wait for yabai to manage the window
 
 wins=$(yabai -m query --windows --space 3 2>/dev/null)
-tg=$(echo "$wins" | jq 'first(.[] | select(.app == "Telegram")) | .id // empty')
-wa=$(echo "$wins" | jq 'first(.[] | select(.app == "WhatsApp")) | .id // empty')
-wc=$(echo "$wins" | jq 'first(.[] | select(.app == "WeChat")) | .id // empty')
+tg=$(echo "$wins" | jq 'first(.[] | select(.app == "Telegram"))             | .id // empty')
+wa=$(echo "$wins" | jq 'first(.[] | select(.app | contains("WhatsApp")))    | .id // empty')
+wc=$(echo "$wins" | jq 'first(.[] | select(.app == "WeChat"))               | .id // empty')
 
 # Only arrange when all 3 are present
 [ -z "$tg" ] || [ -z "$wa" ] || [ -z "$wc" ] && exit 0

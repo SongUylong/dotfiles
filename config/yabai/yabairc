@@ -23,10 +23,10 @@ yabai -m rule --add app="^Adobe Illustrator$" manage=off
 yabai -m rule --add app="^System Settings$" manage=off
 yabai -m rule --add app="^Finder$" title="Preferences" manage=off
 
-# Pin messaging apps to space 3
-yabai -m rule --add app="^Telegram$" space=3
-yabai -m rule --add app="^WhatsApp$" space=3
-yabai -m rule --add app="^WeChat$"   space=3
+# Pin messaging apps to space 3 (WhatsApp has a hidden RTL char prefix)
+yabai -m rule --add app="^Telegram$"  space=3
+yabai -m rule --add app="WhatsApp"    space=3
+yabai -m rule --add app="^WeChat$"    space=3
 
 # Keep exactly 5 numbered spaces.
 # Create missing spaces.
@@ -59,7 +59,7 @@ yabai -m signal --add label=sketchybar_app_terminated   event=application_termin
 # Trigger messaging layout when Telegram/WhatsApp/WeChat opens
 msg_layout="$HOME/.config/yabai/plugins/messaging_layout.sh"
 yabai -m signal --add label=messaging_layout_telegram event=window_created app='^Telegram$' action="$msg_layout"
-yabai -m signal --add label=messaging_layout_whatsapp event=window_created app='^WhatsApp$' action="$msg_layout"
+yabai -m signal --add label=messaging_layout_whatsapp event=window_created app='WhatsApp'   action="$msg_layout"
 yabai -m signal --add label=messaging_layout_wechat   event=window_created app='^WeChat$'   action="$msg_layout"
 
 # Reload sketchybar so space items are rebuilt with the current space list.
