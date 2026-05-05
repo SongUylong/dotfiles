@@ -23,16 +23,30 @@ yabai -m rule --add app="^Adobe Illustrator$" manage=off
 yabai -m rule --add app="^System Settings$" manage=off
 yabai -m rule --add app="^Finder$" title="Preferences" manage=off
 
-# Keep seven numbered spaces available, like the AeroSpace config.
-while [ "$(yabai -m query --spaces | jq 'length')" -lt 7 ]; do
+# Keep exactly 5 numbered spaces.
+# Create missing spaces.
+while [ "$(yabai -m query --spaces | jq 'length')" -lt 5 ]; do
   yabai -m space --create >/dev/null 2>&1 || break
 done
+# Remove excess spaces (keep only first 5).
+while [ "$(yabai -m query --spaces | jq 'length')" -gt 5 ]; do
+  last_idx=$(yabai -m query --spaces | jq 'length')
+  yabai -m space "$last_idx" --destroy >/dev/null 2>&1 || break
+done
+
+# Remove any previously registered signals to avoid duplicates on restart.
+yabai -m signal --remove sketchybar_space_changed   2>/dev/null || true
+yabai -m signal --remove sketchybar_window_created  2>/dev/null || true
+yabai -m signal --remove sketchybar_window_destroyed 2>/dev/null || true
+yabai -m signal --remove sketchybar_app_launched    2>/dev/null || true
+yabai -m signal --remove sketchybar_app_terminated  2>/dev/null || true
 
 refresh_bar="$HOME/.config/sketchybar/plugins/update_workspace_icons.sh"
-yabai -m signal --add event=space_changed action="$refresh_bar"
-yabai -m signal --add event=window_created action="$refresh_bar"
-yabai -m signal --add event=window_destroyed action="$refresh_bar"
-yabai -m signal --add event=application_launched action="$refresh_bar"
-yabai -m signal --add event=application_terminated action="$refresh_bar"
+yabai -m signal --add label=sketchybar_space_changed    event=space_changed        action="$refresh_bar"
+yabai -m signal --add label=sketchybar_window_created   event=window_created       action="$refresh_bar"
+yabai -m signal --add label=sketchybar_window_destroyed event=window_destroyed     action="$refresh_bar"
+yabai -m signal --add label=sketchybar_app_launched     event=application_launched action="$refresh_bar"
+yabai -m signal --add label=sketchybar_app_terminated   event=application_terminated action="$refresh_bar"
 
-$HOME/.config/sketchybar/plugins/update_workspace_icons.sh
+# Reload sketchybar so space items are rebuilt with the current space list.
+sketchybar --reload

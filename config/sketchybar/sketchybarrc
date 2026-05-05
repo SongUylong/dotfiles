@@ -1,5 +1,6 @@
 #!/bin/bash
 
+CONFIG_DIR="${CONFIG_DIR:-$HOME/.config/sketchybar}"
 PLUGIN_DIR="$CONFIG_DIR/plugins"
 ITEM_DIR="$CONFIG_DIR/items"
 
@@ -24,35 +25,45 @@ default=(
 )
 sketchybar --default "${default[@]}"
 
+# Wipe all items so we always rebuild in the correct order.
+sketchybar --remove '/.*/'
+
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# Spaces with dynamic app icons
-while read -r sid display_id; do
-  sketchybar --add item space.$sid left \
-    --set space.$sid display="$display_id" \
-    --set space.$sid \
-    drawing=on \
-    background.color=0xff3c3e4f \
-    background.corner_radius=14 \
-    background.height=28 \
-    background.drawing=on \
-    icon.drawing=on \
-    icon.color=0xffffffff \
-    icon.font="CaskaydiaCove Nerd Font:Bold:16.0" \
-    icon.padding_left=8 \
-    icon.padding_right=8 \
-    icon.y_offset=-1 \
-    label.drawing=off \
-    click_script="yabai -m space --focus $sid && $PLUGIN_DIR/update_workspace_icons.sh" \
-    script=""
-done < <(yabai -m query --spaces | jq -r '.[] | select(.index <= 7) | "\(.index) \(.display)"')
+# Spaces — show exactly 5
+SPACE_COUNT=5
+
+# Fetch space data up front (avoids process-substitution issues inside reload)
+spaces_raw=$(yabai -m query --spaces 2>/dev/null | jq -r --argjson n "$SPACE_COUNT" \
+  '.[] | select(.index <= $n) | "\(.index) \(.display)"')
+
+while IFS=" " read -r sid display_id; do
+  [ -z "$sid" ] && continue
+  sketchybar --add item "space.$sid" left \
+    --set "space.$sid" \
+      display="$display_id" \
+      drawing=on \
+      background.color=0xff3c3e4f \
+      background.corner_radius=14 \
+      background.height=28 \
+      background.drawing=on \
+      icon.drawing=on \
+      icon.color=0xffffffff \
+      icon.font="CaskaydiaCove Nerd Font:Bold:16.0" \
+      icon.padding_left=8 \
+      icon.padding_right=8 \
+      icon.y_offset=-1 \
+      label.drawing=off \
+      click_script="yabai -m space --focus $sid && $PLUGIN_DIR/update_workspace_icons.sh" \
+      script=""
+done <<< "$spaces_raw"
 
 "$PLUGIN_DIR/update_workspace_icons.sh"
 
-# --- Kanika Item: Added to the left side, right after workspaces ---
-sketchybar --add item kanika left \
-  --set kanika \
-  icon="" \
+# --- Left side status items ---
+sketchybar --add item kanika left 2>/dev/null
+sketchybar --set kanika \
+  icon="" \
   label="Potato" \
   label.drawing=on \
   icon.padding_left=8 \
@@ -64,10 +75,11 @@ sketchybar --add item kanika left \
   background.drawing=on \
   script="" \
   click_script="" \
-  update_freq=0 \
-  \
-  --add item bluetooth left \
-  --set bluetooth icon="󰂯" \
+  update_freq=0
+
+sketchybar --add item bluetooth left 2>/dev/null
+sketchybar --set bluetooth \
+  icon="󰂯" \
   label.drawing=on \
   icon.padding_left=8 \
   icon.padding_right=4 \
@@ -78,10 +90,10 @@ sketchybar --add item kanika left \
   background.drawing=on \
   script="$PLUGIN_DIR/bluetooth.sh" \
   click_script="open 'x-apple.systempreferences:com.apple.preferences.Bluetooth'" \
-  update_freq=10 \
-  \
-  --add item network left \
-  --set network \
+  update_freq=10
+
+sketchybar --add item network left 2>/dev/null
+sketchybar --set network \
   icon.padding_left=8 \
   icon.padding_right=4 \
   label.padding_right=8 \
@@ -90,10 +102,10 @@ sketchybar --add item kanika left \
   background.height=28 \
   background.drawing=on \
   script="$PLUGIN_DIR/network.sh" \
-  update_freq=2 \
-  \
-  --add item monitor left \
-  --set monitor \
+  update_freq=2
+
+sketchybar --add item monitor left 2>/dev/null
+sketchybar --set monitor \
   icon.padding_left=8 \
   icon.padding_right=4 \
   label.padding_right=8 \
@@ -107,8 +119,8 @@ sketchybar --add item kanika left \
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ##### Right Side Items #####
-sketchybar --add item clock right \
-  --set clock \
+sketchybar --add item clock right 2>/dev/null
+sketchybar --set clock \
   icon="󰥔" \
   label.drawing=on \
   icon.padding_left=8 \
@@ -119,10 +131,11 @@ sketchybar --add item clock right \
   background.height=28 \
   background.drawing=on \
   script="$PLUGIN_DIR/clock.sh" \
-  update_freq=10 \
-  \
-  --add item battery right \
-  --set battery update_freq=120 \
+  update_freq=10
+
+sketchybar --add item battery right 2>/dev/null
+sketchybar --set battery \
+  update_freq=120 \
   script="$PLUGIN_DIR/battery.sh" \
   icon.padding_left=8 \
   icon.padding_right=4 \
@@ -130,22 +143,24 @@ sketchybar --add item clock right \
   background.color=0xff3c3e4f \
   background.corner_radius=8 \
   background.height=28 \
-  background.drawing=on \
-  --subscribe battery system_woke power_source_change \
-  \
-  --add item volume right \
-  --set volume script="$PLUGIN_DIR/volume.sh" \
+  background.drawing=on
+sketchybar --subscribe battery system_woke power_source_change
+
+sketchybar --add item volume right 2>/dev/null
+sketchybar --set volume \
+  script="$PLUGIN_DIR/volume.sh" \
   icon.padding_left=8 \
   icon.padding_right=4 \
   label.padding_right=8 \
   background.color=0xff3c3e4f \
   background.corner_radius=8 \
   background.height=28 \
-  background.drawing=on \
-  --subscribe volume volume_change \
-  \
-  --add item wifi right \
-  --set wifi icon="󰤨" \
+  background.drawing=on
+sketchybar --subscribe volume volume_change
+
+sketchybar --add item wifi right 2>/dev/null
+sketchybar --set wifi \
+  icon="󰤨" \
   label.drawing=on \
   icon.padding_left=8 \
   icon.padding_right=4 \
@@ -156,10 +171,10 @@ sketchybar --add item clock right \
   background.drawing=on \
   script="$PLUGIN_DIR/wifi.sh" \
   click_script="open 'x-apple.systempreferences:com.apple.preference.network?Wi-Fi'" \
-  update_freq=10 \
-  \
-  --add item cpu right \
-  --set cpu \
+  update_freq=10
+
+sketchybar --add item cpu right 2>/dev/null
+sketchybar --set cpu \
   icon.padding_left=8 \
   icon.padding_right=4 \
   label.padding_right=8 \
@@ -168,10 +183,10 @@ sketchybar --add item clock right \
   background.height=28 \
   background.drawing=on \
   script="$PLUGIN_DIR/cpu.sh" \
-  update_freq=5 \
-  \
-  --add item ram right \
-  --set ram \
+  update_freq=5
+
+sketchybar --add item ram right 2>/dev/null
+sketchybar --set ram \
   icon.padding_left=8 \
   icon.padding_right=4 \
   label.padding_right=8 \
@@ -181,5 +196,12 @@ sketchybar --add item clock right \
   background.drawing=on \
   script="$PLUGIN_DIR/ram.sh" \
   update_freq=5
+
+#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Enforce correct visual order: spaces first, then status items.
+# This is idempotent — safe to run on every reload.
+sketchybar --reorder space.1 space.2 space.3 space.4 space.5 \
+                    kanika bluetooth network monitor
 
 sketchybar --update

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+export PATH="/opt/homebrew/bin:$PATH"
+
 CONFIG_DIR="${CONFIG_DIR:-$HOME/.config/sketchybar}"
 
 spaces_json="$(yabai -m query --spaces 2>/dev/null)"
@@ -10,6 +12,9 @@ update_space() {
   local display_id="$2"
   local focused="$3"
   local first_app icon
+
+  # Skip if this space item doesn't exist in sketchybar yet
+  sketchybar --query "space.$sid" &>/dev/null || return 0
 
   first_app="$(jq -r --argjson sid "$sid" '.[] | select(.space == $sid and ."is-minimized" == false) | .app' <<< "$windows_json" | head -n 1)"
 
@@ -46,6 +51,6 @@ update_space() {
   fi
 }
 
-jq -r '.[] | select(.index <= 7) | [.index, .display, ."has-focus"] | @tsv' <<< "$spaces_json" | while IFS=$'\t' read -r sid display_id focused; do
+jq -r '.[] | [.index, .display, ."has-focus"] | @tsv' <<< "$spaces_json" | while IFS=$'\t' read -r sid display_id focused; do
   update_space "$sid" "$display_id" "$focused"
 done
