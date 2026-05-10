@@ -1,29 +1,43 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
+# OCR Snap — select a screen region, OCR it, copy text to clipboard.
+# Works on both macOS (screencapture + pbcopy) and Linux/Wayland (grim + slurp + wl-copy).
+# Requires: tesseract, and on Linux: grim, slurp, wl-copy, notify-send
+set -euo pipefail
 
-# A clean, visible location to avoid macOS permissions issues
-# Tesseract doesn't like /tmp, and screencapture doesn't like hidden files
-tmp_img="$HOME/Pictures/ocr_snap_temp.png"
+lang="${1:-eng}"
 
-# Clean up any leftover file
-rm -f "$tmp_img"
+export LANG="en_US.UTF-8"
+export LC_CTYPE="en_US.UTF-8"
 
-# Optional: Notification before capture
-# osascript -e 'display notification "Select an area to OCR" with title "OCR Snap"'
+tmp_img="${XDG_RUNTIME_DIR:-/tmp}/ocr_snap_$$.png"
+trap 'rm -f "$tmp_img"' EXIT
 
-# Capture interactive area without sound
-screencapture -i "$tmp_img"
+# ── Capture ──────────────────────────────────────────────────────────────────
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  screencapture -i "$tmp_img"
+else
+  # Wayland: grim + slurp
+  region=$(slurp 2>/dev/null) || exit 0
+  grim -g "$region" "$tmp_img"
+fi
 
-if [[ -f "$tmp_img" && -s "$tmp_img" ]]; then
-  # Perform OCR (--psm 3 is good for automatic segmentation)
-  ocr_text=$(/opt/homebrew/bin/tesseract "$tmp_img" stdout -l eng --psm 3 2>/dev/null)
-  
-  if [[ -n "${ocr_text//[[:space:]]/}" ]]; then
-    echo -n "$ocr_text" | pbcopy
-    osascript -e 'display notification "Text copied to clipboard!" with title "OCR Success"'
+[[ -f "$tmp_img" && -s "$tmp_img" ]] || exit 0
+
+# ── OCR ──────────────────────────────────────────────────────────────────────
+ocr_text=$(tesseract "$tmp_img" stdout -l "$lang" --psm 3 2>/dev/null)
+
+if [[ -n "${ocr_text//[[:space:]]/}" ]]; then
+  if [[ "$(uname -s)" == "Darwin" ]]; then
+    printf '%s' "$ocr_text" | pbcopy
+    osascript -e 'display notification "Text copied to clipboard!" with title "OCR Snap"'
   else
-    osascript -e 'display notification "No text found in selection." with title "OCR Failed"'
+    printf '%s' "$ocr_text" | wl-copy
+    notify-send "OCR Snap" "Text copied to clipboard!" -t 3000
   fi
-  
-  # Clean up
-  rm -f "$tmp_img"
+else
+  if [[ "$(uname -s)" == "Darwin" ]]; then
+    osascript -e 'display notification "No text found in selection." with title "OCR Snap"'
+  else
+    notify-send "OCR Snap" "No text found in selection." -t 3000
+  fi
 fi

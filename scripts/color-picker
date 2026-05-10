@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Color Picker — pick a pixel color from screen, copy hex to clipboard.
+# Requires: hyprpicker, notify-send
+set -euo pipefail
+
+color=$(hyprpicker -a 2>/dev/null) || exit 0
+
+if [[ -n "$color" ]]; then
+  notify-send "Color Picker" "Copied $color" -t 3000
+fi
