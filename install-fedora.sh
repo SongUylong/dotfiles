@@ -231,16 +231,7 @@ for f in "$REPO/bin"/*; do
   ln -sfn "$f" "$HOME/.local/bin/$(basename "$f")"
 done
 
-# Cursor / VS Code / Antigravity — merge editors/* → dist + link into ~/.config/.../User
-if [[ -x "$REPO/scripts/sync-editors" ]]; then
-  echo "Syncing editor settings (Cursor, VS Code, Antigravity)..."
-  SKIP_SYNC_EDITORS="${SKIP_SYNC_EDITORS:-0}"
-  if [[ "$SKIP_SYNC_EDITORS" != "1" ]]; then
-    "$REPO/scripts/sync-editors"
-  else
-    echo "Skipping sync-editors (SKIP_SYNC_EDITORS=1)"
-  fi
-fi
+# Editor settings managed by VS Code Settings Sync (account-based).
 
 # Global git ignore
 git config --global core.excludesfile "$HOME/.config/git/.gitignore" 2>/dev/null || true
