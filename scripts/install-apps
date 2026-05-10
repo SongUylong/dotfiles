@@ -1,0 +1,172 @@
+#!/usr/bin/env bash
+# Install user apps: Brave, VS Code, Notion, Telegram, Spotify (ad-free),
+# WhatsApp, WeChat, OpenAI Codex CLI.
+# Also removes Firefox and sets Brave as default browser.
+set -euo pipefail
+
+if [[ "${EUID:-$(id -u)}" -eq 0 ]]; then
+  echo "Do not run as root — script uses sudo when needed."
+  exit 1
+fi
+
+echo ""
+echo "══════════════════════════════════════════════════════════════════════"
+echo "  Installing user apps..."
+echo "══════════════════════════════════════════════════════════════════════"
+echo ""
+
+# ─── 1. Brave Browser ──────────────────────────────────────────────────────────
+echo "→ Brave Browser"
+if ! command -v brave-browser &>/dev/null; then
+  sudo dnf install -y dnf-plugins-core
+  sudo dnf config-manager addrepo --from-repofile=https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo
+  sudo dnf install -y brave-browser
+  echo "  ✓ Brave installed"
+else
+  echo "  · Already installed"
+fi
+
+# ─── 2. Remove Firefox & set Brave as default ──────────────────────────────────
+echo "→ Removing Firefox and setting Brave as default"
+if rpm -q firefox &>/dev/null; then
+  sudo dnf remove -y firefox
+  echo "  ✓ Firefox removed"
+fi
+xdg-settings set default-web-browser brave-browser.desktop 2>/dev/null || true
+xdg-mime default brave-browser.desktop x-scheme-handler/http 2>/dev/null || true
+xdg-mime default brave-browser.desktop x-scheme-handler/https 2>/dev/null || true
+echo "  ✓ Brave set as default browser"
+
+# ─── 3. VS Code ────────────────────────────────────────────────────────────────
+echo "→ Visual Studio Code"
+if ! command -v code &>/dev/null; then
+  sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
+  sudo tee /etc/yum.repos.d/vscode.repo > /dev/null <<'EOF'
+[code]
+name=Visual Studio Code
+baseurl=https://packages.microsoft.com/yumrepos/vscode
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.microsoft.com/keys/microsoft.asc
+EOF
+  sudo dnf install -y code
+  echo "  ✓ VS Code installed"
+else
+  echo "  · Already installed"
+fi
+
+# ─── 4. OpenAI Codex CLI ───────────────────────────────────────────────────────
+echo "→ OpenAI Codex CLI"
+if ! command -v codex &>/dev/null; then
+  sudo npm install -g @openai/codex
+  echo "  ✓ Codex CLI installed (run 'codex' to authenticate)"
+else
+  echo "  · Already installed ($(codex --version 2>/dev/null || echo 'unknown version'))"
+fi
+
+# ─── 5. Flatpak setup ──────────────────────────────────────────────────────────
+echo "→ Ensuring Flathub is configured"
+if ! flatpak remotes | grep -q flathub; then
+  flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+fi
+echo "  ✓ Flathub ready"
+
+# ─── 6. Notion ─────────────────────────────────────────────────────────────────
+echo "→ Notion"
+if ! flatpak list | grep -q io.github.nickvdp.notion; then
+  # There's no official Notion Flatpak — use the community electron wrapper
+  # Alternative: use Brave to pin notion.so as a web app
+  echo "  ⚠ No official Notion desktop for Linux."
+  echo "  → Use Brave: Menu → More tools → Create shortcut → Open as window"
+  echo "    URL: https://www.notion.so"
+else
+  echo "  · Already installed"
+fi
+
+# ─── 7. Telegram ───────────────────────────────────────────────────────────────
+echo "→ Telegram"
+if ! flatpak list | grep -q org.telegram.desktop; then
+  flatpak install -y flathub org.telegram.desktop
+  echo "  ✓ Telegram installed"
+else
+  echo "  · Already installed"
+fi
+
+# ─── 8. Spotify + Spicetify (ad-free) ──────────────────────────────────────────
+echo "→ Spotify (with Spicetify ad-blocker)"
+if ! flatpak list | grep -q com.spotify.Client; then
+  flatpak install -y flathub com.spotify.Client
+  echo "  ✓ Spotify installed"
+else
+  echo "  · Spotify already installed"
+fi
+
+# Install Spicetify for ad-blocking
+if ! command -v spicetify &>/dev/null; then
+  echo "  Installing Spicetify..."
+  curl -fsSL https://raw.githubusercontent.com/spicetify/cli/main/install.sh | sh
+  export PATH="$HOME/.spicetify:$PATH"
+  echo "  ✓ Spicetify installed"
+fi
+
+# Configure Spicetify for Flatpak Spotify
+SPICETIFY_PREFS="$HOME/.config/spicetify/config-xpui.ini"
+if [[ -f "$SPICETIFY_PREFS" ]]; then
+  # Point Spicetify at Flatpak Spotify path
+  FLATPAK_SPOTIFY="$HOME/.var/app/com.spotify.Client/config/spotify"
+  if [[ -d "$FLATPAK_SPOTIFY" ]]; then
+    spicetify config spotify_path "$FLATPAK_SPOTIFY" 2>/dev/null || true
+  fi
+fi
+
+# Install adblock extension from Spicetify Marketplace
+if command -v spicetify &>/dev/null; then
+  # Install marketplace if not already
+  if [[ ! -d "$HOME/.config/spicetify/CustomApps/marketplace" ]]; then
+    curl -fsSL https://raw.githubusercontent.com/spicetify/marketplace/main/resources/install.sh | sh 2>/dev/null || true
+  fi
+  spicetify backup apply 2>/dev/null || true
+  echo "  ✓ Spicetify configured — install 'adblock' from Marketplace in Spotify"
+fi
+
+# ─── 9. WhatsApp ───────────────────────────────────────────────────────────────
+echo "→ WhatsApp"
+if ! flatpak list | grep -q io.github.nickvdp.nicegram 2>/dev/null; then
+  # No official WhatsApp desktop for Linux — use Brave web app
+  echo "  ⚠ No official WhatsApp desktop for Linux."
+  echo "  → Use Brave: visit https://web.whatsapp.com"
+  echo "    Menu → More tools → Create shortcut → Open as window"
+fi
+
+# ─── 10. WeChat ────────────────────────────────────────────────────────────────
+echo "→ WeChat"
+if ! command -v wechat &>/dev/null && ! flatpak list 2>/dev/null | grep -qi wechat; then
+  echo "  Downloading official WeChat Linux RPM..."
+  WECHAT_TMP=$(mktemp -d -p /tmp wechat.XXXX)
+  curl -fsSL -o "$WECHAT_TMP/wechat.rpm" "https://dldir1v6.qq.com/weixin/Universal/Linux/WeChatLinux_x86_64.rpm" 2>/dev/null || true
+  if [[ -f "$WECHAT_TMP/wechat.rpm" && -s "$WECHAT_TMP/wechat.rpm" ]]; then
+    sudo dnf install -y "$WECHAT_TMP/wechat.rpm" || echo "  ⚠ WeChat RPM install failed — try downloading from https://linux.weixin.qq.com"
+    echo "  ✓ WeChat installed"
+  else
+    echo "  ⚠ Could not download WeChat RPM."
+    echo "  → Download manually: https://linux.weixin.qq.com"
+  fi
+  rm -rf "$WECHAT_TMP"
+else
+  echo "  · Already installed"
+fi
+
+echo ""
+echo "══════════════════════════════════════════════════════════════════════"
+echo "  Done! Summary:"
+echo ""
+echo "  ✓ Brave Browser (default browser)"
+echo "  ✓ VS Code"
+echo "  ✓ Codex CLI (run 'codex' to authenticate)"
+echo "  ✓ Telegram (Flatpak)"
+echo "  ✓ Spotify + Spicetify (open Spotify → Marketplace → install adblock)"
+echo "  ✓ WeChat (official RPM)"
+echo "  ℹ Notion → use Brave web app (https://notion.so)"
+echo "  ℹ WhatsApp → use Brave web app (https://web.whatsapp.com)"
+echo "══════════════════════════════════════════════════════════════════════"
+echo ""
