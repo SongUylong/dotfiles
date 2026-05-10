@@ -4,6 +4,6 @@
 
   programs.vscode = {
     enable = true;
-    package = pkgs.vscodium;
+    package = pkgs.vscode-fhs;
   };
 }

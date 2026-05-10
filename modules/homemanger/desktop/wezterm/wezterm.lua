@@ -13,7 +13,9 @@ config.status_update_interval = 1000
 -- General settings
 config.enable_tab_bar = true
 config.window_decorations = "NONE"
--- Note: font, font_size, and opacity are managed by Stylix
+-- Match Stylix (`stylix.base16Scheme` catppuccin-mocha); WezTerm ships this builtin.
+config.color_scheme = "Catppuccin Mocha"
+config.window_background_opacity = 0.9
 config.window_close_confirmation = "AlwaysPrompt"
 config.harfbuzz_features = { "calt=0", "clig=0", "liga=0" }
 config.freetype_load_target = "Light"
@@ -125,21 +127,36 @@ end)
 
 config.disable_default_mouse_bindings = false
 
-config.leader = { key = "w", mods = "ALT", timeout_milliseconds = math.maxinteger }
+config.leader = { key = "w", mods = "ALT", timeout_milliseconds = 1000000 }
 
 config.keys = {
 	{ key = "n", mods = "ALT", action = act.ActivateCopyMode },
 	{ key = "t", mods = "ALT", action = act.SpawnTab("CurrentPaneDomain") },
-	{ key = "x", mods = "ALT", action = act.CloseCurrentTab({ confirm = false }) },
+	{
+		key = "x",
+		mods = "ALT",
+		action = wezterm.action_callback(function(window, pane)
+			local tab = pane:tab()
+			if not tab then
+				return
+			end
+			local panes = tab:panes_with_info()
+			if #panes > 1 then
+				window:perform_action(act.CloseCurrentPane({ confirm = false }), pane)
+			else
+				window:perform_action(act.CloseCurrentTab({ confirm = false }), pane)
+			end
+		end),
+	},
 	{ key = "m", mods = "ALT", action = act.ActivateKeyTable({ name = "workspace" }) },
 	-- Pane splitting
 	{ key = ";", mods = "ALT", action = act.SplitVertical({ domain = "CurrentPaneDomain" }) },
-	{ key = "'", mods = "ALT", action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
-	-- Pane navigation
+	{ key = "l", mods = "ALT", action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
+	-- Pane navigation (RightArrow: Alt+L is horizontal split)
 	{ key = "h", mods = "ALT", action = act.ActivatePaneDirection("Left") },
 	{ key = "j", mods = "ALT", action = act.ActivatePaneDirection("Down") },
 	{ key = "k", mods = "ALT", action = act.ActivatePaneDirection("Up") },
-	{ key = "l", mods = "ALT", action = act.ActivatePaneDirection("Right") },
+	{ key = "RightArrow", mods = "ALT", action = act.ActivatePaneDirection("Right") },
 }
 config.mouse_bindings = {
 	-- Ctrl-click will open the link under the mouse cursor

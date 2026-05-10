@@ -43,9 +43,14 @@ in
       enable = true;
     };
 
-    supportedFilesystems = [ "ntfs" ];
+    supportedFilesystems = [
+      "ntfs"
+      "btrfs"
+    ];
   };
 
-  # Ensure os-prober can detect Windows
+  environment.systemPackages = with pkgs; [ efibootmgr ];
+
+  # Helps some desktop tools; os-prober is optional (see hosts/desktop for GRUB menu).
   services.gvfs.enable = true;
 }

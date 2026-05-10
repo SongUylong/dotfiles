@@ -6,16 +6,16 @@ in
   home.file = {
     # Zsh — shared config for both NixOS and macOS
     "${config.xdg.configHome}/zsh".source = lib.mkForce (
-      config.lib.file.mkOutOfStoreSymlink "${sharedDir}/zsh"
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/modules/homemanger/system/zsh/config"
     );
 
     # OpenCode config file
     "${config.xdg.configHome}/opencode/opencode.json".source = lib.mkForce (
-      config.lib.file.mkOutOfStoreSymlink "${sharedDir}/opencode/opencode.json"
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/modules/homemanger/apps/opencode/opencode.json"
     );
 
     "${config.xdg.configHome}/opencode/tui.json".source = lib.mkForce (
-      config.lib.file.mkOutOfStoreSymlink "${sharedDir}/opencode/tui.json"
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/modules/homemanger/apps/opencode/tui.json"
     );
 
     # CodeUtility agent skills
@@ -25,20 +25,20 @@ in
 
     # Yazi plugins
     "${config.xdg.configHome}/yazi/plugins".source = lib.mkForce (
-      config.lib.file.mkOutOfStoreSymlink "${sharedDir}/yazi/plugins"
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/modules/homemanger/cli/yazi/plugins"
     );
 
     # Yazi config files
     "${config.xdg.configHome}/yazi/yazi.toml".source = lib.mkForce (
-      config.lib.file.mkOutOfStoreSymlink "${sharedDir}/yazi/yazi.toml"
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/modules/homemanger/cli/yazi/yazi.toml"
     );
 
     "${config.xdg.configHome}/yazi/keymap.toml".source = lib.mkForce (
-      config.lib.file.mkOutOfStoreSymlink "${sharedDir}/yazi/keymap.toml"
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/modules/homemanger/cli/yazi/keymap.toml"
     );
 
     "${config.xdg.configHome}/yazi/package.toml".source = lib.mkForce (
-      config.lib.file.mkOutOfStoreSymlink "${sharedDir}/yazi/package.toml"
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/modules/homemanger/cli/yazi/package.toml"
     );
   };
 }
