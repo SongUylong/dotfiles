@@ -10,3 +10,5 @@ source "${XDG_CONFIG_HOME:-$HOME/.config}/zsh/config.zsh"
 
 # Added by Antigravity
 export PATH="/Users/eric/.antigravity/antigravity/bin:$PATH"
+
+[[ "$TERM_PROGRAM" == "kiro" ]] && . "$(kiro --locate-shell-integration-path zsh)"

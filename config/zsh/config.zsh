@@ -113,11 +113,18 @@ export NODE_EXTRA_CA_CERTS=$HOME/.ssl/system-certs.pem
 
 # ── NVM (Lazy Loaded) ─────────────────────────────────────────────────────────
 export NVM_DIR="$HOME/.nvm"
+
 _lazy_load_nvm() {
-  unset -f nvm node npm npx
-  [ -s "$NVM_DIR/nvm.sh" ]           && source "$NVM_DIR/nvm.sh"
-  [ -s "$NVM_DIR/bash_completion" ]  && source "$NVM_DIR/bash_completion"
+  if [[ -z "$NVM_LAZY_LOADED" ]]; then
+    export NVM_LAZY_LOADED=1
+    # Unset the placeholder functions. Silencing errors to avoid "no such hash table element".
+    unset -f nvm node npm npx 2>/dev/null
+    [ -s "$NVM_DIR/nvm.sh" ]           && source "$NVM_DIR/nvm.sh"
+    [ -s "$NVM_DIR/bash_completion" ]  && source "$NVM_DIR/bash_completion"
+  fi
 }
+
+# Create placeholder functions that trigger the lazy load
 for cmd in nvm node npm npx; do
   eval "${cmd}() { _lazy_load_nvm; ${cmd} \"\$@\"; }"
 done
@@ -125,20 +132,28 @@ done
 # Auto-switch node version from .nvmrc
 autoload -U add-zsh-hook
 load-nvmrc() {
-  # nvm_find_nvmrc and friends exist only after nvm.sh is sourced (lazy load above).
+  # Only attempt to load and switch if nvm.sh exists
   [ -s "$NVM_DIR/nvm.sh" ] || return
-  _lazy_load_nvm
-  local node_version="$(nvm version)"
-  local nvmrc_path="$(nvm_find_nvmrc)"
-  if [ -n "$nvmrc_path" ]; then
-    local nvmrc_node_version=$(nvm version "$(cat "${nvmrc_path}")")
-    if [ "$nvmrc_node_version" = "N/A" ]; then
-      nvm install
-    elif [ "$nvmrc_node_version" != "$node_version" ]; then
-      nvm use
+
+  # Check if we should even bother (e.g. .nvmrc exists in hierarchy)
+  # nvm_find_nvmrc is only available after loading, so we do a quick check
+  if [[ -f .nvmrc || -f .node-version ]] || [[ -n "$NVM_LAZY_LOADED" ]]; then
+    _lazy_load_nvm
+    
+    local node_version="$(nvm version)"
+    local nvmrc_path="$(nvm_find_nvmrc)"
+    
+    if [ -n "$nvmrc_path" ]; then
+      local nvmrc_node_version=$(nvm version "$(cat "${nvmrc_path}")")
+      if [ "$nvmrc_node_version" = "N/A" ]; then
+        nvm install
+      elif [ "$nvmrc_node_version" != "$node_version" ]; then
+        nvm use
+      fi
+    elif [[ "$node_version" != "$(nvm version default)" && -n "$NVM_LAZY_LOADED" ]]; then
+      # If we were on a custom version and left a dir with .nvmrc, go back to default
+      nvm use default 2>/dev/null
     fi
-  elif [ "$node_version" != "$(nvm version default)" ]; then
-    nvm use default 2>/dev/null
   fi
 }
 add-zsh-hook chpwd load-nvmrc

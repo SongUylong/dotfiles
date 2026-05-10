@@ -2,6 +2,10 @@
 
 export PATH="/opt/homebrew/bin:$PATH"
 
+# Load scripting addition (required for space --focus, space --move, etc.)
+yabai -m signal --add event=dock_did_restart action="sudo yabai --load-sa"
+sudo yabai --load-sa
+
 # Keep windows clear of SketchyBar, then preserve the roomy AeroSpace feel.
 yabai -m config external_bar all:40:0
 yabai -m config layout bsp
