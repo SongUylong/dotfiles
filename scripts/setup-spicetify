@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Configure Spicetify for Flatpak Spotify and apply ad-blocking.
+# Run this AFTER launching Spotify at least once.
+set -euo pipefail
+
+export PATH="$HOME/.spicetify:$PATH"
+
+PREFS="$HOME/.var/app/com.spotify.Client/config/spotify/prefs"
+SPOTIFY_PATH="/var/lib/flatpak/app/com.spotify.Client/current/active/files/extra/share/spotify"
+
+if [[ ! -f "$PREFS" ]]; then
+  echo "❌ Spotify prefs not found. Launch Spotify once first:"
+  echo "   flatpak run com.spotify.Client"
+  echo "   Then close it and re-run this script."
+  exit 1
+fi
+
+echo "→ Granting write access to Flatpak Spotify (needed for Spicetify)..."
+sudo chmod a+wr "$SPOTIFY_PATH"
+sudo chmod a+wr -R "$SPOTIFY_PATH/Apps"
+
+echo "→ Configuring Spicetify for Flatpak Spotify..."
+spicetify config spotify_path "$SPOTIFY_PATH"
+spicetify config prefs_path "$PREFS"
+
+echo "→ Backing up and applying Spicetify..."
+spicetify backup apply
+
+echo ""
+echo "✓ Spicetify applied! Open Spotify → click Marketplace → install 'adblock' extension."
