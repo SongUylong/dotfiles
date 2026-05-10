@@ -1,0 +1,131 @@
+#!/usr/bin/env bash
+# Apply all performance optimizations for Hyprland + NVIDIA on Fedora.
+# Run: sudo ./scripts/apply-performance-fixes  (or the install script will call it)
+set -euo pipefail
+
+if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
+  echo "This script must be run with sudo."
+  echo "Usage: sudo $0"
+  exit 1
+fi
+
+echo ""
+echo "══════════════════════════════════════════════════════════════════════"
+echo "  Applying performance optimizations..."
+echo "══════════════════════════════════════════════════════════════════════"
+echo ""
+
+# ─── 1. NVIDIA modprobe config ─────────────────────────────────────────────────
+NVIDIA_MODPROBE="/etc/modprobe.d/nvidia.conf"
+echo "→ NVIDIA modprobe config ($NVIDIA_MODPROBE)"
+tee "$NVIDIA_MODPROBE" > /dev/null <<'EOF'
+options nvidia NVreg_PreserveVideoMemoryAllocations=1
+options nvidia NVreg_UsePageAttributeTable=1
+options nvidia_drm modeset=1 fbdev=1
+EOF
+echo "  ✓ PAT enabled, modeset+fbdev forced, VRAM preserved"
+
+# ─── 2. Early-load NVIDIA in initramfs (dracut) ────────────────────────────────
+DRACUT_NVIDIA="/etc/dracut.conf.d/nvidia.conf"
+echo "→ Dracut early-load ($DRACUT_NVIDIA)"
+echo 'force_drivers+=" nvidia nvidia_modeset nvidia_uvm nvidia_drm "' \
+  | tee "$DRACUT_NVIDIA" > /dev/null
+echo "  ✓ NVIDIA modules will load early in initramfs"
+
+# Rebuild initramfs
+echo "→ Rebuilding initramfs (dracut --force)..."
+dracut --force
+echo "  ✓ initramfs rebuilt"
+
+# ─── 3. GRUB kernel parameters ─────────────────────────────────────────────────
+echo "→ GRUB kernel parameters"
+if ! grep -q 'nvidia-drm.modeset=1' /proc/cmdline 2>/dev/null; then
+  grubby --update-kernel=ALL --args="nvidia-drm.modeset=1 nvidia-drm.fbdev=1"
+  echo "  ✓ Added nvidia-drm.modeset=1 nvidia-drm.fbdev=1"
+else
+  echo "  · Already set — skipping"
+fi
+
+# ─── 4. NVIDIA suspend/resume/hibernate services ───────────────────────────────
+echo "→ NVIDIA power management services"
+systemctl enable nvidia-suspend nvidia-resume nvidia-hibernate 2>/dev/null || true
+echo "  ✓ Enabled nvidia-suspend/resume/hibernate"
+
+# ─── 5. Kernel sysctl tuning ───────────────────────────────────────────────────
+echo "→ Kernel sysctl tuning"
+tee /etc/sysctl.d/99-performance.conf > /dev/null <<'EOF'
+# zram works well with moderate swappiness
+vm.swappiness = 30
+# Keep filesystem metadata caches longer
+vm.vfs_cache_pressure = 50
+# BBR congestion control + CAKE qdisc for better network throughput
+net.core.default_qdisc = cake
+net.ipv4.tcp_congestion_control = bbr
+EOF
+sysctl --system > /dev/null 2>&1
+echo "  ✓ swappiness=30, vfs_cache_pressure=50, BBR+CAKE"
+
+# ─── 6. TuneD → desktop profile ────────────────────────────────────────────────
+echo "→ TuneD profile"
+if command -v tuned-adm &>/dev/null; then
+  tuned-adm profile desktop 2>/dev/null || true
+  echo "  ✓ Switched to 'desktop' profile"
+else
+  echo "  · tuned-adm not found — skipping"
+fi
+
+# ─── 7. Catppuccin GRUB theme (Mocha) ──────────────────────────────────────────
+echo "→ Catppuccin Mocha GRUB theme"
+GRUB_THEME_DIR="/usr/share/grub/themes"
+THEME_NAME="catppuccin-mocha-grub-theme"
+TMPDIR_GRUB=$(mktemp -d)
+
+if [[ ! -d "$GRUB_THEME_DIR/$THEME_NAME" ]]; then
+  echo "  Cloning catppuccin/grub..."
+  git clone --depth 1 https://github.com/catppuccin/grub.git "$TMPDIR_GRUB/grub-theme" 2>/dev/null
+  mkdir -p "$GRUB_THEME_DIR"
+  cp -r "$TMPDIR_GRUB/grub-theme/src/$THEME_NAME" "$GRUB_THEME_DIR/"
+  rm -rf "$TMPDIR_GRUB"
+  echo "  ✓ Installed to $GRUB_THEME_DIR/$THEME_NAME"
+else
+  echo "  · Theme already installed — skipping"
+fi
+
+# Update /etc/default/grub
+GRUB_DEFAULT="/etc/default/grub"
+THEME_LINE="GRUB_THEME=\"$GRUB_THEME_DIR/$THEME_NAME/theme.txt\""
+
+# Remove any existing GRUB_THEME line
+sed -i '/^GRUB_THEME=/d' "$GRUB_DEFAULT"
+# Comment out GRUB_TERMINAL_OUTPUT (conflicts with themes)
+sed -i 's/^GRUB_TERMINAL_OUTPUT=/#GRUB_TERMINAL_OUTPUT=/' "$GRUB_DEFAULT"
+# Add theme + gfxmode
+echo "$THEME_LINE" >> "$GRUB_DEFAULT"
+
+# Set gfxmode if not already set
+if ! grep -q '^GRUB_GFXMODE=' "$GRUB_DEFAULT"; then
+  echo 'GRUB_GFXMODE=auto' >> "$GRUB_DEFAULT"
+fi
+
+echo "  ✓ GRUB_THEME set to Catppuccin Mocha"
+
+# Regenerate GRUB config (Fedora uses grub2-mkconfig)
+echo "→ Regenerating GRUB config..."
+if [[ -d /boot/grub2 ]]; then
+  grub2-mkconfig -o /boot/grub2/grub.cfg 2>/dev/null
+elif [[ -d /boot/grub ]]; then
+  grub-mkconfig -o /boot/grub/grub.cfg 2>/dev/null
+fi
+echo "  ✓ GRUB config regenerated"
+
+echo ""
+echo "══════════════════════════════════════════════════════════════════════"
+echo "  All done! Reboot to apply all changes."
+echo ""
+echo "  What changed:"
+echo "    • NVIDIA: modeset + fbdev + PAT + early initramfs load"
+echo "    • Kernel: swappiness=30, vfs_cache_pressure=50, BBR+CAKE"
+echo "    • TuneD: desktop profile (lower latency)"
+echo "    • GRUB: Catppuccin Mocha theme"
+echo "══════════════════════════════════════════════════════════════════════"
+echo ""
