@@ -1,30 +1,61 @@
+// Place your key bindings in this file to override the defaults
 [
   {
-    "key": "space e",
-    "command": "workbench.action.toggleSidebarVisibility",
-    "when": "editorTextFocus && vim.mode == 'Normal' || neovim.mode == 'normal' && editorTextFocus"
+    "key": "capslock",
+    "command": "extension.vim_escape",
+    "when": "editorTextFocus && vim.active && !inDebugRepl"
   },
   {
-    "key": "space f",
-    "command": "workbench.action.quickOpen",
-    "when": "editorTextFocus && vim.mode == 'Normal' || neovim.mode == 'normal' && editorTextFocus"
+    "key": "escape",
+    "command": "-extension.vim_escape",
+    "when": "editorTextFocus && vim.active && !inDebugRepl"
+  },
+  {
+    "key": "ctrl+h",
+    "command": "workbench.view.explorer"
   },
   {
     "key": "ctrl+l",
-    "command": "workbench.action.focusActiveEditorGroup",
-    "when": "sideBarFocus || filesExplorerFocus || remoteExplorerFocus"
+    "command": "workbench.action.focusActiveEditorGroup"
   },
   {
-    "key": "ctrl+s",
-    "command": "workbench.action.files.save"
+    "key": "ctrl+shift+e",
+    "command": "-workbench.view.explorer"
   },
   {
-    "key": "ctrl+x",
-    "command": "workbench.action.closeActiveEditor"
+    "key": "ctrl+b",
+    "command": "-workbench.action.toggleSidebarVisibility"
   },
   {
-    "key": "space l",
-    "command": "workbench.action.splitEditorRight",
-    "when": "editorTextFocus && vim.mode == 'Normal' || neovim.mode == 'normal' && editorTextFocus"
+    "key": "ctrl+shift+e",
+    "command": "workbench.action.toggleSidebarVisibility"
+  },
+  {
+    "key": "capslock",
+    "command": "closeFindWidget",
+    "when": "findWidgetVisible"
+  },
+  {
+    "key": "ctrl+h",
+    "command": "workbench.view.explorer"
+  },
+  {
+    "key": "ctrl+l",
+    "command": "workbench.view.explorer"
+  },
+  {
+    "key": "a",
+    "command": "explorer.newFile",
+    "when": "explorerViewletVisible && filesExplorerFocus && !inputFocus"
+  },
+  {
+    "key": "d",
+    "command": "deleteFile",
+    "when": "explorerViewletVisible && filesExplorerFocus && !inputFocus"
+  },
+  {
+    "key": "r",
+    "command": "renameFile",
+    "when": "explorerViewletVisible && filesExplorerFocus && !inputFocus"
   }
 ]

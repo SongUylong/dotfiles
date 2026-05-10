@@ -17,6 +17,15 @@ export PATH="$PATH:$HOME/.composer/vendor/bin"
 [[ -d "$HOME/miniconda3/condabin" ]] && export PATH="$HOME/miniconda3/condabin:$PATH"
 [[ -d "$HOME/.antigravity/antigravity/bin" ]] && export PATH="$PATH:$HOME/.antigravity/antigravity/bin"
 
+# Fast exit for VS Code environment resolution
+if [[ "$VSCODE_RESOLVING_ENVIRONMENT" == "1" ]]; then
+  export EDITOR=nvim
+  export NODE_EXTRA_CA_CERTS=$HOME/.ssl/system-certs.pem
+  export NVM_DIR="$HOME/.nvm"
+  export PYENV_ROOT="${PYENV_ROOT:-$HOME/.pyenv}"
+  return 0
+fi
+
 # ── Zinit ─────────────────────────────────────────────────────────────────────
 ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
 if [[ ! -f "$ZINIT_HOME/zinit.zsh" ]]; then
