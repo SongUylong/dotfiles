@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Configure Spicetify for Flatpak Spotify and apply ad-blocking.
+# Configure Spicetify for Flatpak Spotify: Catppuccin Mocha theme + ad-blocking.
 # Run this AFTER launching Spotify at least once.
 set -euo pipefail
 
@@ -23,8 +23,20 @@ echo "→ Configuring Spicetify for Flatpak Spotify..."
 spicetify config spotify_path "$SPOTIFY_PATH"
 spicetify config prefs_path "$PREFS"
 
+# Install Catppuccin Mocha theme
+THEME_DIR="$HOME/.config/spicetify/Themes/catppuccin-mocha"
+if [[ ! -d "$THEME_DIR" ]]; then
+  echo "→ Installing Catppuccin Mocha theme..."
+  TMPDIR_THEME=$(mktemp -d)
+  git clone --depth 1 https://github.com/catppuccin/spicetify.git "$TMPDIR_THEME" 2>/dev/null
+  cp -r "$TMPDIR_THEME/catppuccin" "$THEME_DIR"
+  rm -rf "$TMPDIR_THEME"
+fi
+spicetify config current_theme catppuccin-mocha
+
 echo "→ Backing up and applying Spicetify..."
 spicetify backup apply
 
 echo ""
-echo "✓ Spicetify applied! Open Spotify → click Marketplace → install 'adblock' extension."
+echo "✓ Spicetify applied with Catppuccin Mocha theme!"
+echo "  Open Spotify → Marketplace → install 'adblock' extension."
