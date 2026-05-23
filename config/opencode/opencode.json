@@ -28,28 +28,25 @@
   },
   "default_agent": "build",
   "provider": {
-    "ollama": {
+    "9router": {
       "npm": "@ai-sdk/openai-compatible",
-      "name": "Ollama (local)",
       "options": {
-        "baseURL": "http://localhost:11434/v1"
+        "baseURL": "http://localhost:20128/v1",
+        "apiKey": "sk_9router"
       },
       "models": {
-        "deepseek-coder:6.7b": {
-          "name": "DeepSeek Coder 6.7B",
-          "limit": {
-            "context": 16384,
-            "output": 4096
-          }
-        },
-        "qwen2.5-coder:7b": {
-          "name": "Qwen 2.5 Coder 7B",
-          "limit": {
-            "context": 32768,
-            "output": 8192
-          }
+        "provider/model-id": {
+          "name": "provider/model-id"
         }
       }
+    }
+  },
+  "model": "9router/provider/model-id",
+  "agent": {
+    "explorer": {
+      "description": "Fast explorer subagent for codebase exploration",
+      "mode": "subagent",
+      "model": "9router/provider/model-id"
     }
   }
 }
