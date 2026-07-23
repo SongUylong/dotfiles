@@ -1,10 +1,6 @@
 return {
   "stevearc/conform.nvim",
   opts = {
-    format_on_save = {
-      timeout_ms = 1000,
-      lsp_fallback = true,
-    },
     formatters_by_ft = {
       javascript = { "prettierd", "prettier", stop_after_first = true },
       typescript = { "prettierd", "prettier", stop_after_first = true },
