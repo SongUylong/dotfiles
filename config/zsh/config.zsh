@@ -4,6 +4,11 @@
 # ──────────────────────────────────────────────────────────────────────────────
 
 # ── PATH ──────────────────────────────────────────────────────────────────────
+export LANG="en_US.UTF-8"
+export LC_ALL="en_US.UTF-8"
+export LC_CTYPE="en_US.UTF-8"
+setopt COMBINING_CHARS
+
 export PATH="/opt/homebrew/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/bin:$PATH"
