@@ -1,6 +1,6 @@
 # App launchers
 alt - c : open -n /Applications/Cursor.app
-alt - t : open -n /Applications/WezTerm.app
+alt - t : open -n -a kitty
 alt - b : open -n "/Applications/Brave Browser.app"
 alt - n : open -n /Applications/Notion.app
 alt + shift - f : open -a Finder

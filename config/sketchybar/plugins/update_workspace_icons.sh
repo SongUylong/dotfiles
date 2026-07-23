@@ -64,7 +64,7 @@ update_space() {
       "Google Chrome")           icon="" ;;
       "Firefox")                 icon="󰈹" ;;
       "Safari")                  icon="" ;;
-      "WezTerm")                 icon="" ;;
+      "kitty"|"kitty"|"WezTerm")  icon="󰄛" ;;
       "iTerm2"|"Terminal")       icon="" ;;
       "Visual Studio Code")      icon="󰨞" ;;
       "Cursor")                  icon="󰅩" ;;

@@ -89,7 +89,7 @@ outer.left = 30
 # '''
 # Launch apps (new instances)
 alt-c = 'exec-and-forget open -n /Applications/Cursor.app'
-alt-t = 'exec-and-forget open -n /Applications/WezTerm.app'
+alt-t = 'exec-and-forget open -n -a kitty'
 alt-b = 'exec-and-forget open -n /Applications/Brave.app'
 alt-n = 'exec-and-forget open -n /Applications/Notion.app'
 

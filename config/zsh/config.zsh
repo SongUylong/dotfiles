@@ -104,6 +104,17 @@ alias lt='tree -a'
 alias nvid='neovide & disown && exit'
 alias mux='tmuxinator'
 alias cursor='open -a Cursor'
+function cmux() {
+  if [[ $# -eq 0 ]]; then
+    open -a cmux
+  elif [[ "$1" == "." ]]; then
+    open -a cmux --args --cwd "$PWD"
+  elif [[ -d "$1" ]]; then
+    open -a cmux --args --cwd "$(cd "$1" && pwd)"
+  else
+    command cmux "$@"
+  fi
+}
 alias webai='open-webui serve --port 1234'
 
 export EDITOR=nvim
@@ -124,9 +135,17 @@ _lazy_load_nvm() {
   fi
 }
 
-# Create placeholder functions that trigger the lazy load
+# Create placeholder functions that trigger the lazy load.
+# NB: unfunction the placeholders FIRST so the wrapper can never re-enter
+# itself; guard the loader call so a missing _lazy_load_nvm (e.g. in a
+# non-interactive shell) is skipped instead of hitting command_not_found and
+# recursing until FUNCNEST. node/npm/npx then resolve to the real PATH binary.
 for cmd in nvm node npm npx; do
-  eval "${cmd}() { _lazy_load_nvm; ${cmd} \"\$@\"; }"
+  eval "${cmd}() {
+    unfunction nvm node npm npx 2>/dev/null
+    typeset -f _lazy_load_nvm >/dev/null && _lazy_load_nvm
+    ${cmd} \"\$@\"
+  }"
 done
 
 # Auto-switch node version from .nvmrc

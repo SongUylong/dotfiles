@@ -14,11 +14,23 @@ return {
     end,
   },
   {
+    "mason-org/mason.nvim",
+    opts = {
+      ensure_installed = {
+        "prettierd",
+        "prettier",
+        "stylua",
+        "shfmt",
+        "black",
+        "ruff",
+      },
+    },
+  },
+  {
     "neovim/nvim-lspconfig",
     dependencies = { "pretty-ts-errors-installer" },
     opts = {
       inlay_hints = { enabled = false },
-      -- prettify ts errors
       diagnostics = {
         float = {
           format = (function()
@@ -27,7 +39,6 @@ return {
             local bin_path = vim.fn.stdpath("data") .. "/pretty-ts-errors/node_modules/.bin/pretty-ts-errors-markdown"
 
             return function(diagnostic)
-              -- Only format TypeScript errors
               if diagnostic.source ~= "ts" and diagnostic.source ~= "typescript" then
                 return diagnostic.message
               end
@@ -45,12 +56,9 @@ return {
                 handle:close()
                 if prettified and prettified ~= "" then
                   local result = prettified:gsub("^%s*(.-)%s*$", "%1")
-                  -- remove md links
                   result = result:gsub("%[([^%]]+)%]%(([^%)]+)%)", "%1")
-                  -- remove codeblock markers
                   result = result:gsub("```%w*\n", ""):gsub("\n```", "")
 
-                  -- cache result, so that focusing diagnostics doesnt run format again
                   if #cache_order >= 3 then
                     local oldest = table.remove(cache_order, 1)
                     cache[oldest] = nil
@@ -66,9 +74,25 @@ return {
         },
       },
       servers = {
-        -- Use jdt-language-server from Nix (flake/direnv); Mason’s jdtls fails on NixOS
         jdtls = { mason = false },
+        nil_ls = { mason = false },
         vtsls = { settings = { typescript = { preferences = { importModuleSpecifier = "non-relative" } } } },
+        tailwindcss = {},
+        eslint = {},
+        html = {},
+        cssls = {},
+        jsonls = {},
+        yamlls = {},
+        pyright = {},
+        gopls = {},
+        rust_analyzer = {},
+        clangd = {},
+        lua_ls = {},
+        prismals = {},
+        dockerls = {},
+        bashls = {},
+        taplo = {},
+        marksman = {},
         biome = {},
       },
     },

@@ -21,6 +21,38 @@ return {
           },
         },
       },
+      window = {
+        mappings = {
+          ["j"] = function(state)
+            vim.cmd("normal! j")
+            local node = state.tree:get_node()
+            if node and node.type == "file" then
+              require("neo-tree.sources.common.commands").preview(state)
+            end
+          end,
+          ["k"] = function(state)
+            vim.cmd("normal! k")
+            local node = state.tree:get_node()
+            if node and node.type == "file" then
+              require("neo-tree.sources.common.commands").preview(state)
+            end
+          end,
+          ["<down>"] = function(state)
+            vim.cmd("normal! j")
+            local node = state.tree:get_node()
+            if node and node.type == "file" then
+              require("neo-tree.sources.common.commands").preview(state)
+            end
+          end,
+          ["<up>"] = function(state)
+            vim.cmd("normal! k")
+            local node = state.tree:get_node()
+            if node and node.type == "file" then
+              require("neo-tree.sources.common.commands").preview(state)
+            end
+          end,
+        },
+      },
     },
     keys = {
       {
@@ -34,8 +66,6 @@ return {
       {
         "<leader>E",
         function()
-          -- LazyVim.root() finds the project root.
-          -- If you aren't using LazyVim, remove `dir = ...` to let Neo-tree auto-detect.
           require("neo-tree.command").execute({ toggle = true, dir = LazyVim.root() })
         end,
         desc = "Explorer NeoTree (Root Dir)",

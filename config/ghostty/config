@@ -1,0 +1,10 @@
+# Catppuccin Mocha Theme for Ghostty / cmux
+theme = Catppuccin Mocha
+font-family = "CaskaydiaCove Nerd Font"
+font-size = 16
+window-padding-x = 15
+window-padding-y = 15
+macos-option-as-alt = left
+window-decoration = false
+cursor-style = block
+cursor-style-blink = false

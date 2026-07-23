@@ -23,3 +23,27 @@ export PATH="/Users/eric/.antigravity-ide/antigravity-ide/bin:$PATH"
 
 # Kiro CLI post block. Keep at the bottom of this file.
 [[ -f "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.post.zsh" ]] && builtin source "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.post.zsh"
+
+# OpenClaw Completion
+[ -f "/Users/eric/.openclaw/completions/openclaw.zsh" ] && source "/Users/eric/.openclaw/completions/openclaw.zsh"
+# The following lines have been added by Docker Desktop to enable Docker CLI completions.
+fpath=(/Users/eric/.docker/completions $fpath)
+autoload -Uz compinit
+compinit
+# End of Docker CLI completions
+
+# Node Version Manager (NVM) — lazy-loaded in ~/.config/zsh/config.zsh, don't re-source here
+
+# Force OpenClaw Path
+export PATH="$HOME/.nvm/versions/node/v24.13.0/bin:$PATH"
+
+# >>> grok installer >>>
+export PATH="$HOME/.grok/bin:$PATH"
+fpath=(~/.grok/completions/zsh $fpath)
+autoload -Uz compinit && compinit -C
+# <<< grok installer <<<
+
+
+
+# Added by Antigravity CLI installer
+export PATH="/Users/eric/.local/bin:$PATH"
