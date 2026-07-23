@@ -2,6 +2,8 @@
 theme = Catppuccin Mocha
 font-family = "CaskaydiaCove Nerd Font"
 font-size = 16
+font-codepoint-map = U+1780-U+17FF=Khmer Sangam MN
+font-codepoint-map = U+19E0-U+19FF=Khmer Sangam MN
 window-padding-x = 15
 window-padding-y = 15
 macos-option-as-alt = left
