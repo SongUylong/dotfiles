@@ -47,3 +47,17 @@ autoload -Uz compinit && compinit -C
 
 # Added by Antigravity CLI installer
 export PATH="/Users/eric/.local/bin:$PATH"
+alias agy="agy --dangerously-skip-permissions"
+alias sprint="ssh sprint"
+
+# Agent Browser configuration
+export AGENT_BROWSER_EXECUTABLE_PATH="/Applications/Brave Browser.app/Contents/MacOS/Brave Browser"
+
+
+
+# strix
+export PATH=/Users/eric/.strix/bin:$PATH
+
+# Qwen Code PATH block begin
+export PATH='/Users/eric/.local/bin':$PATH
+# Qwen Code PATH block end

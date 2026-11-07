@@ -4,216 +4,208 @@ export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 
 CONFIG_DIR="${CONFIG_DIR:-$HOME/.config/sketchybar}"
 PLUGIN_DIR="$CONFIG_DIR/plugins"
-ITEM_DIR="$CONFIG_DIR/items"
+source "$CONFIG_DIR/colors.sh"
 
-##### Bar Appearance #####
-sketchybar --bar position=top height=40 blur_radius=0 color=0x40000000
+##### Bar #####
+sketchybar --bar \
+  position=top height=38 \
+  color=$BAR_COLOR blur_radius=30 \
+  margin=8 y_offset=4 corner_radius=12 \
+  border_width=1 border_color=$SURFACE1 \
+  padding_left=6 padding_right=6 \
+  shadow=on sticky=on topmost=off
 
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-##### Default Item Style #####
+##### Defaults (shared pill style) #####
 default=(
-  padding_left=6
-  padding_right=6
+  updates=when_shown
+  padding_left=3
+  padding_right=3
   icon.font="CaskaydiaCove Nerd Font:Bold:14.0"
   label.font="SF Pro:Semibold:13.0"
-  icon.color=0xffffffff
-  label.color=0xffffffff
-  icon.padding_left=4
-  icon.padding_right=4
+  icon.color=$TEXT
+  label.color=$TEXT
+  icon.padding_left=10
+  icon.padding_right=5
   label.padding_left=0
-  label.padding_right=0
-  updates=on
+  label.padding_right=10
+  background.color=$PILL_COLOR
+  background.corner_radius=9
+  background.height=26
+  background.drawing=on
 )
 sketchybar --default "${default[@]}"
 
-# Wipe all items so we always rebuild in the correct order.
+# Rebuild from scratch so the order is always right
 sketchybar --remove '/.*/'
 
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Helper: a pill item  →  pill <name> <position> [extra sketchybar props...]
+pill() { local n=$1 p=$2; shift 2; sketchybar --add item "$n" "$p" --set "$n" "$@"; }
+# Helper: transparent segment inside a bracket
+seg()  { local n=$1 p=$2; shift 2; sketchybar --add item "$n" "$p" --set "$n" background.drawing=off "$@"; }
+group(){ local n=$1; shift; sketchybar --add bracket "$n" "$@" --set "$n" \
+          background.color=$PILL_COLOR background.corner_radius=9 background.height=26 background.drawing=on; }
 
-# Spaces — show exactly 5
+#################### LEFT ####################
+
+pill kanika left icon="" icon.color=$MAUVE label="Potato" label.color=$MAUVE \
+  updates=on
+
+# Spaces (first 5)
 SPACE_COUNT=5
-
-# Retry yabai query up to 5 times (yabai can be briefly unavailable during reload)
 spaces_raw=""
-for _attempt in 1 2 3 4 5; do
+for _ in 1 2 3 4 5; do
   spaces_raw=$(yabai -m query --spaces 2>/dev/null | jq -r --argjson n "$SPACE_COUNT" \
     '.[] | select(.index <= $n) | "\(.index) \(.display)"')
   [ -n "$spaces_raw" ] && break
   sleep 0.3
 done
 
-if [ -n "$spaces_raw" ]; then
-  while IFS=" " read -r sid display_id; do
-    [ -z "$sid" ] && continue
-    sketchybar --add item "space.$sid" left \
-      --set "space.$sid" \
-        display="$display_id" \
-        drawing=on \
-        background.color=0xff3c3e4f \
-        background.corner_radius=14 \
-        background.height=28 \
-        background.drawing=on \
-        icon.drawing=on \
-        icon.color=0xffffffff \
-        icon.font="CaskaydiaCove Nerd Font:Bold:16.0" \
-        icon.padding_left=8 \
-        icon.padding_right=8 \
-        icon.y_offset=-1 \
-        label.drawing=off \
-        click_script="yabai -m space --focus $sid && $PLUGIN_DIR/update_workspace_icons.sh" \
-        script=""
-  done <<< "$spaces_raw"
-fi
+# Each space = one pill (bracket) holding: [number] [app] [app] [app] ...
+# Icons are filled in by update_workspace_icons.sh. The active space shows
+# every app at full size; inactive spaces collapse to their front app + "+N".
+MAX_APPS=6
+while IFS=" " read -r sid display_id; do
+  [ -z "$sid" ] && continue
+  focus="yabai -m space --focus $sid"
+  sketchybar --add item "space.$sid" left --set "space.$sid" \
+    display="$display_id" updates=on background.drawing=off \
+    icon="$sid" icon.font="SF Pro:Bold:12.0" icon.color=$SUBTEXT \
+    icon.padding_left=14 icon.padding_right=8 \
+    label.drawing=off label.font="SF Pro:Bold:10.0" \
+    label.padding_left=4 label.padding_right=18 \
+    click_script="$focus"
+  members=("space.$sid")
+  for k in $(seq 1 $MAX_APPS); do
+    sketchybar --add item "space.$sid.$k" left --set "space.$sid.$k" \
+      display="$display_id" updates=on drawing=off background.drawing=off \
+      icon="" icon.width=22 icon.padding_left=5 icon.padding_right=5 \
+      icon.background.drawing=on icon.background.color=0x00000000 \
+      icon.background.image.drawing=on icon.background.image.scale=0.6 \
+      label.drawing=off padding_left=0 padding_right=0 \
+      click_script="$focus"
+    members+=("space.$sid.$k")
+  done
+  sketchybar --add bracket "space_bg.$sid" "${members[@]}" --set "space_bg.$sid" \
+    background.color=$PILL_COLOR background.corner_radius=14 \
+    background.height=30 background.drawing=on \
+    background.border_color=$ACCENT background.border_width=0
+  # small gap between space pills
+  sketchybar --add item "space_gap.$sid" left --set "space_gap.$sid" \
+    width=6 background.drawing=off icon.drawing=off label.drawing=off
+done <<< "$spaces_raw"
 
-# Extract real app icons in background (skips already-extracted ones)
 "$PLUGIN_DIR/extract_app_icons.sh" &
-
 "$PLUGIN_DIR/update_workspace_icons.sh"
 
-# --- Left side status items ---
-sketchybar --add item kanika left 2>/dev/null
-sketchybar --set kanika \
-  icon="" \
-  label="Potato" \
-  label.drawing=on \
-  icon.padding_left=8 \
-  icon.padding_right=4 \
-  label.padding_right=8 \
-  background.color=0xff3c3e4f \
-  background.corner_radius=8 \
-  background.height=28 \
-  background.drawing=on \
-  script="" \
-  click_script="" \
-  update_freq=0
+# Front app name (event driven, no polling)
+pill front_app left \
+  icon.drawing=off \
+  label.padding_left=10 \
+  label.color=$LAVENDER \
+  background.drawing=off \
+  updates=on \
+  script="$PLUGIN_DIR/front_app.sh"
+sketchybar --subscribe front_app front_app_switched
 
-sketchybar --add item bluetooth left 2>/dev/null
-sketchybar --set bluetooth \
-  icon="󰂯" \
-  label.drawing=on \
-  icon.padding_left=8 \
-  icon.padding_right=4 \
-  label.padding_right=8 \
-  background.color=0xff3c3e4f \
-  background.corner_radius=8 \
-  background.height=28 \
-  background.drawing=on \
-  script="$PLUGIN_DIR/bluetooth.sh" \
-  click_script="open 'x-apple.systempreferences:com.apple.preferences.Bluetooth'" \
-  update_freq=10
+#################### RIGHT (rightmost first) ####################
 
-sketchybar --add item network left 2>/dev/null
-sketchybar --set network \
-  icon.padding_left=8 \
-  icon.padding_right=4 \
-  label.padding_right=8 \
-  background.color=0xff3c3e4f \
-  background.corner_radius=8 \
-  background.height=28 \
-  background.drawing=on \
-  script="$PLUGIN_DIR/network.sh" \
-  update_freq=2
+pill clock right icon="󰥔" icon.color=$PEACH \
+  update_freq=15 updates=on script="$PLUGIN_DIR/clock.sh" \
+  click_script="open -a Calendar"
 
-sketchybar --add item monitor left 2>/dev/null
-sketchybar --set monitor \
-  icon.padding_left=8 \
-  icon.padding_right=4 \
-  label.padding_right=8 \
-  background.color=0xff3c3e4f \
-  background.corner_radius=8 \
-  background.height=28 \
-  background.drawing=on \
-  script="$PLUGIN_DIR/monitor.sh" \
-  update_freq=10
-
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-##### Right Side Items #####
-sketchybar --add item clock right 2>/dev/null
-sketchybar --set clock \
-  icon="󰥔" \
-  label.drawing=on \
-  icon.padding_left=8 \
-  icon.padding_right=4 \
-  label.padding_right=8 \
-  background.color=0xff3c3e4f \
-  background.corner_radius=8 \
-  background.height=28 \
-  background.drawing=on \
-  script="$PLUGIN_DIR/clock.sh" \
-  update_freq=10
-
-sketchybar --add item battery right 2>/dev/null
-sketchybar --set battery \
-  update_freq=120 \
-  script="$PLUGIN_DIR/battery.sh" \
-  icon.padding_left=8 \
-  icon.padding_right=4 \
-  label.padding_right=8 \
-  background.color=0xff3c3e4f \
-  background.corner_radius=8 \
-  background.height=28 \
-  background.drawing=on
+pill battery right update_freq=60 script="$PLUGIN_DIR/battery.sh"
 sketchybar --subscribe battery system_woke power_source_change
 
-sketchybar --add item volume right 2>/dev/null
-sketchybar --set volume \
-  script="$PLUGIN_DIR/volume.sh" \
-  icon.padding_left=8 \
-  icon.padding_right=4 \
-  label.padding_right=8 \
-  background.color=0xff3c3e4f \
-  background.corner_radius=8 \
-  background.height=28 \
-  background.drawing=on
-sketchybar --subscribe volume volume_change
+pill volume right script="$PLUGIN_DIR/volume.sh"
+sketchybar --subscribe volume volume_change mouse.scrolled mouse.clicked
 
-sketchybar --add item wifi right 2>/dev/null
-sketchybar --set wifi \
-  icon="󰤨" \
-  label.drawing=on \
-  icon.padding_left=8 \
-  icon.padding_right=4 \
-  label.padding_right=8 \
-  background.color=0xff3c3e4f \
-  background.corner_radius=8 \
-  background.height=28 \
-  background.drawing=on \
-  script="$PLUGIN_DIR/wifi.sh" \
-  click_script="open 'x-apple.systempreferences:com.apple.preference.network?Wi-Fi'" \
-  update_freq=10
+pill wifi right icon="󰤨" update_freq=30 script="$PLUGIN_DIR/wifi.sh" \
+  click_script="open 'x-apple.systempreferences:com.apple.preference.network?Wi-Fi'"
+sketchybar --subscribe wifi wifi_change system_woke
 
-sketchybar --add item cpu right 2>/dev/null
-sketchybar --set cpu \
-  icon.padding_left=8 \
-  icon.padding_right=4 \
-  label.padding_right=8 \
-  background.color=0xff3c3e4f \
-  background.corner_radius=8 \
-  background.height=28 \
-  background.drawing=on \
-  script="$PLUGIN_DIR/cpu.sh" \
-  update_freq=5
+pill bluetooth right icon="󰂯" icon.color=$BLUE update_freq=30 \
+  popup.background.color=$BASE popup.background.corner_radius=10 \
+  popup.background.border_width=1 popup.background.border_color=$SURFACE1 \
+  popup.align=right popup.y_offset=6 \
+  script="$PLUGIN_DIR/bluetooth.sh" click_script="$PLUGIN_DIR/bluetooth.sh click"
 
-sketchybar --add item ram right 2>/dev/null
-sketchybar --set ram \
-  icon.padding_left=8 \
-  icon.padding_right=4 \
-  label.padding_right=8 \
-  background.color=0xff3c3e4f \
-  background.corner_radius=8 \
-  background.height=28 \
-  background.drawing=on \
-  script="$PLUGIN_DIR/ram.sh" \
-  update_freq=5
+pill mic right update_freq=10 script="$PLUGIN_DIR/mic.sh" \
+  click_script="$PLUGIN_DIR/mic.sh toggle"
+sketchybar --subscribe mic mic_update
 
-#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+##### Dropdowns (click the icon, like Bluetooth) #####
+g() { printf "$1"; }   # glyphs are written as byte escapes so they can't get lost
+G_GAUGE=$(g '\357\203\244');   G_SPARK=$(g '\363\260\231\264')
+G_CPU=$(g '\357\222\274');     G_RAM=$(g '\363\260\215\233');  G_TEMP=$(g '\363\260\224\217')
+G_DISK=$(g '\363\260\213\212'); G_BOLT=$(g '\363\261\220\213'); G_FLASH=$(g '\363\260\211\201')
+G_5H=$(g '\363\260\224\237');  G_WK=$(g '\363\260\203\255');   G_RESET=$(g '\363\260\221\220')
+G_CLOCK=$(g '\363\260\245\224')
 
-# Enforce correct visual order: spaces first, then status items.
-# This is idempotent — safe to run on every reload.
-sketchybar --reorder space.1 space.2 space.3 space.4 space.5 \
-                    kanika bluetooth network monitor
+dropdown() {   # dropdown <toggle name> <icon> <color>
+  pill "$1" right icon="$2" icon.color=$3 label.drawing=off \
+    icon.font="CaskaydiaCove Nerd Font:Bold:15.0" icon.padding_left=10 icon.padding_right=10 \
+    updates=on script="$PLUGIN_DIR/expander.sh" \
+    popup.align=right popup.y_offset=8 popup.height=30 \
+    popup.background.color=$BASE popup.background.corner_radius=12 \
+    popup.background.border_width=1 popup.background.border_color=$SURFACE1 \
+    popup.background.shadow.drawing=on popup.blur_radius=20
+  sketchybar --subscribe "$1" mouse.clicked
+}
+row() {        # row <name> <parent> <glyph> <title> <glyph color> [extra props]
+  local n=$1 p=$2 gl=$3 t=$4 c=$5; shift 5
+  sketchybar --add item "$n" "popup.$p" --set "$n" background.drawing=off \
+    icon="$gl  $t" icon.color=$c icon.font="CaskaydiaCove Nerd Font:Regular:12.0" \
+    icon.width=104 icon.padding_left=18 icon.padding_right=0 \
+    label.font="SF Pro:Semibold:13.0" label.color=$TEXT \
+    label.width=200 label.align=left label.padding_left=0 label.padding_right=16 "$@"
+}
+header() {     # header <name> <parent> <image> <scale> <title>
+  sketchybar --add item "$1" "popup.$2" --set "$1" \
+    width=322 padding_left=8 padding_right=8 \
+    background.drawing=on background.color=$SURFACE0 background.corner_radius=8 background.height=26 \
+    icon="" icon.width=22 icon.padding_left=10 icon.padding_right=0 \
+    icon.background.drawing=on icon.background.image="$3" icon.background.image.scale=$4 \
+    icon.background.color=0x00000000 \
+    label="$5" label.font="SF Pro:Bold:13.0" label.color=$TEXT label.padding_left=8 label.padding_right=12 \
+    click_script="SENDER=mouse.clicked $PLUGIN_DIR/ai_usage.sh"
+}
+divider() {    # divider <name> <parent>
+  sketchybar --add item "$1" "popup.$2" --set "$1" width=344 padding_left=14 \
+    icon.drawing=off label.drawing=off background.drawing=on \
+    background.height=1 background.color=$SURFACE0 background.corner_radius=0
+}
+
+# ---- System monitor ----
+sketchybar --add event stats_refresh
+dropdown stats_toggle "$G_GAUGE" $GREEN
+row cpu    stats_toggle "$G_CPU"   "CPU"     $GREEN label.width=80 label.align=right update_freq=5 updates=on script="$PLUGIN_DIR/cpu.sh" \
+  click_script="open -a 'Activity Monitor'"
+row ram    stats_toggle "$G_RAM"   "Memory"  $TEAL   label.width=80 label.align=right update_freq=10 script="$PLUGIN_DIR/ram.sh"
+row temp   stats_toggle "$G_TEMP"  "Temp"    $PEACH  label.width=80 label.align=right update_freq=10 script="$PLUGIN_DIR/temp.sh"
+row disk   stats_toggle "$G_DISK"  "Disk free" $YELLOW label.width=80 label.align=right update_freq=120 script="$PLUGIN_DIR/disk.sh"
+row pw_in  stats_toggle "$G_BOLT"  "Charger" $GREEN  label.width=80 label.align=right update_freq=10 script="$PLUGIN_DIR/power.sh"
+row pw_use stats_toggle "$G_FLASH" "Power draw" $PEACH label.width=80 label.align=right
+sketchybar --subscribe pw_in system_woke power_source_change \
+  --subscribe cpu stats_refresh --subscribe ram stats_refresh --subscribe temp stats_refresh \
+  --subscribe disk stats_refresh --subscribe pw_in stats_refresh
+
+# ---- AI usage ----
+sketchybar --add event ai_refresh
+dropdown ai_toggle "$G_SPARK" $MAUVE
+header  ai_h_claude ai_toggle app.com.anthropic.claudefordesktop 0.55 "Claude"
+row     ai_c5 ai_toggle "$G_5H" "5-hour"  $SUBTEXT
+row     ai_c7 ai_toggle "$G_WK" "Weekly"  $SUBTEXT
+header  ai_h_codex ai_toggle "$CONFIG_DIR/app_icons/Codex_ai.png" 0.31 "Codex"
+row     ai_x5 ai_toggle "$G_5H" "5-hour"  $SUBTEXT
+row     ai_x7 ai_toggle "$G_WK" "Weekly"  $SUBTEXT
+row     ai_xreset ai_toggle "$G_RESET" "Resets" $TEAL
+row     ai_footer ai_toggle "$G_CLOCK" "Updated" $OVERLAY0 \
+  label.font="SF Pro:Medium:11.0" label.color=$OVERLAY0 label.align=right \
+  updates=on update_freq=300 script="$PLUGIN_DIR/ai_usage.sh" \
+  click_script="SENDER=mouse.clicked $PLUGIN_DIR/ai_usage.sh"
+sketchybar --subscribe ai_footer ai_refresh system_woke
+
+NAME=stats_toggle "$PLUGIN_DIR/expander.sh" init
+NAME=ai_toggle    "$PLUGIN_DIR/expander.sh" init
 
 sketchybar --update

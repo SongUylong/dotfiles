@@ -1,15 +1,19 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "provider": {
-    "xai": {
+    "openai": {
+      "options": {
+        "baseURL": "http://localhost:20128/v1",
+        "apiKey": "9router"
+      },
       "models": {
-        "grok-composer-2.5-fast": {
-          "name": "Grok Composer 2.5 Fast"
+        "ag/gemini-3.6-flash-high": {
+          "name": "Gemini 3.6 Flash High"
+        },
+        "ag/claude-sonnet-4-6": {
+          "name": "Claude Sonnet 4.6"
         }
       }
-    },
-    "anthropic": {
-      "whitelist": ["claude-3-5-sonnet-20241022"]
     }
   }
 }

@@ -9,8 +9,8 @@ config.font_size = 16
 config.send_composed_key_when_left_alt_is_pressed = false
 
 -- ── Performance ───────────────────────────────────────────────────────────────
-config.max_fps = 120
-config.animation_fps = 120
+config.max_fps = 144
+config.animation_fps = 144
 config.status_update_interval = 1000
 
 -- ── General ───────────────────────────────────────────────────────────────────

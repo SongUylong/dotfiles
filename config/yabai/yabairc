@@ -76,6 +76,13 @@ yabai -m signal --remove sketchybar_window_created  2>/dev/null || true
 yabai -m signal --remove sketchybar_window_destroyed 2>/dev/null || true
 yabai -m signal --remove sketchybar_app_launched    2>/dev/null || true
 yabai -m signal --remove sketchybar_app_terminated  2>/dev/null || true
+yabai -m signal --remove sketchybar_window_focused 2>/dev/null || true
+yabai -m signal --remove sketchybar_window_moved 2>/dev/null || true
+yabai -m signal --remove sketchybar_window_minimized 2>/dev/null || true
+yabai -m signal --remove sketchybar_window_deminimized 2>/dev/null || true
+yabai -m signal --remove sketchybar_app_front 2>/dev/null || true
+yabai -m signal --remove sketchybar_app_hidden 2>/dev/null || true
+yabai -m signal --remove sketchybar_app_visible 2>/dev/null || true
 yabai -m signal --remove messaging_layout_telegram  2>/dev/null || true
 yabai -m signal --remove messaging_layout_whatsapp  2>/dev/null || true
 yabai -m signal --remove messaging_layout_wechat    2>/dev/null || true
@@ -86,6 +93,13 @@ yabai -m signal --add label=sketchybar_window_created   event=window_created    
 yabai -m signal --add label=sketchybar_window_destroyed event=window_destroyed     action="$refresh_bar"
 yabai -m signal --add label=sketchybar_app_launched     event=application_launched action="$refresh_bar"
 yabai -m signal --add label=sketchybar_app_terminated   event=application_terminated action="$refresh_bar"
+yabai -m signal --add label=sketchybar_window_focused event=window_focused action="$refresh_bar"
+yabai -m signal --add label=sketchybar_window_moved event=window_moved action="$refresh_bar"
+yabai -m signal --add label=sketchybar_window_minimized event=window_minimized action="$refresh_bar"
+yabai -m signal --add label=sketchybar_window_deminimized event=window_deminimized action="$refresh_bar"
+yabai -m signal --add label=sketchybar_app_front event=application_front_switched action="$refresh_bar"
+yabai -m signal --add label=sketchybar_app_hidden event=application_hidden action="$refresh_bar"
+yabai -m signal --add label=sketchybar_app_visible event=application_visible action="$refresh_bar"
 
 # Trigger messaging layout when Telegram/WhatsApp/WeChat opens
 msg_layout="$HOME/.config/yabai/plugins/messaging_layout.sh"

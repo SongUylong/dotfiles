@@ -1,33 +1,13 @@
 #!/bin/sh
-
-NAME="wifi"
-# Find WiFi device
+. "${CONFIG_DIR:-$HOME/.config/sketchybar}/colors.sh"
 DEVICE=$(networksetup -listallhardwareports | awk '/Wi-Fi/{getline; print $2}')
-
-if [ -z "$DEVICE" ]; then
-    # No WiFi device
-    ICON="󰤭"
-    LABEL=""
-    ICON_COLOR="0xffe06c75" # red
+SSID=""
+[ -n "$DEVICE" ] && SSID=$(ipconfig getsummary "$DEVICE" 2>/dev/null | awk -F ' SSID : ' '/ SSID : / {print $2; exit}')
+if [ -n "$SSID" ]; then
+  sketchybar --set "$NAME" icon="󰤨" icon.color=$GREEN label="$SSID" label.drawing=on
+elif [ -n "$DEVICE" ] && ipconfig getifaddr "$DEVICE" >/dev/null 2>&1; then
+  # Connected but SSID hidden by macOS privacy
+  sketchybar --set "$NAME" icon="󰤨" icon.color=$GREEN label.drawing=off
 else
-    INFO=$(networksetup -listallhardwareports | awk '/Wi-Fi/{getline; print $2}' | xargs networksetup -getairportnetwork | sed 's/Current Wi-Fi Network: //')
-    if [ -z "$INFO" ] || [ "$INFO" = "Off" ] || printf "%s" "$INFO" | grep -q "^You are not associated"; then
-        ALT_INFO=$(ipconfig getsummary "$DEVICE" | awk -F ' SSID : ' '/ SSID : / {print $2}')
-        [ -n "$ALT_INFO" ] && INFO="$ALT_INFO"
-    fi
-    SSID="$INFO"
-    case "$SSID" in
-        "" | "Off" | "You are not associated"*)
-            ICON="󰤭"
-            LABEL=""
-            ICON_COLOR="0xffe06c75" # red
-            ;;
-        *)
-            ICON="󰤨"
-            LABEL="$SSID"
-            ICON_COLOR="0xff98c379" # green
-            ;;
-    esac
+  sketchybar --set "$NAME" icon="󰤭" icon.color=$RED label.drawing=off
 fi
-
-sketchybar --set "$NAME" icon="$ICON" label="$LABEL" icon.color=$ICON_COLOR

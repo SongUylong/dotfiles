@@ -1,36 +1,15 @@
 #!/bin/sh
-
-# Get battery percentage
-PERCENTAGE=$(pmset -g batt | grep -Eo "\d+%" | cut -d% -f1)
-CHARGING=$(pmset -g batt | grep 'AC Power')
-
-# Get time remaining
-TIME_REMAINING=$(pmset -g batt | grep -Eo '\d+:\d+' | head -1)
-
-# Determine icon based on percentage and charging status
-if [ -n "$CHARGING" ]; then
-    ICON="󰂄" # Charging icon
-else
-    if [ "$PERCENTAGE" -ge 90 ]; then
-        ICON="󰁹"
-    elif [ "$PERCENTAGE" -ge 70 ]; then
-        ICON="󰂀"
-    elif [ "$PERCENTAGE" -ge 50 ]; then
-        ICON="󰁾"
-    elif [ "$PERCENTAGE" -ge 30 ]; then
-        ICON="󰁼"
-    elif [ "$PERCENTAGE" -ge 10 ]; then
-        ICON="󰁺"
-    else
-        ICON="󰂃"
-    fi
+. "${CONFIG_DIR:-$HOME/.config/sketchybar}/colors.sh"
+BATT=$(pmset -g batt)
+PCT=$(echo "$BATT" | grep -Eo "[0-9]+%" | cut -d% -f1)
+[ -z "$PCT" ] && { sketchybar --set "$NAME" drawing=off; exit 0; }
+if echo "$BATT" | grep -q 'AC Power'; then
+  ICON="󰂄"; COLOR=$GREEN
+elif [ "$PCT" -ge 90 ]; then ICON="󰁹"; COLOR=$GREEN
+elif [ "$PCT" -ge 70 ]; then ICON="󰂀"; COLOR=$GREEN
+elif [ "$PCT" -ge 50 ]; then ICON="󰁾"; COLOR=$YELLOW
+elif [ "$PCT" -ge 30 ]; then ICON="󰁼"; COLOR=$PEACH
+elif [ "$PCT" -ge 10 ]; then ICON="󰁺"; COLOR=$RED
+else ICON="󰂃"; COLOR=$RED
 fi
-
-# Format time remaining for display
-if [ -n "$TIME_REMAINING" ]; then
-    LABEL="${PERCENTAGE}% (${TIME_REMAINING})"
-else
-    LABEL="${PERCENTAGE}%"
-fi
-
-sketchybar --set "$NAME" icon="$ICON" label="$LABEL"
+sketchybar --set "$NAME" icon="$ICON" icon.color=$COLOR label="${PCT}%"

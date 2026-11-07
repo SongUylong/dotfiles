@@ -1,6 +1,7 @@
 # App launchers
 alt - c : open -n /Applications/Cursor.app
-alt - t : open -n -a kitty
+# one kitty process; each press opens a new window in it (so cmd+q quits everything)
+alt - t : /Applications/kitty.app/Contents/MacOS/kitty --single-instance --directory ~ >/dev/null 2>&1 &
 alt - b : open -n "/Applications/Brave Browser.app"
 alt - n : open -n /Applications/Notion.app
 alt + shift - f : open -a Finder
@@ -8,6 +9,7 @@ alt + shift - f : open -a Finder
 # Window lifecycle and services
 alt - q : yabai -m window --close
 alt + shift - t : sketchybar --reload
+alt + shift - b : /Users/eric/.config/yabai/toggle_bar.sh
 alt + shift - 0x29 : yabai --restart-service && skhd --restart-service
 alt + shift - 0x33 : focused="$(yabai -m query --windows --window | jq -r '.id')" && yabai -m query --windows --space | jq -r --arg focused "$focused" '.[] | select((.id|tostring) != $focused) | .id' | while read -r id; do yabai -m window "$id" --close; done
 
