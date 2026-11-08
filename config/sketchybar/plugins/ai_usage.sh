@@ -25,7 +25,7 @@ seg() {    # pct reset_epoch -> "29% 1h12m" | "reset"
   if [ -n "$r" ] && [ -z "$t" ]; then printf 'reset'; else printf '%s%%%s' "$p" "${t:+ $t}"; fi
 }
 
-CJ="$CACHE/claude_usage.json"; CL="$CACHE/claude_live.json"; XJ="$CACHE/codex_usage.json"
+CJ="$CACHE/claude_usage.json"; XJ="$CACHE/codex_usage.json"
 # How fresh data must be: 25s while the group is open, 2 min when collapsed.
 # Opening it (ai_refresh) or clicking a logo always fetches fresh.
 MAXAGE=120; [ -f "$CACHE/ai_toggle.open" ] && MAXAGE=25
@@ -34,14 +34,12 @@ stale() { [ -n "$FORCE" ] || [ ! -f "$1" ] || [ $(( NOW - $(stat -f %m "$1") )) 
 
 CB="$CACHE/claude_backoff"   # epoch until which Anthropic told us to wait (HTTP 429)
 fetch_claude() {
-  # Main source is Claude Code's status line (claude_statusline.sh), which
-  # saves the numbers after every reply at no cost. Anthropic's usage API
-  # rate-limits hard (a 429 can mean ~1h of waiting), so it is only a
-  # fallback for when Claude Code hasn't run lately: data older than
-  # 15 min, at most every 15 min (5 min when you click refresh).
+  # Anthropic rate-limits this endpoint hard (a 429 can mean ~1h of waiting),
+  # so Claude is polled slowly: every 5 min while the panel is open, 15 min
+  # otherwise, and a click only refreshes data that is at least 5 min old.
   local age=999999 min=900 tok out code ra hdr
-  [ -f "$CL" ] && [ $(( NOW - $(stat -f %m "$CL") )) -lt 900 ] && return 0
   [ -f "$CJ" ] && age=$(( NOW - $(stat -f %m "$CJ") ))
+  [ -f "$CACHE/ai_toggle.open" ] && min=300
   [ -n "$FORCE" ] && min=300
   [ "$age" -lt "$min" ] && return 0
   [ -f "$CB" ] && [ "$(cat "$CB")" -gt "$NOW" ] 2>/dev/null && return 0
@@ -83,11 +81,7 @@ fi
 
 # ---------- Claude ----------
 c5=""; c5r=""; c7=""; c7r=""
-# newest of: status-line numbers (epoch resets) or API response (ISO resets)
-if [ -f "$CL" ] && { [ ! -f "$CJ" ] || [ "$CL" -nt "$CJ" ]; }; then
-  IFS='|' read -r c5 c5r c7 c7r <<< "$(jq -r '[.five // "", .five_reset // "", .week // "", .week_reset // ""] | map(tostring) | join("|")' "$CL")"
-  c5r=${c5r%.*}; c7r=${c7r%.*}
-elif [ -f "$CJ" ]; then
+if [ -f "$CJ" ]; then
   read -r c5 c5iso c7 c7iso <<< "$(jq -r '[.five_hour.utilization // "", .five_hour.resets_at // "", .seven_day.utilization // "", .seven_day.resets_at // ""] | map(tostring) | join(" ")' "$CJ")"
   c5r=$(iso2epoch "$c5iso"); c7r=$(iso2epoch "$c7iso")
 fi
@@ -126,6 +120,8 @@ meter_args() {   # item pct reset_epoch -> sketchybar --set args
   if [ -z "$p" ]; then
     printf '%s\n' --set "$item" label="—" label.color=$OVERLAY0; return; fi
   if [ -n "$r" ] && [ "$r" -le "$NOW" ]; then
+    # Claude's saved numbers are older than this reset: real usage is unknown
+    case "$item" in ai_c*) printf '%s\n' --set "$item" label="$(bar 0)   waiting for data" label.color=$OVERLAY0; return ;; esac
     printf '%s\n' --set "$item" label="$(bar 0)   reset ✓" label.color=$TEAL; return; fi
   t=$(left "$r")
   printf '%s\n' --set "$item" label="$(bar "$p")  ${p}%${t:+  ·  $t}" label.color="$(col "$p")"
@@ -154,13 +150,12 @@ xplan=$(jq -r '.plan_type // empty' "$XJ" 2>/dev/null)
 cap() { printf '%s' "$1" | awk '{print toupper(substr($0,1,1)) substr($0,2)}'; }
 args+=(--set ai_h_claude label="Claude${cplan:+   ·   $(cap "$cplan")}"
        --set ai_h_codex  label="Codex${xplan:+   ·   $(cap "$xplan")}")
-age=999999; for f in "$CJ" "$CL" "$XJ"; do [ -f "$f" ] && { a=$(( $(date +%s) - $(stat -f %m "$f") )); [ $a -lt $age ] && age=$a; }; done
+age=999999; for f in "$CJ" "$XJ"; do [ -f "$f" ] && { a=$(( $(date +%s) - $(stat -f %m "$f") )); [ $a -lt $age ] && age=$a; }; done
 if   [ $age -lt 10 ];   then ago="just now"
 elif [ $age -lt 60 ];   then ago="${age}s ago"
 elif [ $age -lt 3600 ]; then ago="$((age/60))m ago"
 else ago="—"; fi
-live_ok=; [ -f "$CL" ] && [ $(( NOW - $(stat -f %m "$CL") )) -lt 900 ] && live_ok=1
-if [ -z "$live_ok" ] && [ -f "$CB" ] && [ "$(cat "$CB")" -gt "$NOW" ] 2>/dev/null; then
+if [ -f "$CB" ] && [ "$(cat "$CB")" -gt "$NOW" ] 2>/dev/null; then
   args+=(--set ai_footer label="Claude rate-limited · retry $(left "$(cat "$CB")")" label.color=$PEACH)
 else
   args+=(--set ai_footer label="$ago  ·  click to refresh" label.color=$OVERLAY0)
