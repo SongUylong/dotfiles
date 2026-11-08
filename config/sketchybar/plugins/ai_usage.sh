@@ -32,16 +32,32 @@ MAXAGE=120; [ -f "$CACHE/ai_toggle.open" ] && MAXAGE=25
 case "$SENDER" in ai_refresh|mouse.clicked) FORCE=1 ;; esac
 stale() { [ -n "$FORCE" ] || [ ! -f "$1" ] || [ $(( NOW - $(stat -f %m "$1") )) -ge "$MAXAGE" ]; }
 
+CB="$CACHE/claude_backoff"   # epoch until which Anthropic told us to wait (HTTP 429)
 fetch_claude() {
-  stale "$CJ" || return 0
-  local tok out
+  # Anthropic rate-limits this endpoint hard (a 429 can mean ~1h of waiting),
+  # so Claude is polled far less often than Codex: 3 min while open, 10 min
+  # otherwise, and a forced refresh still needs the data to be 90s old.
+  local age=999999 min=600 tok out code ra hdr
+  [ -f "$CJ" ] && age=$(( NOW - $(stat -f %m "$CJ") ))
+  [ -f "$CACHE/ai_toggle.open" ] && min=180
+  [ -n "$FORCE" ] && min=90
+  [ "$age" -lt "$min" ] && return 0
+  [ -f "$CB" ] && [ "$(cat "$CB")" -gt "$NOW" ] 2>/dev/null && return 0
   tok=$(security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null | jq -r '.claudeAiOauth.accessToken // empty')
   [ -z "$tok" ] && tok=$(jq -r '.claudeAiOauth.accessToken // empty' "$HOME/.claude/.credentials.json" 2>/dev/null)
-  if [ -n "$tok" ]; then
-    out=$(curl -s -m 6 https://api.anthropic.com/api/oauth/usage \
-          -H "Authorization: Bearer $tok" -H "anthropic-beta: oauth-2025-04-20" -H "User-Agent: claude-code")
-    echo "$out" | jq -e '.five_hour' >/dev/null 2>&1 && printf '%s' "$out" > "$CJ"
+  [ -z "$tok" ] && return 0
+  hdr="$CACHE/claude_hdr.$$"
+  out=$(curl -s -m 6 -D "$hdr" -w '\n%{http_code}' https://api.anthropic.com/api/oauth/usage \
+        -H "Authorization: Bearer $tok" -H "anthropic-beta: oauth-2025-04-20" -H "User-Agent: claude-code")
+  code=${out##*$'\n'}; out=${out%$'\n'*}
+  if [ "$code" = 429 ]; then
+    ra=$(awk -F': ' 'tolower($1)=="retry-after"{print $2+0}' "$hdr")
+    [ "${ra:-0}" -lt 300 ] 2>/dev/null && ra=300
+    echo $(( NOW + ra )) > "$CB"
+  elif echo "$out" | jq -e '.five_hour' >/dev/null 2>&1; then
+    printf '%s' "$out" > "$CJ"; rm -f "$CB"
   fi
+  rm -f "$hdr"
 }
 
 fetch_codex() {   # same endpoint Codex's /status uses (~/.codex/auth.json sign-in)
@@ -137,5 +153,9 @@ if   [ $age -lt 10 ];   then ago="just now"
 elif [ $age -lt 60 ];   then ago="${age}s ago"
 elif [ $age -lt 3600 ]; then ago="$((age/60))m ago"
 else ago="—"; fi
-args+=(--set ai_footer label="$ago  ·  click to refresh")
+if [ -f "$CB" ] && [ "$(cat "$CB")" -gt "$NOW" ] 2>/dev/null; then
+  args+=(--set ai_footer label="Claude rate-limited · retry $(left "$(cat "$CB")")" label.color=$PEACH)
+else
+  args+=(--set ai_footer label="$ago  ·  click to refresh" label.color=$OVERLAY0)
+fi
 sketchybar "${args[@]}" --set ai_toggle icon.color=$tcol

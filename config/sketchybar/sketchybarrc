@@ -116,23 +116,6 @@ pill clock right icon="󰥔" icon.color=$PEACH \
 pill battery right update_freq=60 script="$PLUGIN_DIR/battery.sh"
 sketchybar --subscribe battery system_woke power_source_change
 
-pill volume right script="$PLUGIN_DIR/volume.sh"
-sketchybar --subscribe volume volume_change mouse.scrolled mouse.clicked
-
-pill wifi right icon="󰤨" update_freq=30 script="$PLUGIN_DIR/wifi.sh" \
-  click_script="open 'x-apple.systempreferences:com.apple.preference.network?Wi-Fi'"
-sketchybar --subscribe wifi wifi_change system_woke
-
-pill bluetooth right icon="󰂯" icon.color=$BLUE update_freq=30 \
-  popup.background.color=$BASE popup.background.corner_radius=10 \
-  popup.background.border_width=1 popup.background.border_color=$SURFACE1 \
-  popup.align=right popup.y_offset=6 \
-  script="$PLUGIN_DIR/bluetooth.sh" click_script="$PLUGIN_DIR/bluetooth.sh click"
-
-pill mic right update_freq=10 script="$PLUGIN_DIR/mic.sh" \
-  click_script="$PLUGIN_DIR/mic.sh toggle"
-sketchybar --subscribe mic mic_update
-
 ##### Dropdowns (click the icon, like Bluetooth) #####
 g() { printf "$1"; }   # glyphs are written as byte escapes so they can't get lost
 G_GAUGE=$(g '\357\203\244');   G_SPARK=$(g '\363\260\231\264')
@@ -175,6 +158,25 @@ divider() {    # divider <name> <parent>
     background.height=1 background.color=$SURFACE0 background.corner_radius=0
 }
 
+# ---- Controls: volume, mic, Wi-Fi, Bluetooth ----
+sketchybar --add event controls_refresh
+dropdown controls_toggle "$(g '\363\260\225\276')" $TEXT
+sketchybar --subscribe controls_toggle mouse.scrolled
+CC="$PLUGIN_DIR/controls.sh"
+row cc_vol  controls_toggle "" "Volume"    $BLUE  click_script="$CC vol_click" \
+  updates=on update_freq=30 script="$CC"
+row cc_mic  controls_toggle "" "Mic"       $GREEN click_script="$CC mic_click"
+row cc_wifi controls_toggle "" "Wi-Fi"     $GREEN \
+  click_script="open 'x-apple.systempreferences:com.apple.preference.network?Wi-Fi'; NAME=controls_toggle SENDER=mouse.clicked $PLUGIN_DIR/expander.sh"
+row cc_bt   controls_toggle "" "Bluetooth" $BLUE \
+  click_script="open 'x-apple.systempreferences:com.apple.preferences.Bluetooth'; NAME=controls_toggle SENDER=mouse.clicked $PLUGIN_DIR/expander.sh"
+for i in 1 2 3 4; do
+  row cc_bt$i controls_toggle "" "" $SUBTEXT drawing=off icon.width=40 icon.padding_left=38 \
+    icon.font="CaskaydiaCove Nerd Font:Regular:13.0" label.width=264 \
+    label.font="SF Pro:Regular:12.0" label.color=$SUBTEXT
+done
+sketchybar --subscribe cc_vol volume_change mouse.scrolled wifi_change system_woke controls_refresh
+
 # ---- System monitor ----
 sketchybar --add event stats_refresh
 dropdown stats_toggle "$G_GAUGE" $GREEN
@@ -207,5 +209,7 @@ sketchybar --subscribe ai_footer ai_refresh system_woke
 
 NAME=stats_toggle "$PLUGIN_DIR/expander.sh" init
 NAME=ai_toggle    "$PLUGIN_DIR/expander.sh" init
+NAME=controls_toggle "$PLUGIN_DIR/expander.sh" init
+"$CC" forced
 
 sketchybar --update

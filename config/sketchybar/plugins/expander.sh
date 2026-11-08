@@ -2,10 +2,11 @@
 # Dropdown toggle (click to open/close, like Bluetooth). Opening one closes the other.
 STATE_DIR="$HOME/.cache/sketchybar"; mkdir -p "$STATE_DIR"
 . "${CONFIG_DIR:-$HOME/.config/sketchybar}/colors.sh"
-ALL="stats_toggle ai_toggle"
+ALL="stats_toggle ai_toggle controls_toggle"
 case "$NAME" in
   stats_toggle) EVENT=stats_refresh ;;
   ai_toggle)    EVENT=ai_refresh ;;
+  controls_toggle) EVENT=controls_refresh ;;
   *) exit 0 ;;
 esac
 
@@ -24,6 +25,7 @@ set_state() {   # set_state <toggle> on|off
 
 case "${1:-$SENDER}" in
   init)  set_state "$NAME" off ;;
+  mouse.scrolled) [ "$NAME" = controls_toggle ] && exec "${CONFIG_DIR:-$HOME/.config/sketchybar}/plugins/controls.sh" ;;
   mouse.clicked)
     if [ -f "$STATE_DIR/$NAME.open" ]; then set_state "$NAME" off
     else
