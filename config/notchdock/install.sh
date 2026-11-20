@@ -30,7 +30,10 @@ fi
 mkdir -p "$APP/Contents/MacOS"
 cp "$D/.build/release/NotchDock" "$APP/Contents/MacOS/NotchDock"
 cp "$D/packaging/Info.plist" "$APP/Contents/Info.plist"
-codesign -s - --force "$APP" >/dev/null 2>&1
+# Sign with a stable identity so macOS keeps Accessibility/Calendar/Location grants across
+# rebuilds (an ad-hoc signature changes every build and resets them). Override with NOTCHDOCK_SIGN.
+ID="${NOTCHDOCK_SIGN:-$(security find-identity -v -p codesigning | awk -F'"' '/Apple Development|NotchDock/{print $2; exit}')}"
+codesign -s "${ID:--}" --force --timestamp=none "$APP"
 
 # 2. Start at login (paths in the template are rewritten for this user)
 mkdir -p "$(dirname "$AGENT")"
