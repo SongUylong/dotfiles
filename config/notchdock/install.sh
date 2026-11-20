@@ -16,6 +16,8 @@ if [[ "${1:-}" == "--uninstall" ]]; then
   defaults delete com.apple.dock autohide-delay 2>/dev/null || true
   defaults write com.apple.dock autohide -bool false
   defaults delete com.apple.dock no-bouncing 2>/dev/null || true
+  defaults delete com.apple.dock wvous-tr-corner 2>/dev/null || true
+  defaults delete com.apple.dock wvous-tr-modifier 2>/dev/null || true
   killall Dock
   launchctl enable "$U/homebrew.mxcl.sketchybar"
   launchctl bootstrap "$U" "$HOME/Library/LaunchAgents/homebrew.mxcl.sketchybar.plist" 2>/dev/null || true
@@ -42,6 +44,9 @@ if [[ "${1:-}" != "--no-system" ]]; then
   defaults write com.apple.dock autohide -bool true
   defaults write com.apple.dock autohide-delay -float 1000
   defaults write com.apple.dock no-bouncing -bool true
+  # Top-right hot corner opens Notification Center (12), no modifier key.
+  defaults write com.apple.dock wvous-tr-corner -int 12
+  defaults write com.apple.dock wvous-tr-modifier -int 0
   killall Dock
   launchctl bootout "$U/homebrew.mxcl.sketchybar" 2>/dev/null || true
   launchctl disable "$U/homebrew.mxcl.sketchybar"
