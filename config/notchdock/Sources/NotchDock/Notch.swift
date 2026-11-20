@@ -89,7 +89,14 @@ struct NotchView: View {
                 else if !shelf.files.isEmpty { collapsedBadge }
             }
             .frame(width: width, height: height)
-            .onHover { h in withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) { shelf.expanded = h } }
+            // Hover target: only the middle of the notch when closed, the whole shelf when open.
+            .overlay(alignment: .top) {
+                Color.clear
+                    .frame(width: open ? width : geo.notchWidth * 0.6, height: open ? height : geo.notchHeight * 0.8)
+                    .contentShape(Rectangle())
+                    .onHover { h in withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) { shelf.expanded = h } }
+                    .allowsHitTesting(true)
+            }
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -265,7 +272,7 @@ final class NotchController {
         let p = NSEvent.mouseLocation
         // Only right at the notch: its width plus a small margin, and the top ~notch height.
         let geo = NotchGeometry.of(screen)
-        let near = abs(p.x - screen.frame.midX) < geo.notchWidth / 2 + 16 && p.y > screen.frame.maxY - geo.notchHeight - 8
+        let near = abs(p.x - screen.frame.midX) < geo.notchWidth * 0.3 && p.y > screen.frame.maxY - geo.notchHeight * 0.8
         if near != shelf.expanded { setExpanded(near) }
     }
 
@@ -291,8 +298,8 @@ final class NotchController {
         // Accept drops on the notch itself, or on the whole shelf once it is open.
         view.activeRect = { [weak shelf] in
             let open = (shelf?.expanded ?? false) || (shelf?.dropTargeted ?? false)
-            let ww: CGFloat = open ? max(geo.notchWidth + 260, 520) : geo.notchWidth + 16
-            let hh: CGFloat = open ? geo.notchHeight + 130 : geo.notchHeight + 4
+            let ww: CGFloat = open ? max(geo.notchWidth + 260, 520) : geo.notchWidth * 0.6
+            let hh: CGFloat = open ? geo.notchHeight + 130 : geo.notchHeight
             return NSRect(x: (w - ww) / 2, y: h - hh, width: ww, height: hh)
         }
         p.contentView = view
