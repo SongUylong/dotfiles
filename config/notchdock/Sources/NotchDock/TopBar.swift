@@ -109,8 +109,22 @@ struct TopBarView: View {
     @ObservedObject var state: TopBarState
     @State private var hoveringPotato = false
     let notchGap: CGFloat   // width reserved for the hardware notch (0 if none)
+    var dropdownOnly = false
 
     var body: some View {
+        if dropdownOnly {
+            // Lives in its own window under the bar, top-aligned so it never moves the bar.
+            VStack(spacing: 0) { dropdown; Spacer(minLength: 0) }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                .foregroundStyle(Mocha.text)
+                .environment(\.colorScheme, .dark)
+                .ignoresSafeArea()
+        } else {
+            barBody
+        }
+    }
+
+    private var barBody: some View {
         VStack(spacing: 8) {
             HStack(spacing: 6) {
                 left
@@ -125,14 +139,12 @@ struct TopBarView: View {
                     .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Mocha.surface1, lineWidth: 1))
                     .shadow(color: .black.opacity(0.3), radius: 8, y: 3)
             )
-            HStack { Spacer(); dropdown }.padding(.trailing, 8)
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 8)
         .padding(.top, 4)
         .foregroundStyle(Mocha.text)
         .environment(\.colorScheme, .dark)
-        .animation(.spring(response: 0.28, dampingFraction: 0.85), value: state.open)
         .ignoresSafeArea()
     }
 
@@ -300,7 +312,7 @@ struct TopBarView: View {
             .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Mocha.base)
                 .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Mocha.surface1, lineWidth: 1))
                 .shadow(color: .black.opacity(0.4), radius: 14, y: 6))
-            .transition(.opacity.combined(with: .move(edge: .top)))
+            .padding(.top, 2).padding(.trailing, 16).padding([.leading, .bottom], 24)   // room for the shadow
         }
     }
 
@@ -422,56 +434,55 @@ final class TopBarController {
     let state = TopBarState()
     let settings: Settings
     var panel: FloatingPanel?
+    var dropPanel: FloatingPanel?
     private var bag = Set<AnyCancellable>()
     private var clickMonitor: Any?
-    private var shrinkWork: DispatchWorkItem?
+    private let barHeight: CGFloat = 48
 
     init(settings: Settings) {
         self.settings = settings
         settings.$showTopBar.sink { [weak self] _ in main { self?.reposition() } }.store(in: &bag)
-        // Only take up the full height while a dropdown is open, so the invisible part of the
-        // window never sits over other apps.
-        // @Published fires before SwiftUI redraws, so grow the window synchronously first
-        // (no frame where the dropdown is squeezed into the 48pt bar), and shrink only after
-        // the close animation has finished.
-        state.$open.removeDuplicates().sink { [weak self] open in
-            guard let self else { return }
-            self.shrinkWork?.cancel()
-            if open != nil { self.resize(tall: true) }
-            else {
-                let w = DispatchWorkItem { [weak self] in
-                    if self?.state.open == nil { self?.resize(tall: false) }
-                }
-                self.shrinkWork = w
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35, execute: w)
-            }
-        }.store(in: &bag)
+        // The bar window never changes size; dropdowns fade in their own window below it.
+        state.$open.removeDuplicates().sink { [weak self] open in self?.showDropdown(open != nil) }.store(in: &bag)
         // Close an open dropdown when clicking anywhere else.
         clickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
             main { self?.state.open = nil }
         }
     }
 
-    private func resize(tall: Bool) {
-        guard let panel, let screen = panel.screen ?? NSScreen.main else { return }
-        let h: CGFloat = tall ? 520 : 48
-        let frame = NSRect(x: screen.frame.minX, y: screen.frame.maxY - h, width: screen.frame.width, height: h)
-        guard panel.frame != frame else { return }
-        // Keep the content pinned to the top while the window changes height.
-        NSAnimationContext.runAnimationGroup { $0.duration = 0 ; panel.setFrame(frame, display: true, animate: false) }
+    private func showDropdown(_ show: Bool) {
+        guard let p = dropPanel else { return }
+        if show {
+            p.alphaValue = 0
+            p.orderFrontRegardless()
+        }
+        NSAnimationContext.runAnimationGroup({ ctx in
+            ctx.duration = show ? 0.14 : 0.12
+            p.animator().alphaValue = show ? 1 : 0
+        }, completionHandler: { [weak self] in
+            if !show, self?.state.open == nil { p.orderOut(nil) }
+        })
     }
 
     func reposition() {
         panel?.orderOut(nil); panel = nil
+        dropPanel?.orderOut(nil); dropPanel = nil
         guard settings.showTopBar, let screen = NSScreen.screens.first(where: { $0.safeAreaInsets.top > 0 }) ?? NSScreen.main else { return }
         let geo = NotchGeometry.of(screen)
-        let h: CGFloat = 520   // bar + room for dropdowns; transparent area lets clicks through
-        let rect = NSRect(x: screen.frame.minX, y: screen.frame.maxY - h, width: screen.frame.width, height: h)
-        let p = FloatingPanel(rect: rect, level: .floating)
-        p.contentView = FirstClickHostingView(rootView: TopBarView(data: data, menuBar: menuBar, state: state, notchGap: geo.hasNotch ? geo.notchWidth : 0))
-        p.orderFrontRegardless()
-        panel = p
-        resize(tall: state.open != nil)
+        let f = screen.frame
+        let bar = FloatingPanel(rect: NSRect(x: f.minX, y: f.maxY - barHeight, width: f.width, height: barHeight), level: .floating)
+        bar.contentView = FirstClickHostingView(rootView: TopBarView(data: data, menuBar: menuBar, state: state,
+                                                                     notchGap: geo.hasNotch ? geo.notchWidth : 0))
+        bar.orderFrontRegardless()
+        panel = bar
+
+        // Fixed-size, mostly transparent window under the bar's right end; content is top-aligned.
+        let w: CGFloat = 400, h: CGFloat = 560
+        let drop = FloatingPanel(rect: NSRect(x: f.maxX - w, y: f.maxY - barHeight - h, width: w, height: h), level: .floating)
+        drop.contentView = FirstClickHostingView(rootView: TopBarView(data: data, menuBar: menuBar, state: state,
+                                                                      notchGap: 0, dropdownOnly: true))
+        dropPanel = drop
+        if state.open != nil { showDropdown(true) }
     }
 }
 
