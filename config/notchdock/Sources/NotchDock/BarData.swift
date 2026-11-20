@@ -94,7 +94,6 @@ final class BarData: ObservableObject {
         every(60) { [weak self] in self?.refreshBattery() }
         every(5) { [weak self] in self?.refreshStats() }
         every(10) { [weak self] in self?.refreshSlowStats() }
-        every(3) { [weak self] in self?.refreshMedia() }
         every(20) { [weak self] in self?.refreshControls() }
         every(120) { [weak self] in self?.refreshAI(fetch: true) }
         let nc = NSWorkspace.shared.notificationCenter
@@ -111,7 +110,7 @@ final class BarData: ObservableObject {
         }
         frontApp = NSWorkspace.shared.frontmostApplication?.localizedName ?? ""
         caffeinated = existingCaffeinate() != nil
-        [refreshSpaces, refreshBattery, refreshStats, refreshSlowStats, refreshMedia, refreshControls].forEach { $0() }
+        [refreshSpaces, refreshBattery, refreshStats, refreshSlowStats, refreshControls].forEach { $0() }
         refreshAI(fetch: false)
         refreshAI(fetch: true)
     }

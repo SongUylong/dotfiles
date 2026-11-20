@@ -228,19 +228,6 @@ struct TopBarView: View {
 
     private var right: some View {
         HStack(spacing: 6) {
-            if let m = data.media {
-                Pill {
-                    if let i = AppIcon.bundleIcon(m.bundle) { Image(nsImage: i).resizable().frame(width: 16, height: 16).opacity(m.playing ? 1 : 0.5) }
-                    Text(Self.short(m.title)).foregroundStyle(m.playing ? Mocha.text : Mocha.overlay0)
-                }
-                .help("\(m.title) — \(m.artist)\nClick: play/pause · Right-click: next")
-                .onTapGesture { data.mediaCommand("toggle-play-pause") }
-                .contextMenu {
-                    Button("Play / Pause") { data.mediaCommand("toggle-play-pause") }
-                    Button("Next Track") { data.mediaCommand("next-track") }
-                    Button("Previous Track") { data.mediaCommand("previous-track") }
-                }
-            }
             if !menuBar.extras.isEmpty {
                 Pill {
                     ForEach(menuBar.extras) { e in
