@@ -281,6 +281,14 @@ struct TopBarView: View {
                 Text(data.now, format: .dateTime.weekday(.abbreviated).day().month(.abbreviated).hour().minute())
             }
             .onTapGesture { state.open = state.open == .calendar ? nil : .calendar }
+            Pill {
+                Image(systemName: "bell.fill").foregroundStyle(Mocha.yellow)
+            }
+            .help(menuBar.trusted ? "Notification Center" : "Allow Accessibility to open Notification Center")
+            .onTapGesture {
+                state.open = nil
+                if menuBar.trusted { menuBar.openNotificationCenter() } else { menuBar.requestTrust() }
+            }
         }
         .font(.system(size: 13, weight: .semibold))
     }
@@ -444,32 +452,9 @@ final class TopBarController {
         settings.$showTopBar.sink { [weak self] _ in main { self?.reposition() } }.store(in: &bag)
         // The bar window never changes size; dropdowns fade in their own window below it.
         state.$open.removeDuplicates().sink { [weak self] open in self?.showDropdown(open != nil) }.store(in: &bag)
-        // Top-right hot corner → Notification Center (fires once per visit, after a short dwell).
-        let corner = { [weak self] in self?.checkCorner() }
-        NSEvent.addGlobalMonitorForEvents(matching: [.mouseMoved]) { _ in corner() }
-        NSEvent.addLocalMonitorForEvents(matching: [.mouseMoved]) { e in corner(); return e }
         // Close an open dropdown when clicking anywhere else.
         clickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
             main { self?.state.open = nil }
-        }
-    }
-
-    private var cornerArmed = true
-    private var cornerWork: DispatchWorkItem?
-    private func checkCorner() {
-        let p = NSEvent.mouseLocation
-        guard let screen = NSScreen.screens.first(where: { $0.frame.contains(p) || $0.frame.maxX == p.x }) else { return }
-        let inCorner = p.x >= screen.frame.maxX - 3 && p.y >= screen.frame.maxY - 3
-        if inCorner, cornerArmed {
-            cornerArmed = false
-            let w = DispatchWorkItem { [weak self] in
-                let q = NSEvent.mouseLocation
-                if q.x >= screen.frame.maxX - 3 && q.y >= screen.frame.maxY - 3 { self?.menuBar.openNotificationCenter() }
-            }
-            cornerWork = w
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15, execute: w)
-        } else if !inCorner, p.x < screen.frame.maxX - 40 || p.y < screen.frame.maxY - 40 {
-            cornerArmed = true
         }
     }
 
