@@ -15,3 +15,14 @@ Native SwiftUI replacement for SketchyBar and Apple's Dock, with a file shelf in
 ~/dotfiles/config/notchdock/install.sh --no-system  # just rebuild + reinstall the app
 ~/dotfiles/config/notchdock/install.sh --uninstall  # remove and restore Apple Dock + SketchyBar
 ```
+
+## Low Power Mode without a password
+
+Clicking the battery switches Low Power Mode. That needs root, so install the small helper once:
+
+```bash
+sudo ~/dotfiles/config/notchdock/lowpower-helper/install.sh
+```
+
+NotchDock then writes `0`/`1` to `~/.cache/notchdock/lowpower.want` and the root LaunchDaemon
+`com.eric.lowpower-helper` applies it. Without the helper, macOS asks for your password each time.
