@@ -123,22 +123,27 @@ final class WiFiModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         joining = n.ssid; error = nil; askPasswordFor = nil
         q.async {
             let iface = self.iface
-            var err: String?
-            if let net = (try? iface?.scanForNetworks(withSSID: n.ssid.data(using: .utf8)))?.first {
-                do { try iface?.associate(to: net, password: password) }
-                catch {
-                    // Fall back to networksetup, which can read saved passwords from the keychain.
-                    let dev = iface?.interfaceName ?? "en0"
-                    let pw = password.map { " '" + $0.replacingOccurrences(of: "'", with: "'\\''") + "'" } ?? ""
-                    let out = sh("networksetup -setairportnetwork \(dev) '\(n.ssid.replacingOccurrences(of: "'", with: "'\\''"))'\(pw) 2>&1")
-                    if !out.isEmpty { err = n.known ? "Couldn't join \(n.ssid)" : "Wrong password or couldn't join" }
-                }
-            } else { err = "\(n.ssid) is out of range" }
+            let dev = iface?.interfaceName ?? "en0"
+            func joined() -> Bool {
+                for _ in 0..<16 { if iface?.ssid() == n.ssid { return true }; Thread.sleep(forTimeInterval: 0.5) }
+                return false
+            }
+            // 1) CoreWLAN; 2) networksetup, which uses the keychain password for saved networks.
+            // Success is judged by actually being on the network, not by error output.
+            var ok = false
+            if let net = (try? iface?.scanForNetworks(withSSID: n.ssid.data(using: .utf8)))?.first,
+               (try? iface?.associate(to: net, password: password)) != nil { ok = joined() }
+            if !ok {
+                let q1 = { (x: String) in "'" + x.replacingOccurrences(of: "'", with: "'\\''") + "'" }
+                _ = sh("networksetup -setairportnetwork \(dev) \(q1(n.ssid))\(password.map { " " + q1($0) } ?? "") 2>&1")
+                ok = joined()
+            }
             let cur = iface?.ssid()
             main {
-                self.joining = nil; self.error = err
+                self.joining = nil
+                self.error = ok ? nil : (password != nil ? "Couldn't join \(n.ssid) — check the password" : "Couldn't join \(n.ssid)")
                 if cur != self.current { self.current = cur }
-                if err != nil, n.secure { self.askPasswordFor = n.ssid }
+                if !ok, n.secure { self.askPasswordFor = n.ssid }
             }
         }
     }

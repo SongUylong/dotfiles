@@ -288,6 +288,7 @@ final class BarData: ObservableObject {
             let devices = ((try? JSONSerialization.jsonObject(with: Data(bt.utf8))) as? [[String: Any]] ?? [])
                 .compactMap { $0["name"] as? String }
             main {
+                self.refreshDND()
                 if a.count == 3 {
                     self.volume = Int(a[0]) ?? 0; self.muted = a[1] == "true"; self.mic = Int(a[2]) ?? 0
                 }
@@ -310,6 +311,25 @@ final class BarData: ObservableObject {
         bg { sh("osascript -e 'set volume input volume \(v)'") }
     }
     private var lastMic = 70
+    @Published var dnd = false
+    /// Focus state: an active assertion in the DoNotDisturb store means a Focus (DND) is on.
+    func refreshDND() {
+        bg {
+            let url = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/DoNotDisturb/DB/Assertions.json")
+            var on = false
+            if let d = try? Data(contentsOf: url),
+               let j = try? JSONSerialization.jsonObject(with: d) as? [String: Any],
+               let data = j["data"] as? [[String: Any]] {
+                on = data.contains { (($0["storeAssertionRecords"] as? [Any]) ?? []).isEmpty == false }
+            }
+            main { if on != self.dnd { self.dnd = on } }
+        }
+    }
+    /// Uses the "Toggle DND" shortcut (macOS has no public Focus API).
+    func toggleDND() {
+        dnd.toggle()
+        bg { sh("shortcuts run 'Toggle DND' 2>&1"); Thread.sleep(forTimeInterval: 0.8); self.refreshDND() }
+    }
     func toggleMic() {
         if mic > 0 { lastMic = mic; mic = 0 } else { mic = lastMic }
         let m = mic

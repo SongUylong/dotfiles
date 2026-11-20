@@ -372,6 +372,9 @@ struct TopBarView: View {
                     .onTapGesture { data.toggleMic() }
             }
         }
+        Row(symbol: data.dnd ? "moon.fill" : "moon", title: "Do Not Disturb", color: data.dnd ? Mocha.mauve : Mocha.subtext) {
+            HStack { Spacer(); ToggleSwitch(on: data.dnd) { data.toggleDND() } }
+        }
         Divider().padding(.vertical, 2)
         WiFiSection(wifi: state.wifi)
         Divider().padding(.vertical, 2)
