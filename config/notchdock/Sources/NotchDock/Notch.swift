@@ -89,13 +89,18 @@ struct NotchView: View {
                 else if !shelf.files.isEmpty { collapsedBadge }
             }
             .frame(width: width, height: height)
-            // Hover target: only the middle of the notch when closed, the whole shelf when open.
+            // Closed: only the middle of the notch opens it (small overlay).
+            // Open: hover is tracked on the shelf itself, so tiles stay draggable.
             .overlay(alignment: .top) {
-                Color.clear
-                    .frame(width: open ? width : geo.notchWidth * 0.6, height: open ? height : geo.notchHeight * 0.8)
-                    .contentShape(Rectangle())
-                    .onHover { h in withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) { shelf.expanded = h } }
-                    .allowsHitTesting(true)
+                if !open {
+                    Color.clear
+                        .frame(width: geo.notchWidth * 0.6, height: geo.notchHeight * 0.8)
+                        .contentShape(Rectangle())
+                        .onHover { h in if h { withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) { shelf.expanded = true } } }
+                }
+            }
+            .onHover { h in
+                if !h, shelf.expanded { withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) { shelf.expanded = false } }
             }
             Spacer(minLength: 0)
         }
