@@ -263,7 +263,9 @@ final class NotchController {
         let pb = NSPasteboard(name: .drag)
         guard pb.canReadObject(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) else { return }
         let p = NSEvent.mouseLocation
-        let near = abs(p.x - screen.frame.midX) < 260 && p.y > screen.frame.maxY - 120
+        // Only right at the notch: its width plus a small margin, and the top ~notch height.
+        let geo = NotchGeometry.of(screen)
+        let near = abs(p.x - screen.frame.midX) < geo.notchWidth / 2 + 16 && p.y > screen.frame.maxY - geo.notchHeight - 8
         if near != shelf.expanded { setExpanded(near) }
     }
 
@@ -289,8 +291,8 @@ final class NotchController {
         // Accept drops on the notch itself, or on the whole shelf once it is open.
         view.activeRect = { [weak shelf] in
             let open = (shelf?.expanded ?? false) || (shelf?.dropTargeted ?? false)
-            let ww: CGFloat = open ? max(geo.notchWidth + 260, 520) : geo.notchWidth + 60
-            let hh: CGFloat = open ? geo.notchHeight + 130 : geo.notchHeight + 20
+            let ww: CGFloat = open ? max(geo.notchWidth + 260, 520) : geo.notchWidth + 16
+            let hh: CGFloat = open ? geo.notchHeight + 130 : geo.notchHeight + 4
             return NSRect(x: (w - ww) / 2, y: h - hh, width: ww, height: hh)
         }
         p.contentView = view
