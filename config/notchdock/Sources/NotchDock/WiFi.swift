@@ -24,51 +24,73 @@ final class WiFiModel: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     private let client = CWWiFiClient.shared()
     private let location = CLLocationManager()
+    private let q = DispatchQueue(label: "notchdock.wifi", qos: .userInitiated)
     private var iface: CWInterface? { client.interface() }
+    private var lastScan = Date.distantPast
 
     override init() {
         super.init()
         location.delegate = self
         updateAuth()
         refresh()
+        if location.authorizationStatus == .notDetermined { requestLocation() }
+        scan(force: true)
     }
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         updateAuth()
-        if locationOK { scan() }
+        if locationOK { scan(force: true) }
     }
 
     private func updateAuth() {
         let s = location.authorizationStatus
-        locationOK = s == .authorizedAlways || s == .authorized
+        let ok = s == .authorizedAlways || s == .authorized
+        if ok != locationOK { locationOK = ok }
     }
 
-    func requestLocation() { location.requestWhenInUseAuthorization(); location.startUpdatingLocation(); location.stopUpdatingLocation() }
+    func requestLocation() {
+        NSApp.activate(ignoringOtherApps: true)   // the prompt only shows for an active app
+        location.requestAlwaysAuthorization(); location.requestWhenInUseAuthorization(); location.startUpdatingLocation(); location.stopUpdatingLocation() }
 
+    /// Reads power and the current network off the main thread; publishes only what changed.
     func refresh() {
-        powered = iface?.powerOn() ?? false
-        current = iface?.ssid()
+        q.async {
+            let p = self.iface?.powerOn() ?? false
+            let c = self.iface?.ssid()
+            main {
+                if p != self.powered { self.powered = p }
+                if c != self.current { self.current = c }
+            }
+        }
     }
 
     func setPower(_ on: Bool) {
-        do { try iface?.setPower(on); error = nil } catch { self.error = "Couldn't turn Wi-Fi \(on ? "on" : "off")" }
-        refresh()
-        if on { DispatchQueue.main.asyncAfter(deadline: .now() + 2) { self.scan() } } else { networks = [] }
+        powered = on; error = nil          // flip the switch immediately
+        if !on { networks = [] }
+        q.async {
+            var failed = false
+            do { try self.iface?.setPower(on) } catch { failed = true }
+            main {
+                if failed { self.powered = !on; self.error = "Couldn't turn Wi-Fi \(on ? "on" : "off")" }
+                self.refresh()
+                if on && !failed { DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { self.scan(force: true) } }
+            }
+        }
     }
 
-    /// Known networks are the ones saved in the system Wi-Fi settings.
-    private var knownSSIDs: Set<String> {
-        let profiles = iface?.configuration()?.networkProfiles.array as? [CWNetworkProfile] ?? []
-        return Set(profiles.compactMap(\.ssid))
-    }
-
-    func scan() {
-        guard powered, !scanning else { return }
+    /// Scans in the background. The cached list stays on screen meanwhile, so opening the
+    /// dropdown is instant; a rescan happens at most every 15 s unless forced.
+    func scan(force: Bool = false) {
+        guard powered || force, !scanning else { return }
+        if !force, Date().timeIntervalSince(lastScan) < 15 { refresh(); return }
         if !locationOK { requestLocation() }
         scanning = true
-        let known = knownSSIDs
-        let iface = self.iface
-        bg {
+        q.async {
+            let iface = self.iface
+            guard iface?.powerOn() == true else { main { self.scanning = false; self.refresh() }; return }
+            let profiles = iface?.configuration()?.networkProfiles.array as? [CWNetworkProfile] ?? []
+            let known = Set(profiles.compactMap(\.ssid))
+            let cur = iface?.ssid()
             let found = (try? iface?.scanForNetworks(withSSID: nil)) ?? []
             var best: [String: CWNetwork] = [:]
             for n in found {
@@ -76,20 +98,31 @@ final class WiFiModel: NSObject, ObservableObject, CLLocationManagerDelegate {
                 if let b = best[s], b.rssiValue >= n.rssiValue { continue }
                 best[s] = n
             }
+            // Stable order: current, saved, then others, alphabetically (signal strength jitters).
             let list = best.values.map { n in
                 Network(ssid: n.ssid!, rssi: n.rssiValue, secure: !n.supportsSecurity(.none), known: known.contains(n.ssid!))
-            }.sorted { ($0.known ? 1 : 0, $0.rssi) > ($1.known ? 1 : 0, $1.rssi) }
-            main { self.networks = list; self.scanning = false; self.refresh() }
+            }.sorted {
+                let a = ($0.ssid == cur ? 0 : $0.known ? 1 : 2), b = ($1.ssid == cur ? 0 : $1.known ? 1 : 2)
+                return a != b ? a < b : $0.ssid.localizedCaseInsensitiveCompare($1.ssid) == .orderedAscending
+            }
+            main {
+                self.lastScan = Date()
+                if list.map(\.ssid) != self.networks.map(\.ssid) || list != self.networks {
+                    withAnimation(.easeOut(duration: 0.2)) { self.networks = list }
+                }
+                self.scanning = false
+                self.refresh()
+            }
         }
     }
 
     /// Joins a network. Saved networks use the password stored by macOS; for new secured ones
     /// we show a password box first.
     func join(_ n: Network, password: String? = nil) {
-        if n.secure, !n.known, password == nil { askPasswordFor = n.ssid; return }
+        if n.secure, !n.known, password == nil { withAnimation(.easeOut(duration: 0.15)) { askPasswordFor = n.ssid }; return }
         joining = n.ssid; error = nil; askPasswordFor = nil
-        let iface = self.iface
-        bg {
+        q.async {
+            let iface = self.iface
             var err: String?
             if let net = (try? iface?.scanForNetworks(withSSID: n.ssid.data(using: .utf8)))?.first {
                 do { try iface?.associate(to: net, password: password) }
@@ -101,14 +134,16 @@ final class WiFiModel: NSObject, ObservableObject, CLLocationManagerDelegate {
                     if !out.isEmpty { err = n.known ? "Couldn't join \(n.ssid)" : "Wrong password or couldn't join" }
                 }
             } else { err = "\(n.ssid) is out of range" }
+            let cur = iface?.ssid()
             main {
-                self.joining = nil; self.error = err; self.refresh()
+                self.joining = nil; self.error = err
+                if cur != self.current { self.current = cur }
                 if err != nil, n.secure { self.askPasswordFor = n.ssid }
             }
         }
     }
 
-    func disconnect() { iface?.disassociate(); refresh() }
+    func disconnect() { q.async { self.iface?.disassociate(); self.refresh() } }
 
     static func bars(_ rssi: Int) -> String {
         rssi > -60 ? "wifi" : rssi > -72 ? "wifi" : "wifi.exclamationmark"
@@ -119,6 +154,7 @@ struct WiFiSection: View {
     @ObservedObject var wifi: WiFiModel
     @State private var password = ""
     @FocusState private var pwFocused: Bool
+    static let rowH: CGFloat = 27
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
@@ -127,13 +163,15 @@ struct WiFiSection: View {
                     .foregroundStyle(wifi.powered ? Mocha.green : Mocha.red).frame(width: 18)
                 Text("Wi-Fi").foregroundStyle(Mocha.subtext)
                 Spacer()
-                if wifi.powered {
-                    Image(systemName: "arrow.clockwise").font(.system(size: 11, weight: .bold))
-                        .foregroundStyle(wifi.scanning ? Mocha.overlay0 : Mocha.subtext)
-                        .rotationEffect(.degrees(wifi.scanning ? 180 : 0))
-                        .animation(wifi.scanning ? .linear(duration: 0.6).repeatForever(autoreverses: false) : .default, value: wifi.scanning)
-                        .onTapGesture { wifi.scan() }
-                }
+                ZStack {   // fixed slot so the header never shifts
+                    if wifi.scanning { ProgressView().controlSize(.mini) }
+                    else if wifi.powered {
+                        Image(systemName: "arrow.clockwise").font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(Mocha.subtext)
+                            .contentShape(Rectangle())
+                            .onTapGesture { wifi.scan(force: true) }
+                    }
+                }.frame(width: 18, height: 18)
                 ToggleSwitch(on: wifi.powered) { wifi.setPower(!wifi.powered) }
             }
             .font(.system(size: 12.5, weight: .semibold))
@@ -149,18 +187,26 @@ struct WiFiSection: View {
                             NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_LocationServices")!)
                         }
                 }
-                ScrollView {
-                    VStack(spacing: 1) {
+                ScrollView(showsIndicators: false) {
+                    LazyVStack(spacing: 0) {
                         ForEach(wifi.networks) { n in network(n) }
                     }
                 }
-                .frame(maxHeight: 190)
+                .frame(height: listHeight)
+                .animation(.easeOut(duration: 0.2), value: listHeight)
                 if let e = wifi.error {
                     Text(e).font(.system(size: 11, weight: .semibold)).foregroundStyle(Mocha.red).padding(.horizontal, 42)
                 }
             }
         }
-        .onAppear { wifi.refresh(); wifi.scan() }
+        .animation(.easeOut(duration: 0.18), value: wifi.powered)
+        .onAppear { wifi.scan() }
+    }
+
+    private var listHeight: CGFloat {
+        let rows = CGFloat(min(wifi.networks.count, 7))
+        let pw: CGFloat = wifi.askPasswordFor != nil && wifi.networks.count <= 7 ? 30 : 0
+        return max(wifi.networks.isEmpty ? Self.rowH : 0, rows * Self.rowH + pw)
     }
 
     private func network(_ n: WiFiModel.Network) -> some View {
@@ -172,15 +218,18 @@ struct WiFiSection: View {
                 Text(n.ssid).font(.system(size: 12.5, weight: connected ? .bold : .medium))
                     .foregroundStyle(connected ? Mocha.green : Mocha.text).lineLimit(1)
                 Spacer()
-                if wifi.joining == n.ssid { ProgressView().controlSize(.mini) }
-                else if connected { Image(systemName: "checkmark").font(.system(size: 11, weight: .bold)).foregroundStyle(Mocha.green) }
-                if n.secure { Image(systemName: "lock.fill").font(.system(size: 9)).foregroundStyle(Mocha.overlay0) }
+                ZStack {
+                    if wifi.joining == n.ssid { ProgressView().controlSize(.mini) }
+                    else if connected { Image(systemName: "checkmark").font(.system(size: 11, weight: .bold)).foregroundStyle(Mocha.green) }
+                }.frame(width: 16)
+                Image(systemName: "lock.fill").font(.system(size: 9)).foregroundStyle(Mocha.overlay0)
+                    .opacity(n.secure ? 1 : 0).frame(width: 10)
             }
-            .padding(.leading, 28).padding(.trailing, 14).frame(height: 26)
-            .background(RoundedRectangle(cornerRadius: 7).fill(connected ? Mocha.surface0 : .clear).padding(.horizontal, 6))
+            .padding(.leading, 28).padding(.trailing, 14).frame(height: Self.rowH)
+            .background(RowHover(active: connected))
             .contentShape(Rectangle())
             .onTapGesture {
-                if connected { return }
+                if connected || wifi.joining != nil { return }
                 password = ""
                 wifi.join(n)
             }
@@ -198,13 +247,27 @@ struct WiFiSection: View {
                         .background(RoundedRectangle(cornerRadius: 6).fill(Mocha.green))
                         .onTapGesture { wifi.join(n, password: password) }
                 }
-                .padding(.leading, 54).padding(.trailing, 14)
+                .padding(.leading, 54).padding(.trailing, 14).padding(.bottom, 4)
+                .transition(.opacity)
                 .onAppear {
                     NSApp.activate(ignoringOtherApps: true)
                     DispatchQueue.main.async { pwFocused = true }
                 }
             }
         }
+    }
+}
+
+/// Row background with a hover highlight, shared by the Wi-Fi and Bluetooth lists.
+struct RowHover: View {
+    let active: Bool
+    @State private var hover = false
+    var body: some View {
+        RoundedRectangle(cornerRadius: 7)
+            .fill(active ? Mocha.surface0 : hover ? Mocha.surface0.opacity(0.55) : .clear)
+            .padding(.horizontal, 6)
+            .onHover { hover = $0 }
+            .animation(.easeOut(duration: 0.1), value: hover)
     }
 }
 

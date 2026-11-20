@@ -1,3 +1,4 @@
+import IOBluetooth
 import SwiftUI
 
 /// Bluetooth control for the controls dropdown, through blueutil: power, paired devices, connect.
@@ -12,40 +13,62 @@ final class BluetoothModel: ObservableObject {
     @Published var devices: [Device] = []
     @Published var busy: String?
     @Published var error: String?
-    private let bu = "/opt/homebrew/bin/blueutil"
+    private let q = DispatchQueue(label: "notchdock.bt", qos: .userInitiated)
+    private var lastRefresh = Date.distantPast
 
-    init() { refresh() }
+    // Power on/off lives in IOBluetooth but isn't in its public headers; look it up at runtime.
+    private typealias GetPower = @convention(c) () -> Int32
+    private typealias SetPower = @convention(c) (Int32) -> Void
+    private static let lib = dlopen("/System/Library/Frameworks/IOBluetooth.framework/IOBluetooth", RTLD_NOW)
+    private static let getPower = dlsym(lib, "IOBluetoothPreferenceGetControllerPowerState").map { unsafeBitCast($0, to: GetPower.self) }
+    private static let setPowerFn = dlsym(lib, "IOBluetoothPreferenceSetControllerPowerState").map { unsafeBitCast($0, to: SetPower.self) }
+
+    init() { refresh() }   // first IOBluetooth use makes macOS ask for Bluetooth permission once
 
     func refresh() {
-        let bu = self.bu
-        bg {
-            let p = sh("\(bu) --power") == "1"
-            let js = sh("\(bu) --paired --format json 2>/dev/null")
-            let list = ((try? JSONSerialization.jsonObject(with: Data(js.utf8))) as? [[String: Any]] ?? [])
-                .compactMap { d -> Device? in
-                    guard let a = d["address"] as? String else { return nil }
-                    return Device(name: (d["name"] as? String) ?? a, address: a, connected: (d["connected"] as? Bool) ?? false)
-                }
-                .sorted { ($0.connected ? 0 : 1, $0.name) < ($1.connected ? 0 : 1, $1.name) }
-            main { self.powered = p; self.devices = list }
+        lastRefresh = Date()
+        q.async {
+            let p = (Self.getPower?() ?? 0) != 0
+            let paired = (IOBluetoothDevice.pairedDevices() as? [IOBluetoothDevice]) ?? []
+            let list = paired.compactMap { d -> Device? in
+                guard let a = d.addressString else { return nil }
+                return Device(name: d.name ?? a, address: a, connected: d.isConnected())
+            }.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+            main {
+                if p != self.powered { self.powered = p }
+                if list != self.devices { withAnimation(.easeOut(duration: 0.2)) { self.devices = list } }
+            }
         }
     }
+    func refreshIfStale() { if Date().timeIntervalSince(lastRefresh) > 5 { refresh() } }
 
     func setPower(_ on: Bool) {
-        powered = on
-        let bu = self.bu
-        bg { sh("\(bu) --power \(on ? 1 : 0)"); main { DispatchQueue.main.asyncAfter(deadline: .now() + 1) { self.refresh() } } }
+        powered = on; error = nil
+        q.async {
+            Self.setPowerFn?(on ? 1 : 0)
+            Thread.sleep(forTimeInterval: 1.2)
+            let now = (Self.getPower?() ?? 0) != 0
+            main {
+                if now != on { self.error = "Couldn't turn Bluetooth \(on ? "on" : "off")" }
+                self.refresh()
+            }
+        }
     }
 
     func toggle(_ d: Device) {
         busy = d.address; error = nil
-        let bu = self.bu
-        bg {
-            let out = sh("\(bu) --\(d.connected ? "disconnect" : "connect") \(d.address) 2>&1")
+        q.async {
+            var ok = false
+            if let dev = IOBluetoothDevice(addressString: d.address) {
+                ok = d.connected ? dev.closeConnection() == kIOReturnSuccess
+                                 : dev.openConnection() == kIOReturnSuccess
+            }
             main {
                 self.busy = nil
-                if !out.isEmpty && !d.connected { self.error = "Couldn't connect \(d.name)" }
-                self.refresh()
+                if ok, let i = self.devices.firstIndex(of: d) {   // show the new state right away
+                    self.devices[i] = Device(name: d.name, address: d.address, connected: !d.connected)
+                } else if !ok { self.error = "Couldn't \(d.connected ? "disconnect" : "connect") \(d.name)" }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { self.refresh() }
             }
         }
     }
@@ -65,15 +88,17 @@ struct BluetoothSection: View {
             .font(.system(size: 12.5, weight: .semibold))
             .padding(.horizontal, 14).frame(height: 30)
             if bt.powered {
-                ScrollView {
-                    VStack(spacing: 1) { ForEach(bt.devices) { device($0) } }
-                }.frame(maxHeight: 160)
+                ScrollView(showsIndicators: false) {
+                    LazyVStack(spacing: 0) { ForEach(bt.devices) { device($0) } }
+                }
+                .frame(height: max(27, CGFloat(min(bt.devices.count, 6)) * 27))
                 if let e = bt.error {
                     Text(e).font(.system(size: 11, weight: .semibold)).foregroundStyle(Mocha.red).padding(.horizontal, 42)
                 }
             }
         }
-        .onAppear { bt.refresh() }
+        .animation(.easeOut(duration: 0.18), value: bt.powered)
+        .onAppear { bt.refreshIfStale() }
     }
 
     private func device(_ d: BluetoothModel.Device) -> some View {
@@ -83,11 +108,13 @@ struct BluetoothSection: View {
             Text(d.name).font(.system(size: 12.5, weight: d.connected ? .bold : .medium))
                 .foregroundStyle(d.connected ? Mocha.blue : Mocha.text).lineLimit(1)
             Spacer()
-            if bt.busy == d.address { ProgressView().controlSize(.mini) }
-            else if d.connected { Text("Connected").font(.system(size: 11, weight: .semibold)).foregroundStyle(Mocha.subtext) }
+            ZStack(alignment: .trailing) {
+                if bt.busy == d.address { ProgressView().controlSize(.mini) }
+                else if d.connected { Text("Connected").font(.system(size: 11, weight: .semibold)).foregroundStyle(Mocha.subtext) }
+            }.frame(width: 70, alignment: .trailing)
         }
-        .padding(.leading, 28).padding(.trailing, 14).frame(height: 26)
-        .background(RoundedRectangle(cornerRadius: 7).fill(d.connected ? Mocha.surface0 : .clear).padding(.horizontal, 6))
+        .padding(.leading, 28).padding(.trailing, 14).frame(height: 27)
+        .background(RowHover(active: d.connected))
         .contentShape(Rectangle())
         .onTapGesture { if bt.busy == nil { bt.toggle(d) } }
     }
