@@ -17,6 +17,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     var dock: DockController?
     var notch: NotchController?
     var topBar: TopBarController?
+    var launcher: LauncherController?
     var settingsWindow: NSWindow?
     var statusItem: NSStatusItem?
 
@@ -24,6 +25,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         dock = DockController(settings: settings)
         topBar = TopBarController(settings: settings)
         notch = NotchController(settings: settings)
+        launcher = LauncherController()
         setupStatusItem()
         NotificationCenter.default.addObserver(
             self, selector: #selector(screensChanged),
@@ -40,12 +42,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         item.button?.image = NSImage(systemSymbolName: "dock.rectangle", accessibilityDescription: "NotchDock")
         let menu = NSMenu()
+        menu.addItem(withTitle: "Open Launcher", action: #selector(openLauncher), keyEquivalent: "").target = self
         menu.addItem(withTitle: "Settings…", action: #selector(openSettings), keyEquivalent: ",").target = self
         menu.addItem(.separator())
         menu.addItem(withTitle: "Quit NotchDock", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         item.menu = menu
         statusItem = item
     }
+
+    @objc func openLauncher() { launcher?.show() }
 
     @objc func openSettings() {
         if settingsWindow == nil {

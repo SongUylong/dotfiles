@@ -6,6 +6,7 @@ Native SwiftUI replacement for SketchyBar and Apple's Dock, with a file shelf in
   front app, now playing (`media-control`), AI usage / system / controls dropdowns, keep-awake, battery, clock.
   AI usage reuses `../sketchybar/plugins/ai_usage.sh` to fetch and reads `~/.cache/sketchybar/*.json`.
 - **Dock** (`Dock.swift`): pinned + running apps, magnification, auto-hide (reveal at bottom edge).
+- **Launcher** (`Launcher.swift`): ⌘Space (falls back to ⌥Space if Spotlight holds ⌘Space). Fuzzy app search ranked by use, calculator, built-in commands (yabai window actions, lock, sleep, dark mode…), clipboard history (`clip`), file search (`f name`), Google fallback.
 - **Notch shelf** (`Notch.swift`): drag files toward the notch to park them; drag back out, double-click to open.
 - **Settings**: menu bar icon → Settings…
 
