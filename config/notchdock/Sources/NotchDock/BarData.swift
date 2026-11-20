@@ -305,6 +305,10 @@ final class BarData: ObservableObject {
         let m = muted
         bg { sh("osascript -e 'set volume output muted \(m)'") }
     }
+    func setMic(_ v: Int) {
+        mic = v
+        bg { sh("osascript -e 'set volume input volume \(v)'") }
+    }
     private var lastMic = 70
     func toggleMic() {
         if mic > 0 { lastMic = mic; mic = 0 } else { mic = lastMic }

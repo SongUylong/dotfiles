@@ -8,6 +8,8 @@ enum Dropdown: String { case controls, stats, ai, calendar }
 final class TopBarState: ObservableObject {
     @Published var open: Dropdown?
     let calendar = CalendarModel()
+    let wifi = WiFiModel()
+    let bt = BluetoothModel()
 }
 
 // MARK: building blocks
@@ -361,21 +363,19 @@ struct TopBarView: View {
                     .onTapGesture { data.toggleMute() }
             }
         }
+        let mic = Binding(get: { Double(data.mic) }, set: { data.mic = Int($0) })
         Row(symbol: data.mic == 0 ? "mic.slash.fill" : "mic.fill", title: "Mic", color: data.mic == 0 ? Mocha.red : Mocha.green) {
-            HStack { Meter(pct: Double(data.mic)); Text(data.mic == 0 ? "muted" : "\(data.mic)%").frame(width: 46, alignment: .trailing) }
+            HStack {
+                BarSlider(value: mic, color: Mocha.green) { data.setMic(Int($0)) }
+                Text(data.mic == 0 ? "muted" : "\(data.mic)%").frame(width: 46, alignment: .trailing)
+                    .foregroundStyle(data.mic == 0 ? Mocha.red : Mocha.text)
+                    .onTapGesture { data.toggleMic() }
+            }
         }
-        .onTapGesture { data.toggleMic() }
-        Row(symbol: data.wifi.isEmpty ? "wifi.slash" : "wifi", title: "Wi-Fi", color: data.wifi.isEmpty ? Mocha.red : Mocha.green) {
-            Text(data.wifi.isEmpty ? "Off" : "\(data.wifi)  \(data.ip)").lineLimit(1)
-        }
-        .onTapGesture { open("x-apple.systempreferences:com.apple.preference.network?Wi-Fi") }
-        Row(symbol: "bolt.horizontal.circle", title: "Bluetooth", color: Mocha.blue) {
-            Text(data.btDevices.isEmpty ? "No devices" : "\(data.btDevices.count) connected").foregroundStyle(Mocha.subtext)
-        }
-        .onTapGesture { open("x-apple.systempreferences:com.apple.preferences.Bluetooth") }
-        ForEach(data.btDevices, id: \.self) { d in
-            Text(d).font(.system(size: 12)).foregroundStyle(Mocha.subtext).padding(.leading, 42).frame(height: 22)
-        }
+        Divider().padding(.vertical, 2)
+        WiFiSection(wifi: state.wifi)
+        Divider().padding(.vertical, 2)
+        BluetoothSection(bt: state.bt)
     }
 
     @ViewBuilder private var stats: some View {
