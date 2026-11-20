@@ -104,6 +104,7 @@ struct BarSlider: View {
 
 struct TopBarView: View {
     @ObservedObject var data: BarData
+    @ObservedObject var menuBar: MenuBarModel
     @ObservedObject var state: TopBarState
     let notchGap: CGFloat   // width reserved for the hardware notch (0 if none)
 
@@ -140,7 +141,10 @@ struct TopBarView: View {
                 Text("Potato").foregroundStyle(Mocha.mauve)
             }
             .font(.system(size: 13, weight: .semibold))
-            .onTapGesture { NSWorkspace.shared.open(URL(fileURLWithPath: "/System/Applications/Launchpad.app")) }
+            .onTapGesture {
+                if let apple = menuBar.menus.first { menuBar.open(apple, at: Self.menuPoint()) }
+                else { NSWorkspace.shared.open(URL(fileURLWithPath: "/System/Applications/Launchpad.app")) }
+            }
 
             ForEach(data.spaces) { s in
                 HStack(spacing: 6) {
@@ -159,9 +163,76 @@ struct TopBarView: View {
                 .onTapGesture { data.focusSpace(s.id) }
             }
 
-            Text(data.frontApp).font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(Mocha.lavender).lineLimit(1).padding(.leading, 6)
+            appMenus
         }
+    }
+
+    /// The front app's real menus (File, Edit, …), trimmed to the room left before the notch;
+    /// anything that doesn't fit goes into a » menu.
+    private var appMenus: some View {
+        let items = Array(menuBar.menus.dropFirst())
+        let name = menuBar.appName.isEmpty ? data.frontApp : menuBar.appName
+        return ViewThatFits(in: .horizontal) {
+            ForEach([items.count, 7, 5, 3, 1, 0].filter { $0 <= items.count }.uniqued(), id: \.self) { n in
+                menuRow(name: name, shown: Array(items.prefix(n)), overflow: Array(items.dropFirst(n)))
+            }
+        }
+    }
+
+    private func menuRow(name: String, shown: [MenuBarModel.TopMenu], overflow: [MenuBarModel.TopMenu]) -> some View {
+        HStack(spacing: 2) {
+            ForEach(Array(shown.enumerated()), id: \.offset) { i, m in
+                Text(m.title)
+                    .font(.system(size: 13, weight: i == 0 ? .bold : .medium))
+                    .foregroundStyle(i == 0 ? Mocha.lavender : Mocha.text)
+                    .padding(.horizontal, 7).frame(height: 26)
+                    .background(RoundedRectangle(cornerRadius: 7).fill(Color.white.opacity(0.001)))
+                    .contentShape(Rectangle())
+                    .onTapGesture { menuBar.open(m, at: Self.menuPoint()) }
+                    .fixedSize()
+            }
+            if shown.isEmpty {
+                Text(name).font(.system(size: 13, weight: .bold)).foregroundStyle(Mocha.lavender)
+                    .padding(.horizontal, 7).fixedSize()
+            }
+            if !overflow.isEmpty {
+                Image(systemName: "chevron.right.2").font(.system(size: 11, weight: .bold)).foregroundStyle(Mocha.subtext)
+                    .padding(.horizontal, 7).frame(height: 26).contentShape(Rectangle())
+                    .onTapGesture {
+                        let m = NSMenu()
+                        for o in overflow {
+                            let item = NSMenuItem(title: o.title, action: nil, keyEquivalent: "")
+                            let sub = NSMenu()
+                            item.submenu = sub
+                            m.addItem(item)
+                            // Build lazily by reusing the model's builder through a one-off popup.
+                            menuBar.fill(sub, from: o)
+                        }
+                        m.popUp(positioning: nil, at: Self.menuPoint(), in: nil)
+                    }
+            }
+            if !menuBar.trusted {
+                Text("Allow Accessibility for menus").font(.system(size: 11, weight: .semibold)).foregroundStyle(Mocha.peach)
+                    .padding(.horizontal, 7).onTapGesture { menuBar.requestTrust() }.fixedSize()
+            }
+        }
+        .padding(.leading, 4)
+    }
+
+    /// Short label for the keyboard layout, like the system menu's icon (A, 拼, ក…).
+    static func inputLabel(_ name: String) -> String {
+        let n = name.lowercased()
+        if n.contains("pinyin") { return "拼" }
+        if n.contains("khmer") { return "ក" }
+        if n == "abc" || n.hasPrefix("u.s") || n.hasPrefix("british") { return "A" }
+        return String(name.prefix(2))
+    }
+
+    /// Menus open just under the bar, left-aligned with the pointer.
+    static func menuPoint() -> NSPoint {
+        let m = NSEvent.mouseLocation
+        let screen = NSScreen.screens.first { $0.frame.contains(m) } ?? NSScreen.main!
+        return NSPoint(x: m.x - 12, y: screen.frame.maxY - 46)
     }
 
     private var right: some View {
@@ -179,6 +250,27 @@ struct TopBarView: View {
                     Button("Previous Track") { data.mediaCommand("previous-track") }
                 }
             }
+            if !menuBar.extras.isEmpty {
+                Pill {
+                    ForEach(menuBar.extras) { e in
+                        Group {
+                            if let icon = e.icon { Image(nsImage: icon).resizable().aspectRatio(contentMode: .fit) }
+                            else { Image(systemName: "app") }
+                        }
+                        .frame(width: 18, height: 18)
+                        .help(e.title)
+                        .contentShape(Rectangle())
+                        .onTapGesture { menuBar.click(e) }
+                    }
+                }
+            }
+            Pill {
+                Text(Self.inputLabel(menuBar.inputSource.name))
+                    .font(.system(size: 12, weight: .bold)).foregroundStyle(Mocha.text)
+                    .frame(minWidth: 16)
+            }
+            .help(menuBar.inputSource.name)
+            .onTapGesture { InputSources.menu().popUp(positioning: nil, at: Self.menuPoint(), in: nil) }
             toggle(.ai, symbol: "sparkles", color: Mocha.mauve)
             toggle(.stats, symbol: "gauge.with.dots.needle.67percent", color: Mocha.green)
             toggle(.controls, symbol: volumeSymbol, color: data.muted ? Mocha.red : Mocha.text)
@@ -345,6 +437,7 @@ struct TopBarView: View {
 
 final class TopBarController {
     let data = BarData()
+    let menuBar = MenuBarModel()
     let state = TopBarState()
     let settings: Settings
     var panel: FloatingPanel?
@@ -376,9 +469,13 @@ final class TopBarController {
         let h: CGFloat = 520   // bar + room for dropdowns; transparent area lets clicks through
         let rect = NSRect(x: screen.frame.minX, y: screen.frame.maxY - h, width: screen.frame.width, height: h)
         let p = FloatingPanel(rect: rect, level: .floating)
-        p.contentView = NSHostingView(rootView: TopBarView(data: data, state: state, notchGap: geo.hasNotch ? geo.notchWidth : 0))
+        p.contentView = NSHostingView(rootView: TopBarView(data: data, menuBar: menuBar, state: state, notchGap: geo.hasNotch ? geo.notchWidth : 0))
         p.orderFrontRegardless()
         panel = p
         resize(tall: state.open != nil)
     }
+}
+
+extension Array where Element: Hashable {
+    func uniqued() -> [Element] { var seen = Set<Element>(); return filter { seen.insert($0).inserted } }
 }

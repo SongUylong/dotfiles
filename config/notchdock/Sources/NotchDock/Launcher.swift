@@ -7,7 +7,7 @@ import SwiftUI
 
 struct LaunchItem: Identifiable {
     enum Kind: String { case app = "Application", command = "Command", file = "File", clipboard = "Clipboard", calc = "Calculator", web = "Search", window = "Window" }
-    let id = UUID()
+    var id: String { kind.rawValue + "|" + title + "|" + subtitle }
     let title: String
     var subtitle = ""
     let kind: Kind
@@ -65,9 +65,16 @@ final class LauncherModel: ObservableObject {
                 found.append((String(name.dropLast(4)), URL(fileURLWithPath: root).appendingPathComponent(name)))
             }
         }
-        // System Settings etc. live in /System/Applications already; de-duplicate by name.
+        // Apps elsewhere (Homebrew casks in subfolders, Setapp, ~/Applications/Chrome Apps…) via Spotlight.
+        let extra = sh("mdfind 'kMDItemContentType == com.apple.application-bundle' 2>/dev/null")
+        for line in extra.split(separator: "\n") {
+            let u = URL(fileURLWithPath: String(line))
+            let p = u.path
+            if p.contains("/Library/") || p.contains(".app/") || p.hasPrefix("/System/Library") { continue }
+            found.append((u.deletingPathExtension().lastPathComponent, u))
+        }
         var seen = Set<String>()
-        apps = found.filter { seen.insert($0.0).inserted }
+        apps = found.filter { seen.insert($0.0.lowercased()).inserted }
     }
 
     // MARK: search
@@ -293,13 +300,14 @@ struct LauncherView: View {
             Rectangle().fill(Mocha.surface0).frame(height: 1)
             ScrollViewReader { proxy in
                 ScrollView {
-                    LazyVStack(spacing: 2) {
-                        ForEach(Array(model.results.enumerated()), id: \.element.id) { i, item in
+                    VStack(spacing: 2) {
+                        ForEach(Array(model.results.enumerated()), id: \.offset) { i, item in
                             row(item, selected: i == model.selected)
                                 .id(i)
                                 .onTapGesture { model.selected = i; model.runSelected() }
                         }
                     }.padding(8)
+                    .id(model.query)
                 }
                 .onChange(of: model.selected) { _, s in withAnimation(.easeOut(duration: 0.1)) { proxy.scrollTo(s) } }
             }
@@ -394,8 +402,9 @@ final class LauncherController {
 
     func toggle() { panel.isVisible ? hide() : show() }
 
+    private var lastReload = Date()
     func show() {
-        model.reloadApps()
+        if Date().timeIntervalSince(lastReload) > 300 { model.reloadApps(); lastReload = Date() }
         model.query = ""
         model.search()
         let screen = NSScreen.screens.first { $0.frame.contains(NSEvent.mouseLocation) } ?? NSScreen.main!
