@@ -34,6 +34,11 @@ final class WiFiModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         updateAuth()
         refresh()
         if location.authorizationStatus == .notDetermined { requestLocation() }
+        // Debug hook: `notifyutil`-style trigger to join a saved network by name from the shell.
+        DistributedNotificationCenter.default().addObserver(forName: .init("com.eric.notchdock.debug.wifijoin"), object: nil, queue: .main) { [weak self] note in
+            guard let self, let ssid = note.object as? String else { return }
+            self.join(self.networks.first { $0.ssid == ssid } ?? Network(ssid: ssid, rssi: -50, secure: true, known: true))
+        }
         scan(force: true)
     }
 
@@ -125,18 +130,33 @@ final class WiFiModel: NSObject, ObservableObject, CLLocationManagerDelegate {
             let iface = self.iface
             let dev = iface?.interfaceName ?? "en0"
             func joined() -> Bool {
-                for _ in 0..<16 { if iface?.ssid() == n.ssid { return true }; Thread.sleep(forTimeInterval: 0.5) }
+                for _ in 0..<40 { if iface?.ssid() == n.ssid { return true }; Thread.sleep(forTimeInterval: 0.5) }
                 return false
             }
             // 1) CoreWLAN; 2) networksetup, which uses the keychain password for saved networks.
             // Success is judged by actually being on the network, not by error output.
             var ok = false
-            if let net = (try? iface?.scanForNetworks(withSSID: n.ssid.data(using: .utf8)))?.first,
-               (try? iface?.associate(to: net, password: password)) != nil { ok = joined() }
+            wlog("join \(n.ssid) known=\(n.known) secure=\(n.secure) pw=\(password != nil) loc=\(self.location.authorizationStatus.rawValue) cur=\(iface?.ssid() ?? "nil")")
+            if n.known && password == nil {
+                ok = Self.joinViaControlCenter(n.ssid) && joined()
+                wlog("control center joined=\(ok)")
+            }
+            if !ok { do {
+                let nets = try iface?.scanForNetworks(withSSID: n.ssid.data(using: .utf8)) ?? []
+                wlog("scan-by-ssid found \(nets.count)")
+                if let net = nets.first {
+                    try iface?.associate(to: net, password: password)
+                    wlog("associate returned ok")
+                    ok = joined()
+                    wlog("after associate joined=\(ok) cur=\(iface?.ssid() ?? "nil")")
+                }
+            } catch { wlog("corewlan error: \(error as NSError)") } }
             if !ok {
                 let q1 = { (x: String) in "'" + x.replacingOccurrences(of: "'", with: "'\\''") + "'" }
-                _ = sh("networksetup -setairportnetwork \(dev) \(q1(n.ssid))\(password.map { " " + q1($0) } ?? "") 2>&1")
+                let out = sh("networksetup -setairportnetwork \(dev) \(q1(n.ssid))\(password.map { " " + q1($0) } ?? "") 2>&1")
+                wlog("networksetup said: [\(out)]")
                 ok = joined()
+                wlog("after networksetup joined=\(ok) cur=\(iface?.ssid() ?? "nil")")
             }
             let cur = iface?.ssid()
             main {
@@ -146,6 +166,51 @@ final class WiFiModel: NSObject, ObservableObject, CLLocationManagerDelegate {
                 if !ok, n.secure { self.askPasswordFor = n.ssid }
             }
         }
+    }
+
+    /// macOS only lets the system Wi-Fi menu use saved passwords, so for saved networks we open
+    /// Control Center's Wi-Fi menu through Accessibility, press the network and close the menu.
+    static func joinViaControlCenter(_ ssid: String) -> Bool {
+        guard AXIsProcessTrusted(),
+              let cc = NSRunningApplication.runningApplications(withBundleIdentifier: "com.apple.controlcenter").first
+        else { wlog("cc: not trusted or no ControlCenter"); return false }
+        let app = AXUIElementCreateApplication(cc.processIdentifier)
+        guard let bar: AXUIElement = ax(app, "AXExtrasMenuBar") else { wlog("cc: no extras bar"); return false }
+        let wifiItem = axChildren(bar).first { el in
+            let id: String = ax(el, "AXIdentifier") ?? ""
+            let d: String = ax(el, kAXDescriptionAttribute) ?? ""
+            return id.contains("wifi") || d.lowercased().contains("wi-fi") || d.lowercased().contains("wifi")
+        }
+        guard let wifiItem else { wlog("cc: no wifi item: " + axChildren(bar).map { (ax($0, "AXIdentifier") as String?) ?? "?" }.joined(separator: ",")); return false }
+        AXUIElementPerformAction(wifiItem, kAXPressAction as CFString)
+        defer { // close the menu again
+            Thread.sleep(forTimeInterval: 0.3)
+            if let w: [AXUIElement] = ax(app, kAXWindowsAttribute), !w.isEmpty { AXUIElementPerformAction(wifiItem, kAXPressAction as CFString) }
+        }
+        func find(_ el: AXUIElement, _ depth: Int) -> AXUIElement? {
+            if depth > 12 { return nil }
+            let t: String = ax(el, kAXTitleAttribute) ?? ""
+            let d: String = ax(el, kAXDescriptionAttribute) ?? ""
+            let id: String = ax(el, "AXIdentifier") ?? ""
+            if t == ssid || d == ssid || id == "wifi-network-\(ssid)" { return el }
+            for c in axChildren(el) { if let f = find(c, depth + 1) { return f } }
+            return nil
+        }
+        for _ in 0..<20 {   // the network list fills in over a second or two
+            Thread.sleep(forTimeInterval: 0.25)
+            for w in (ax(app, kAXWindowsAttribute) as [AXUIElement]?) ?? [] {
+                if let el = find(w, 0) {
+                    var target = el   // press the row (button/checkbox), not a text label inside it
+                    let role: String = ax(el, kAXRoleAttribute) ?? ""
+                    if role == kAXStaticTextRole, let p: AXUIElement = ax(el, kAXParentAttribute) { target = p }
+                    let r = AXUIElementPerformAction(target, kAXPressAction as CFString)
+                    wlog("cc: pressed \(ssid) role=\(role) result=\(r.rawValue)")
+                    return r == .success
+                }
+            }
+        }
+        wlog("cc: network \(ssid) not found in menu")
+        return false
     }
 
     func disconnect() { q.async { self.iface?.disassociate(); self.refresh() } }
@@ -289,4 +354,12 @@ struct ToggleSwitch: View {
         .contentShape(Capsule())
         .onTapGesture(perform: action)
     }
+}
+
+/// Appends a line to ~/.cache/notchdock/wifi.log (never logs passwords).
+func wlog(_ msg: String) {
+    let url = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".cache/notchdock/wifi.log")
+    let line = "\(Date()) \(msg)\n"
+    if let h = try? FileHandle(forWritingTo: url) { h.seekToEndOfFile(); h.write(Data(line.utf8)); try? h.close() }
+    else { try? Data(line.utf8).write(to: url) }
 }

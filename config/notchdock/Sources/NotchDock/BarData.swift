@@ -95,6 +95,7 @@ final class BarData: ObservableObject {
         every(5) { [weak self] in self?.refreshStats() }
         every(10) { [weak self] in self?.refreshSlowStats() }
         every(20) { [weak self] in self?.refreshControls() }
+        DistributedNotificationCenter.default().addObserver(forName: .init("com.eric.notchdock.debug.dnd"), object: nil, queue: .main) { [weak self] _ in self?.toggleDND() }
         every(120) { [weak self] in self?.refreshAI(fetch: true) }
         let nc = NSWorkspace.shared.notificationCenter
         nc.addObserver(forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main) { [weak self] n in
@@ -322,13 +323,21 @@ final class BarData: ObservableObject {
                let data = j["data"] as? [[String: Any]] {
                 on = data.contains { (($0["storeAssertionRecords"] as? [Any]) ?? []).isEmpty == false }
             }
-            main { if on != self.dnd { self.dnd = on } }
+            let readable = FileManager.default.isReadableFile(atPath: url.path)
+            if !readable { wlog("dnd: can't read Assertions.json") }
+            main { if readable, on != self.dnd { self.dnd = on } }
         }
     }
     /// Uses the "Toggle DND" shortcut (macOS has no public Focus API).
     func toggleDND() {
-        dnd.toggle()
-        bg { sh("shortcuts run 'Toggle DND' 2>&1"); Thread.sleep(forTimeInterval: 0.8); self.refreshDND() }
+        let want = !dnd
+        dnd = want
+        bg {
+            let out = sh("/usr/bin/shortcuts run 'Toggle DND' 2>&1")
+            wlog("dnd: want=\(want) shortcuts said [\(out)]")
+            Thread.sleep(forTimeInterval: 1.0)
+            self.refreshDND()
+        }
     }
     func toggleMic() {
         if mic > 0 { lastMic = mic; mic = 0 } else { mic = lastMic }
