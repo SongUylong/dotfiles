@@ -91,10 +91,14 @@ final class LauncherModel: ObservableObject {
             if out.isEmpty { out = [LaunchItem(title: "Clipboard history is empty", kind: .clipboard, symbol: "doc.on.clipboard", run: {})] }
             results = out; return
         }
-        if q.hasPrefix("f ") || q.hasPrefix("file ") {
-            let rest = String(q.drop { $0 != " " }).trimmingCharacters(in: .whitespaces)
+        let raw = query.drop { $0 == " " }
+        if raw.hasPrefix("f ") || raw.hasPrefix("file ") {
+            let rest = String(raw.drop { $0 != " " }).trimmingCharacters(in: .whitespaces)
             findFiles(rest)
-            results = fileResults.prefix(30).map(fileItem); return
+            results = rest.count < 2
+                ? [LaunchItem(title: "Type a file name…", subtitle: "Searches your home folder", kind: .file, symbol: "doc.text.magnifyingglass", color: Mocha.yellow, run: {})]
+                : [LaunchItem(title: "Searching…", kind: .file, symbol: "hourglass", color: Mocha.overlay0, run: {})]
+            return
         }
 
         if q.isEmpty {
@@ -158,11 +162,33 @@ final class LauncherModel: ObservableObject {
         }
     }
 
-    /// Spotlight's index, limited to the home folder; results arrive synchronously but are capped and fast.
+    /// Live search of the home folder with fd (Spotlight's index can be stale). Runs off the
+    /// main thread, debounced, and only the latest query's results are shown.
+    private var fileToken = 0
     private func findFiles(_ q: String) {
+        fileToken += 1
+        let token = fileToken
         guard q.count >= 2 else { fileResults = []; return }
-        let out = sh("mdfind -onlyin ~ -name \(shellQuote(q)) 2>/dev/null | grep -v '/Library/' | head -40")
-        fileResults = out.split(separator: "\n").map { URL(fileURLWithPath: String($0)) }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
+            guard let self, token == self.fileToken else { return }
+            bg {
+                let fd = FileManager.default.isExecutableFile(atPath: "/opt/homebrew/bin/fd") ? "/opt/homebrew/bin/fd" : "fd"
+                let cmd = "\(fd) --ignore-case --max-results 40 --exclude Library --exclude node_modules --exclude .git "
+                    + "--fixed-strings \(self.shellQuote(q)) ~ 2>/dev/null"
+                    + " || mdfind -onlyin ~ -name \(self.shellQuote(q)) 2>/dev/null | head -40"
+                let found = sh(cmd).split(separator: "\n").map { URL(fileURLWithPath: String($0)) }
+                main {
+                    guard token == self.fileToken else { return }
+                    self.fileResults = found
+                    if self.query.hasPrefix("f ") || self.query.hasPrefix("file ") {
+                        self.results = found.isEmpty
+                            ? [LaunchItem(title: "No files match “\(q)”", kind: .file, symbol: "doc.questionmark", run: {})]
+                            : found.map(self.fileItem)
+                        self.selected = 0
+                    }
+                }
+            }
+        }
     }
 
     private func shellQuote(_ s: String) -> String { "'" + s.replacingOccurrences(of: "'", with: "'\\''") + "'" }
