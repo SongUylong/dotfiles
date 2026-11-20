@@ -239,6 +239,14 @@ struct TopBarView: View {
                         .help(e.title)
                         .contentShape(Rectangle())
                         .onTapGesture { menuBar.click(e) }
+                        .contextMenu {
+                            Button("Open Menu") { menuBar.click(e) }
+                            Divider()
+                            Button("Quit \(NSRunningApplication(processIdentifier: e.pid)?.localizedName ?? e.title)") {
+                                NSRunningApplication(processIdentifier: e.pid)?.terminate()
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 1) { menuBar.refreshExtras() }
+                            }
+                        }
                     }
                 }
             }
