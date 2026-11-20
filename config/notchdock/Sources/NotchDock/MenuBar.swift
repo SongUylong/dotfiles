@@ -47,7 +47,7 @@ final class MenuBarModel: ObservableObject {
             if t != self.trusted { self.trusted = t; self.refreshMenus() }
             self.refreshExtras()
         }
-        if !trusted { requestTrust() }
+        // Ask only when the user clicks the hint; prompting on every launch keeps opening Settings.
         refreshMenus()
         refreshExtras()
     }

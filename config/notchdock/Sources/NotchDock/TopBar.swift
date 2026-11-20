@@ -424,13 +424,28 @@ final class TopBarController {
     var panel: FloatingPanel?
     private var bag = Set<AnyCancellable>()
     private var clickMonitor: Any?
+    private var shrinkWork: DispatchWorkItem?
 
     init(settings: Settings) {
         self.settings = settings
         settings.$showTopBar.sink { [weak self] _ in main { self?.reposition() } }.store(in: &bag)
         // Only take up the full height while a dropdown is open, so the invisible part of the
         // window never sits over other apps.
-        state.$open.sink { [weak self] open in main { self?.resize(tall: open != nil) } }.store(in: &bag)
+        // @Published fires before SwiftUI redraws, so grow the window synchronously first
+        // (no frame where the dropdown is squeezed into the 48pt bar), and shrink only after
+        // the close animation has finished.
+        state.$open.removeDuplicates().sink { [weak self] open in
+            guard let self else { return }
+            self.shrinkWork?.cancel()
+            if open != nil { self.resize(tall: true) }
+            else {
+                let w = DispatchWorkItem { [weak self] in
+                    if self?.state.open == nil { self?.resize(tall: false) }
+                }
+                self.shrinkWork = w
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35, execute: w)
+            }
+        }.store(in: &bag)
         // Close an open dropdown when clicking anywhere else.
         clickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
             main { self?.state.open = nil }
@@ -440,7 +455,10 @@ final class TopBarController {
     private func resize(tall: Bool) {
         guard let panel, let screen = panel.screen ?? NSScreen.main else { return }
         let h: CGFloat = tall ? 520 : 48
-        panel.setFrame(NSRect(x: screen.frame.minX, y: screen.frame.maxY - h, width: screen.frame.width, height: h), display: true)
+        let frame = NSRect(x: screen.frame.minX, y: screen.frame.maxY - h, width: screen.frame.width, height: h)
+        guard panel.frame != frame else { return }
+        // Keep the content pinned to the top while the window changes height.
+        NSAnimationContext.runAnimationGroup { $0.duration = 0 ; panel.setFrame(frame, display: true, animate: false) }
     }
 
     func reposition() {
