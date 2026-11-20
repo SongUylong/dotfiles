@@ -34,3 +34,14 @@ final class FloatingPanel: NSPanel {
     // Keep panels exactly where we put them (no pushing below the menu bar / notch).
     override func constrainFrameRect(_ frameRect: NSRect, to screen: NSScreen?) -> NSRect { frameRect }
 }
+
+/// Hosting view that reacts to the first click even when its window isn't key
+/// (otherwise the first click on a bar pill is swallowed).
+final class FirstClickHostingView<Content: View>: NSHostingView<Content> {
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+    required init(rootView: Content) {
+        super.init(rootView: rootView)
+        sizingOptions = []   // we size the panel ourselves; don't let SwiftUI clamp it
+    }
+    @MainActor required dynamic init?(coder: NSCoder) { fatalError() }
+}

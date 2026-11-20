@@ -218,7 +218,7 @@ final class DockController {
         self.settings = settings
         model = DockModel(settings: settings)
         panel = FloatingPanel(rect: .zero, level: .statusBar)
-        panel.contentView = NSHostingView(rootView: DockView(model: model, settings: settings))
+        panel.contentView = FirstClickHostingView(rootView: DockView(model: model, settings: settings))
         hidden = settings.autoHideDock
         reposition()
         settings.$autoHideDock.dropFirst().sink { [weak self] on in DispatchQueue.main.async { self?.setHidden(on) } }.store(in: &bag)

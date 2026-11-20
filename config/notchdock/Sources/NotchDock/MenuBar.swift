@@ -84,13 +84,36 @@ final class MenuBarModel: ObservableObject {
         menu.popUp(positioning: nil, at: point, in: nil)
     }
 
+    /// One menu holding the Apple menu and every app menu as submenus. Submenus are filled
+    /// lazily when hovered, so big apps (Xcode, browsers) stay fast.
+    func combinedMenu() -> NSMenu {
+        let root = NSMenu()
+        root.autoenablesItems = false
+        let header = NSMenuItem(title: appName, action: nil, keyEquivalent: "")
+        header.isEnabled = false
+        header.attributedTitle = NSAttributedString(string: appName, attributes: [.font: NSFont.systemFont(ofSize: 13, weight: .bold)])
+        root.addItem(header)
+        root.addItem(.separator())
+        for (i, m) in menus.enumerated() {
+            let title = i == 0 ? "Apple" : m.title
+            let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
+            if i == 0 { item.image = NSImage(systemSymbolName: "applelogo", accessibilityDescription: nil) }
+            if i == 1 { item.attributedTitle = NSAttributedString(string: title, attributes: [.font: NSFont.systemFont(ofSize: 13, weight: .semibold)]) }
+            let sub = LazyAXMenu(top: m, model: self)
+            item.submenu = sub
+            root.addItem(item)
+            if i == 0 { root.addItem(.separator()) }
+        }
+        return root
+    }
+
     /// Fills an existing NSMenu with a top-level menu's items (used by the » overflow menu).
     func fill(_ target: NSMenu, from m: TopMenu) {
         guard let submenu = axChildren(m.element).first else { return }
         for item in buildMenu(submenu).items { item.menu?.removeItem(item); target.addItem(item) }
     }
 
-    private func buildMenu(_ axMenu: AXUIElement) -> NSMenu {
+    func buildMenu(_ axMenu: AXUIElement) -> NSMenu {
         let menu = NSMenu()
         menu.autoenablesItems = false
         for child in axChildren(axMenu) {
@@ -269,4 +292,25 @@ final class ClosureMenuItem: NSMenuItem {
     }
     required init(coder: NSCoder) { fatalError() }
     @objc private func fire() { handler() }
+}
+
+/// A submenu that reads its items from Accessibility the first time it opens.
+final class LazyAXMenu: NSMenu, NSMenuDelegate {
+    let top: MenuBarModel.TopMenu
+    weak var model: MenuBarModel?
+    private var loaded = false
+    init(top: MenuBarModel.TopMenu, model: MenuBarModel) {
+        self.top = top; self.model = model
+        super.init(title: top.title)
+        autoenablesItems = false
+        delegate = self
+        addItem(NSMenuItem(title: "…", action: nil, keyEquivalent: ""))   // so the arrow shows
+    }
+    required init(coder: NSCoder) { fatalError() }
+    func menuNeedsUpdate(_ menu: NSMenu) {
+        guard !loaded, let model, let ax = axChildren(top.element).first else { return }
+        loaded = true
+        removeAllItems()
+        for item in model.buildMenu(ax).items { item.menu?.removeItem(item); addItem(item) }
+    }
 }
