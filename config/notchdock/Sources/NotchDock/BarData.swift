@@ -64,6 +64,7 @@ final class BarData: ObservableObject {
     @Published var now = Date()
     @Published var batteryPct = 0
     @Published var charging = false
+    @Published var lowPower = ProcessInfo.processInfo.isLowPowerModeEnabled
     @Published var caffeinated = false
     @Published var cpu = 0
     @Published var ram = 0
@@ -104,6 +105,9 @@ final class BarData: ObservableObject {
         }
         nc.addObserver(forName: NSWorkspace.activeSpaceDidChangeNotification, object: nil, queue: .main) { [weak self] _ in
             self?.refreshSpaces()
+        }
+        NotificationCenter.default.addObserver(forName: .NSProcessInfoPowerStateDidChange, object: nil, queue: .main) { [weak self] _ in
+            self?.lowPower = ProcessInfo.processInfo.isLowPowerModeEnabled
         }
         frontApp = NSWorkspace.shared.frontmostApplication?.localizedName ?? ""
         caffeinated = existingCaffeinate() != nil
@@ -154,7 +158,8 @@ final class BarData: ObservableObject {
             let s = sh("pmset -g batt")
             let pct = Int(s.range(of: #"\d+(?=%)"#, options: .regularExpression).map { String(s[$0]) } ?? "") ?? 0
             let charging = s.contains("AC Power")
-            main { self.batteryPct = pct; self.charging = charging }
+            let lp = ProcessInfo.processInfo.isLowPowerModeEnabled
+            main { self.batteryPct = pct; self.charging = charging; self.lowPower = lp }
         }
     }
 
@@ -180,6 +185,16 @@ final class BarData: ObservableObject {
             try? FileManager.default.createDirectory(at: cache, withIntermediateDirectories: true)
             try? "\(p.processIdentifier)".write(to: caffeinatePIDFile, atomically: true, encoding: .utf8)
             caffeinated = true
+        }
+    }
+
+    /// Low Power Mode needs admin rights: macOS shows its own password / Touch ID prompt.
+    func toggleLowPower() {
+        let target = lowPower ? 0 : 1
+        bg {
+            sh("osascript -e 'do shell script \"pmset -a lowpowermode \(target)\" with administrator privileges'")
+            let on = ProcessInfo.processInfo.isLowPowerModeEnabled
+            main { self.lowPower = on }
         }
     }
 

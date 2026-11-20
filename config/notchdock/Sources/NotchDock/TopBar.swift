@@ -1,3 +1,4 @@
+import Carbon
 import AppKit
 import Combine
 import SwiftUI
@@ -194,8 +195,6 @@ struct TopBarView: View {
 
     private var appMenus: some View {
         HStack(spacing: 6) {
-            Text(menuBar.appName.isEmpty ? data.frontApp : menuBar.appName)
-                .font(.system(size: 13, weight: .bold)).foregroundStyle(Mocha.lavender).lineLimit(1)
             if !menuBar.trusted {
                 Text("Allow Accessibility for menus").font(.system(size: 11, weight: .semibold)).foregroundStyle(Mocha.peach)
                     .onTapGesture { menuBar.requestTrust() }.fixedSize()
@@ -256,26 +255,32 @@ struct TopBarView: View {
                     }
                 }
             }
-            Pill {
-                Text(Self.inputLabel(menuBar.inputSource.name))
-                    .font(.system(size: 12, weight: .bold)).foregroundStyle(Mocha.text)
-                    .frame(minWidth: 16)
+            Pill(active: state.open == .stats) {
+                Image(systemName: "sparkles").foregroundStyle(Mocha.mauve)
+                Image(systemName: "gauge.with.dots.needle.67percent").foregroundStyle(Mocha.green)
             }
-            .help(menuBar.inputSource.name)
-            .onTapGesture { InputSources.menu().popUp(positioning: nil, at: Self.menuPoint(), in: nil) }
-            toggle(.ai, symbol: "sparkles", color: Mocha.mauve)
-            toggle(.stats, symbol: "gauge.with.dots.needle.67percent", color: Mocha.green)
-            toggle(.controls, symbol: volumeSymbol, color: data.muted ? Mocha.red : Mocha.text)
-            Pill(border: data.caffeinated ? Mocha.peach : nil) {
-                Image(systemName: data.caffeinated ? "cup.and.saucer.fill" : "moon.zzz")
-                    .foregroundStyle(data.caffeinated ? Mocha.peach : Mocha.overlay0)
+            .help("AI and system usage")
+            .onTapGesture {
+                state.open = state.open == .stats ? nil : .stats
+                if state.open == .stats { data.refreshAI(fetch: true); data.refreshSlowStats() }
             }
-            .help(data.caffeinated ? "Keeping awake (click to allow sleep)" : "Normal sleep (click to keep awake)")
-            .onTapGesture { data.toggleCaffeinate() }
-            Pill {
-                Image(systemName: batterySymbol).foregroundStyle(batteryColor)
+            Pill(active: state.open == .controls, border: data.caffeinated ? Mocha.peach : nil) {
+                Image(systemName: volumeSymbol).foregroundStyle(data.muted ? Mocha.red : Mocha.text)
+                Image(systemName: data.wifi.isEmpty ? "wifi.slash" : "wifi").foregroundStyle(data.wifi.isEmpty ? Mocha.red : Mocha.text)
+                if data.caffeinated { Image(systemName: "cup.and.saucer.fill").foregroundStyle(Mocha.peach) }
+                Text(Self.inputLabel(menuBar.inputSource.name)).font(.system(size: 12, weight: .bold))
+            }
+            .help("Sound, Wi-Fi, keep awake and keyboard")
+            .onTapGesture {
+                state.open = state.open == .controls ? nil : .controls
+                if state.open == .controls { data.refreshControls() }
+            }
+            Pill(border: data.lowPower ? Mocha.yellow : nil) {
+                Image(systemName: batterySymbol).foregroundStyle(data.lowPower ? Mocha.yellow : batteryColor)
                 Text("\(data.batteryPct)%")
             }
+            .help(data.lowPower ? "Low Power Mode on (click to turn off)" : "Click to turn on Low Power Mode")
+            .onTapGesture { data.toggleLowPower() }
             Pill {
                 Image(systemName: "clock").foregroundStyle(Mocha.peach)
                 Text(data.now, format: .dateTime.weekday(.abbreviated).day().month(.abbreviated).hour().minute())
@@ -310,7 +315,7 @@ struct TopBarView: View {
             VStack(alignment: .leading, spacing: 2) {
                 switch open {
                 case .controls: controls
-                case .stats: stats
+                case .stats: ai; Divider().overlay(Mocha.surface0).padding(.horizontal, 14).padding(.vertical, 4); stats
                 case .ai: ai
                 case .calendar: CalendarDropView(model: state.calendar)
                 }
@@ -325,6 +330,33 @@ struct TopBarView: View {
     }
 
     @ViewBuilder private var controls: some View {
+        controlsAudioNet
+        Divider().overlay(Mocha.surface0).padding(.horizontal, 14).padding(.vertical, 4)
+        Row(symbol: data.caffeinated ? "cup.and.saucer.fill" : "moon.zzz", title: "Keep awake",
+            color: data.caffeinated ? Mocha.peach : Mocha.overlay0) {
+            Text(data.caffeinated ? "On — never sleeps" : "Off — normal sleep")
+                .foregroundStyle(data.caffeinated ? Mocha.peach : Mocha.subtext)
+        }
+        .onTapGesture { data.toggleCaffeinate() }
+        Row(symbol: "keyboard", title: "Keyboard", color: Mocha.lavender) {
+            Text(menuBar.inputSource.name).lineLimit(1)
+        }
+        .onTapGesture { InputSources.menu().popUp(positioning: nil, at: Self.menuPoint(), in: nil) }
+        ForEach(InputSources.enabled()) { src in
+            HStack {
+                Text(Self.inputLabel(src.name)).font(.system(size: 12, weight: .bold)).frame(width: 18)
+                Text(src.name).font(.system(size: 12))
+                Spacer()
+                if src.id == menuBar.inputSource.id { Image(systemName: "checkmark").font(.system(size: 11, weight: .bold)).foregroundStyle(Mocha.green) }
+            }
+            .foregroundStyle(src.id == menuBar.inputSource.id ? Mocha.text : Mocha.subtext)
+            .padding(.leading, 42).padding(.trailing, 14).frame(height: 24)
+            .contentShape(Rectangle())
+            .onTapGesture { TISSelectInputSource(src.ref); menuBar.inputSource = InputSources.current() }
+        }
+    }
+
+    @ViewBuilder private var controlsAudioNet: some View {
         let vol = Binding(get: { Double(data.volume) }, set: { data.volume = Int($0) })
         Row(symbol: volumeSymbol, title: "Volume", color: data.muted ? Mocha.red : Mocha.blue) {
             HStack {
@@ -485,7 +517,7 @@ final class TopBarController {
         panel = bar
 
         // Fixed-size, mostly transparent window under the bar's right end; content is top-aligned.
-        let w: CGFloat = 400, h: CGFloat = 560
+        let w: CGFloat = 400, h: CGFloat = 820
         let drop = FloatingPanel(rect: NSRect(x: f.maxX - w, y: f.maxY - barHeight - h, width: w, height: h), level: .floating)
         drop.contentView = FirstClickHostingView(rootView: TopBarView(data: data, menuBar: menuBar, state: state,
                                                                       notchGap: 0, dropdownOnly: true))
