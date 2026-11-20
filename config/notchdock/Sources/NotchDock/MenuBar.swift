@@ -179,6 +179,23 @@ final class MenuBarModel: ObservableObject {
         return NSImage(cgImage: cg, size: size)
     }
 
+    /// Opens Notification Center by pressing Control Center's clock item (what clicking the
+    /// date in the real menu bar does). Needs Accessibility.
+    func openNotificationCenter() {
+        guard trusted, let cc = NSRunningApplication.runningApplications(withBundleIdentifier: "com.apple.controlcenter").first else { return }
+        bg {
+            let app = AXUIElementCreateApplication(cc.processIdentifier)
+            guard let bar: AXUIElement = ax(app, "AXExtrasMenuBar") else { return }
+            let items = axChildren(bar)
+            let clock = items.first { el in
+                let id: String = ax(el, "AXIdentifier") ?? ""
+                let d: String = ax(el, kAXDescriptionAttribute) ?? ""
+                return id.contains("clock") || d.localizedCaseInsensitiveContains("clock")
+            } ?? items.last   // the clock is the rightmost item
+            if let clock { AXUIElementPerformAction(clock, kAXPressAction as CFString) }
+        }
+    }
+
     func click(_ e: Extra) {
         // Pressing the real item opens its own menu/popover where the app drew it.
         bg { AXUIElementPerformAction(e.element, kAXPressAction as CFString) }

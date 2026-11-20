@@ -42,7 +42,7 @@ final class ClipboardHistory {
 }
 
 final class LauncherModel: ObservableObject {
-    @Published var query = "" { didSet { search() } }
+    @Published var query = "" { didSet { if query != oldValue { search() } } }
     @Published var results: [LaunchItem] = []
     @Published var selected = 0
     var close: () -> Void = {}
@@ -463,3 +463,5 @@ final class LauncherController {
         }
     }
 }
+
+
