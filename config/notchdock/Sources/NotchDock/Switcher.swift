@@ -2,8 +2,8 @@ import Carbon.HIToolbox
 import ScreenCaptureKit
 import SwiftUI
 
-/// Option+Tab window switcher: live previews of every window on every space, most recently
-/// used first. Keep holding Option and press Tab (Shift+Tab goes back), release Option to jump
+/// Cmd+Tab window switcher: live previews of every window on every space, most recently
+/// used first. Keep holding Cmd and press Tab (Shift+Tab goes back), release Cmd to jump
 /// there. Esc cancels; clicking a card jumps too. Windows and spaces come from yabai.
 
 struct SwitchWindow: Identifiable, Equatable {
@@ -63,7 +63,22 @@ final class SwitcherController {
     /// with a keyboard event tap (uses NotchDock's Accessibility permission). The tap swallows
     /// Option+Tab, and Esc/arrows while the switcher is open.
     private var tap: CFMachPort?
-    private func registerHotKeys() { installTap() }
+    private var signalSources: [DispatchSourceSignal] = []
+    private func registerHotKeys() {
+        AppleSwitcher.set(enabled: false)
+        // Give Apple's switcher back when NotchDock quits or is stopped (launchctl sends SIGTERM).
+        for sig in [SIGTERM, SIGINT, SIGHUP] {
+            signal(sig, SIG_IGN)
+            let src = DispatchSource.makeSignalSource(signal: sig, queue: .main)
+            src.setEventHandler { AppleSwitcher.set(enabled: true); exit(0) }
+            src.resume()
+            signalSources.append(src)
+        }
+        NotificationCenter.default.addObserver(forName: NSApplication.willTerminateNotification, object: nil, queue: .main) { _ in
+            AppleSwitcher.set(enabled: true)
+        }
+        installTap()
+    }
 
     private func installTap() {
         let mask = CGEventMask(1 << CGEventType.keyDown.rawValue)
@@ -78,8 +93,8 @@ final class SwitcherController {
             }
             let code = Int(event.getIntegerValueField(.keyboardEventKeycode))
             let f = event.flags
-            let optOnly = f.contains(.maskAlternate) && !f.contains(.maskCommand) && !f.contains(.maskControl)
-            if code == kVK_Tab && optOnly {
+            let cmdOnly = f.contains(.maskCommand) && !f.contains(.maskAlternate) && !f.contains(.maskControl)
+            if code == kVK_Tab && cmdOnly {
                 let back = f.contains(.maskShift)
                 DispatchQueue.main.async { c.step(back ? -1 : 1) }
                 return nil
@@ -128,7 +143,7 @@ final class SwitcherController {
     }
 
     private func show(_ list: [SwitchWindow], back: Bool) {
-        guard !list.isEmpty, NSEvent.modifierFlags.contains(.option) else { return }
+        guard !list.isEmpty, NSEvent.modifierFlags.contains(.command) else { return }
         model.windows = list
         model.previews = previewCache.filter { id, _ in list.contains { $0.id == id } }
         model.selected = list.count > 1 ? (back ? list.count - 1 : 1) : 0
@@ -141,12 +156,12 @@ final class SwitcherController {
         DispatchQueue.main.async { withAnimation(.spring(response: 0.22, dampingFraction: 0.85)) { self.model.shown = true } }
         capturePreviews(list)
 
-        // Release Option → go. Polling the hardware modifier state is the most reliable way to
+        // Release Cmd → go. Polling the hardware modifier state is the most reliable way to
         // catch the release while another app is frontmost.
         poll?.invalidate()
         poll = Timer.scheduledTimer(withTimeInterval: 1.0 / 60, repeats: true) { [weak self] _ in
             guard let self else { return }
-            if !NSEvent.modifierFlags.contains(.option) { self.commit(self.model.selected) }
+            if !NSEvent.modifierFlags.contains(.command) { self.commit(self.model.selected) }
         }
         RunLoop.main.add(poll!, forMode: .common)
         isOpen = true
@@ -314,5 +329,20 @@ struct SwitcherView: View {
         .scaleEffect(selected ? 1.03 : 1)
         .animation(.spring(response: 0.2, dampingFraction: 0.85), value: selected)
         .contentShape(Rectangle())
+    }
+}
+
+/// Apple's own Cmd+Tab app switcher is a WindowServer "symbolic hotkey" that fires before any
+/// event tap, so it's turned off while NotchDock runs and turned back on when it quits
+/// (the same private call AltTab-style apps use).
+enum AppleSwitcher {
+    private typealias SetFn = @convention(c) (Int32, Bool) -> Int32
+    private static let fn: SetFn? = {
+        guard let h = dlopen("/System/Library/Frameworks/ApplicationServices.framework/ApplicationServices", RTLD_NOW),
+              let p = dlsym(h, "CGSSetSymbolicHotKeyEnabled") else { return nil }
+        return unsafeBitCast(p, to: SetFn.self)
+    }()
+    static func set(enabled: Bool) {
+        for id: Int32 in [1, 2] { _ = fn?(id, enabled) }   // 1: Cmd+Tab, 2: Cmd+Shift+Tab
     }
 }

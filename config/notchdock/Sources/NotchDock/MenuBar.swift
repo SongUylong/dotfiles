@@ -173,7 +173,8 @@ final class MenuBarModel: ObservableObject {
     private static func snapshot(of item: AXUIElement) -> NSImage? {
         guard CGPreflightScreenCaptureAccess(),
               let pos: CGPoint = axValue(item, kAXPositionAttribute),
-              let size: CGSize = axValue(item, kAXSizeAttribute), size.width > 0 else { return nil }
+              let size: CGSize = axValue(item, kAXSizeAttribute), size.width > 0,
+              pos.y >= 0 else { return nil }   // auto-hidden menu bar sits above the screen: capture would be blank
         guard let cg = CGWindowListCreateImage(CGRect(origin: pos, size: size), .optionOnScreenOnly, kCGNullWindowID, .bestResolution)
         else { return nil }
         return NSImage(cgImage: cg, size: size)
