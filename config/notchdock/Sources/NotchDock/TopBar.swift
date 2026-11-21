@@ -508,7 +508,7 @@ final class TopBarController {
         guard settings.showTopBar, let screen = NSScreen.screens.first(where: { $0.safeAreaInsets.top > 0 }) ?? NSScreen.main else { return }
         let geo = NotchGeometry.of(screen)
         let f = screen.frame
-        let bar = FloatingPanel(rect: NSRect(x: f.minX, y: f.maxY - barHeight, width: f.width, height: barHeight), level: .floating)
+        let bar = FloatingPanel(rect: NSRect(x: f.minX, y: f.maxY - barHeight, width: f.width, height: barHeight), level: NSWindow.Level(rawValue: NSWindow.Level.mainMenu.rawValue + 1))
         bar.contentView = FirstClickHostingView(rootView: TopBarView(data: data, menuBar: menuBar, state: state,
                                                                      notchGap: geo.hasNotch ? geo.notchWidth : 0))
         bar.orderFrontRegardless()
@@ -516,7 +516,7 @@ final class TopBarController {
 
         // Fixed-size, mostly transparent window under the bar's right end; content is top-aligned.
         let w: CGFloat = 400, h: CGFloat = 820
-        let drop = FloatingPanel(rect: NSRect(x: f.maxX - w, y: f.maxY - barHeight - h, width: w, height: h), level: .floating)
+        let drop = FloatingPanel(rect: NSRect(x: f.maxX - w, y: f.maxY - barHeight - h, width: w, height: h), level: NSWindow.Level(rawValue: NSWindow.Level.mainMenu.rawValue + 1))
         drop.contentView = FirstClickHostingView(rootView: TopBarView(data: data, menuBar: menuBar, state: state,
                                                                       notchGap: 0, dropdownOnly: true))
         dropPanel = drop
