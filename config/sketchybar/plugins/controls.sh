@@ -2,7 +2,7 @@
 # Controls dropdown: volume, mic, Wi-Fi and Bluetooth in one popup.
 #   bar pill   : volume glyph (scroll = volume, click = open/close)
 #   cc_vol     : click = mute / unmute, scroll = volume
-#   cc_mic     : click = mute / unmute input
+#   cc_mic     : click = mute / unmute input, scroll = input level
 #   cc_wifi    : click = Wi-Fi settings
 #   cc_bt      : click = Bluetooth settings, connected devices listed below
 export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
@@ -98,11 +98,24 @@ case "${1:-$SENDER}" in
       -e 'set volume output muted m' -e 'set s to get volume settings' \
       -e 'return ((output volume of s) as text) & "," & (m as text) & "," & ((input volume of s) as text)' 2>/dev/null)"
     audio_args "$vol" "$muted" "$mic" ;;
-  mic_click)
-    osascript -e 'if (input volume of (get volume settings)) = 0 then' -e 'set volume input volume 100' \
-      -e 'else' -e 'set volume input volume 0' -e 'end if' >/dev/null 2>&1
+  mic_click)   # mute / unmute, restoring the level it had before muting
+    cur=$(osascript -e 'input volume of (get volume settings)' 2>/dev/null)
+    if [ "${cur:-0}" -eq 0 ]; then
+      last=$(cat "$CACHE/mic_level" 2>/dev/null); [ "${last:-0}" -gt 0 ] 2>/dev/null || last=75
+      osascript -e "set volume input volume $last" >/dev/null 2>&1
+    else
+      echo "$cur" > "$CACHE/mic_level"
+      osascript -e 'set volume input volume 0' >/dev/null 2>&1
+    fi
     audio_args ;;
   mouse.scrolled)
+    if [ "$NAME" = cc_mic ]; then   # scroll on the Mic row = input level
+      STEP=5; [ "${SCROLL_DELTA:-0}" -lt 0 ] && STEP=-5
+      osascript -e "set v to (input volume of (get volume settings)) + ($STEP)" \
+        -e 'if v > 100 then set v to 100' -e 'if v < 0 then set v to 0' \
+        -e 'set volume input volume v' >/dev/null 2>&1
+      audio_args; sketchybar "${args[@]}"; exit 0
+    fi
     STEP=5; [ "${SCROLL_DELTA:-0}" -lt 0 ] && STEP=-5
     osascript -e "set v to (output volume of (get volume settings)) + ($STEP)" \
       -e 'if v > 100 then set v to 100' -e 'if v < 0 then set v to 0' \

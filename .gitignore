@@ -1,6 +1,7 @@
 # ── macOS system ──────────────────────────────────────────────────────────────
 .DS_Store
 *.log
+/config/menubar/menu-bar-hover-guard
 
 # ── Secrets ───────────────────────────────────────────────────────────────────
 .webui_secret_key

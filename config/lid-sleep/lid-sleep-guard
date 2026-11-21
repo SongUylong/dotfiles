@@ -1,0 +1,21 @@
+#!/bin/bash
+# Runs as root every few seconds (LaunchDaemon com.eric.lid-sleep-guard).
+# Lid closed => Mac sleeps, UNLESS one of these is true:
+#   - on charger (AC power)
+#   - an external monitor is connected
+#   - the SketchyBar keep-awake cup is on (caffeinate pid in ~/.cache)
+# It does this by flipping `pmset -a disablesleep` 1/0.
+PATH=/usr/bin:/bin:/usr/sbin:/sbin
+CUP_PID=/Users/eric/.cache/sketchybar/caffeinate.pid
+
+want=0
+pmset -g ps | grep -q "AC Power" && want=1
+[ $want = 0 ] && ioreg -r -c DCPAVServiceProxy -d1 -w0 | grep -q '"Location" = "External"' && want=1
+if [ $want = 0 ] && [ -f "$CUP_PID" ]; then
+  p=$(cat "$CUP_PID" 2>/dev/null)
+  [ -n "$p" ] && ps -p "$p" -o comm= 2>/dev/null | grep -q caffeinate && want=1
+fi
+
+pmset -g | grep -qE "SleepDisabled[[:space:]]+1" && have=1 || have=0
+[ "$want" != "$have" ] && pmset -a disablesleep "$want"
+exit 0

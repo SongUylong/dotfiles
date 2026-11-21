@@ -116,6 +116,11 @@ pill clock right icon="󰥔" icon.color=$PEACH \
 pill battery right update_freq=60 script="$PLUGIN_DIR/battery.sh"
 sketchybar --subscribe battery system_woke power_source_change
 
+# Keep awake (click = toggle caffeinate)
+pill caffeinate right label.drawing=off icon.padding_left=10 icon.padding_right=10 \
+  icon.font="CaskaydiaCove Nerd Font:Bold:15.0" updates=on script="$PLUGIN_DIR/caffeinate.sh"
+sketchybar --subscribe caffeinate mouse.clicked system_woke
+
 ##### Dropdowns (click the icon, like Bluetooth) #####
 g() { printf "$1"; }   # glyphs are written as byte escapes so they can't get lost
 G_GAUGE=$(g '\357\203\244');   G_SPARK=$(g '\363\260\231\264')
@@ -165,17 +170,21 @@ sketchybar --subscribe controls_toggle mouse.scrolled
 CC="$PLUGIN_DIR/controls.sh"
 row cc_vol  controls_toggle "" "Volume"    $BLUE  click_script="$CC vol_click" \
   updates=on update_freq=30 script="$CC"
-row cc_mic  controls_toggle "" "Mic"       $GREEN click_script="$CC mic_click"
+row cc_mic  controls_toggle "" "Mic"       $GREEN click_script="$CC mic_click" \
+  script="$CC"
 row cc_wifi controls_toggle "" "Wi-Fi"     $GREEN \
   click_script="open 'x-apple.systempreferences:com.apple.preference.network?Wi-Fi'; NAME=controls_toggle SENDER=mouse.clicked $PLUGIN_DIR/expander.sh"
 row cc_bt   controls_toggle "" "Bluetooth" $BLUE \
   click_script="open 'x-apple.systempreferences:com.apple.preferences.Bluetooth'; NAME=controls_toggle SENDER=mouse.clicked $PLUGIN_DIR/expander.sh"
 for i in 1 2 3 4; do
-  row cc_bt$i controls_toggle "" "" $SUBTEXT drawing=off icon.width=40 icon.padding_left=38 \
-    icon.font="CaskaydiaCove Nerd Font:Regular:13.0" label.width=264 \
+  row cc_bt$i controls_toggle "" "" $SUBTEXT drawing=off icon.width=66 icon.padding_left=38 \
+    icon.font="CaskaydiaCove Nerd Font:Regular:13.0" label.width=254 \
     label.font="SF Pro:Regular:12.0" label.color=$SUBTEXT
 done
+# wider title column so "Bluetooth" does not run into its value
+sketchybar --set cc_vol icon.width=120 --set cc_mic icon.width=120 --set cc_wifi icon.width=120 --set cc_bt icon.width=120
 sketchybar --subscribe cc_vol volume_change mouse.scrolled wifi_change system_woke controls_refresh
+sketchybar --subscribe cc_mic mouse.scrolled
 
 # ---- System monitor ----
 sketchybar --add event stats_refresh
@@ -194,18 +203,36 @@ sketchybar --subscribe pw_in system_woke power_source_change \
 # ---- AI usage ----
 sketchybar --add event ai_refresh
 dropdown ai_toggle "$G_SPARK" $MAUVE
-header  ai_h_claude ai_toggle app.com.anthropic.claudefordesktop 0.55 "Claude"
+header  ai_h_claude ai_toggle app.com.anthropic.claudefordesktop 0.55 "Claude Personal"
 row     ai_c5 ai_toggle "$G_5H" "5-hour"  $SUBTEXT
 row     ai_c7 ai_toggle "$G_WK" "Weekly"  $SUBTEXT
+header  ai_h_claudew ai_toggle app.com.anthropic.claudefordesktop 0.55 "Claude Company"
+row     ai_w5 ai_toggle "$G_5H" "5-hour"  $SUBTEXT
+row     ai_w7 ai_toggle "$G_WK" "Weekly"  $SUBTEXT
 header  ai_h_codex ai_toggle "$CONFIG_DIR/app_icons/Codex_ai.png" 0.31 "Codex"
 row     ai_x5 ai_toggle "$G_5H" "5-hour"  $SUBTEXT
 row     ai_x7 ai_toggle "$G_WK" "Weekly"  $SUBTEXT
 row     ai_xreset ai_toggle "$G_RESET" "Resets" $TEAL
+for i in 1 2 3 4; do   # one row per free reset credit, with its deadline
+  row ai_xr$i ai_toggle "" "" $SUBTEXT drawing=off icon.width=66 icon.padding_left=38 \
+    icon.font="SF Pro:Semibold:11.0" label.width=238 \
+    label.font="SF Pro:Regular:12.0" label.color=$TEXT
+done
 row     ai_footer ai_toggle "$G_CLOCK" "Updated" $OVERLAY0 \
   label.font="SF Pro:Medium:11.0" label.color=$OVERLAY0 label.align=right \
   updates=on update_freq=300 script="$PLUGIN_DIR/ai_usage.sh" \
   click_script="SENDER=mouse.clicked $PLUGIN_DIR/ai_usage.sh"
 sketchybar --subscribe ai_footer ai_refresh system_woke
+row     ai_dash ai_toggle "$(g '\363\260\217\214')" "Dashboard" $BLUE \
+  label="localhost:3100" label.font="SF Pro:Medium:12.0" label.color=$BLUE label.align=right \
+  click_script="open 'http://localhost:3100/'; NAME=ai_toggle SENDER=mouse.clicked $PLUGIN_DIR/expander.sh"
+
+# ---- Now playing (any app, via media-control): click = play/pause, right-click = next ----
+sketchybar --add event media_update
+pill media right drawing=off icon.padding_left=8 icon.padding_right=6 \
+  updates=on update_freq=60 script="$PLUGIN_DIR/media.sh"
+sketchybar --subscribe media media_update mouse.clicked system_woke
+nohup "$PLUGIN_DIR/media_stream.sh" >/dev/null 2>&1 &
 
 NAME=stats_toggle "$PLUGIN_DIR/expander.sh" init
 NAME=ai_toggle    "$PLUGIN_DIR/expander.sh" init

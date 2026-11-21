@@ -4,6 +4,8 @@ alt - c : open -n /Applications/Cursor.app
 alt - t : /Applications/kitty.app/Contents/MacOS/kitty --single-instance --directory ~ >/dev/null 2>&1 &
 alt - b : open -n "/Applications/Brave Browser.app"
 alt - n : open -n /Applications/Notion.app
+# Musike only runs once: open it, or bring it to the front if it's already open
+alt - m : open -a /Applications/Musike.app
 alt + shift - f : open -a Finder
 
 # Window lifecycle and services
@@ -57,3 +59,6 @@ alt + shift - o : /Users/eric/dotfiles/scripts/ocr-snap
 alt + shift - 0x21 : /Users/eric/dotfiles/scripts/color-picker
 alt + shift - i : /Users/eric/dotfiles/scripts/ocr-snap chi_sim
 alt + shift - r : pkill -f "ffmpeg.*avfoundation" || ffmpeg -f avfoundation -r 30 -i "1:0" "$HOME/Desktop/screenrecord-$(date +%Y%m%d-%H%M%S).mkv" >/dev/null 2>&1 &
+
+# Dictation: toggle record, transcribe with whisper, copy to clipboard
+ctrl - space : /Users/eric/.config/skhd/dictate.sh

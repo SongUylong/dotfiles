@@ -61,4 +61,3 @@ export PATH=/Users/eric/.strix/bin:$PATH
 # Qwen Code PATH block begin
 export PATH='/Users/eric/.local/bin':$PATH
 # Qwen Code PATH block end
-export CLAUDE_CODE_AUTO_COMPACT_WINDOW="200k"
