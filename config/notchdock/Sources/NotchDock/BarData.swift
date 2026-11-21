@@ -109,7 +109,6 @@ final class BarData: ObservableObject {
         NotificationCenter.default.addObserver(forName: .NSProcessInfoPowerStateDidChange, object: nil, queue: .main) { [weak self] _ in
             self?.lowPower = ProcessInfo.processInfo.isLowPowerModeEnabled
         }
-        prepareLowPowerFile()
         frontApp = NSWorkspace.shared.frontmostApplication?.localizedName ?? ""
         caffeinated = existingCaffeinate() != nil
         [refreshSpaces, refreshBattery, refreshStats, refreshSlowStats, refreshControls].forEach { $0() }
@@ -186,36 +185,6 @@ final class BarData: ObservableObject {
             try? FileManager.default.createDirectory(at: cache, withIntermediateDirectories: true)
             try? "\(p.processIdentifier)".write(to: caffeinatePIDFile, atomically: true, encoding: .utf8)
             caffeinated = true
-        }
-    }
-
-    /// Low Power Mode needs root. With the root helper installed
-    /// (lowpower-helper/install.sh) we just write the wanted state to a file it watches;
-    /// otherwise macOS asks for a password each time.
-    private let lowPowerWant = FileManager.default.homeDirectoryForCurrentUser
-        .appendingPathComponent(".cache/notchdock/lowpower.want")
-    private var helperInstalled: Bool {
-        FileManager.default.fileExists(atPath: "/Library/LaunchDaemons/com.eric.lowpower-helper.plist")
-    }
-
-    func prepareLowPowerFile() {
-        try? FileManager.default.createDirectory(at: lowPowerWant.deletingLastPathComponent(), withIntermediateDirectories: true)
-        if !FileManager.default.fileExists(atPath: lowPowerWant.path) {
-            try? (lowPower ? "1" : "0").write(to: lowPowerWant, atomically: false, encoding: .utf8)
-        }
-    }
-
-    func toggleLowPower() {
-        let target = lowPower ? 0 : 1
-        if helperInstalled {
-            try? "\(target)".write(to: lowPowerWant, atomically: false, encoding: .utf8)
-            lowPower = target == 1   // optimistic; the power-state notification confirms it
-            return
-        }
-        bg {
-            sh("osascript -e 'do shell script \"pmset -a lowpowermode \(target)\" with administrator privileges'")
-            let on = ProcessInfo.processInfo.isLowPowerModeEnabled
-            main { self.lowPower = on }
         }
     }
 

@@ -295,7 +295,6 @@ final class LauncherModel: ObservableObject {
             cmd("Toggle Bluetooth", "Network", "dot.radiowaves.left.and.right", Mocha.blue) { if let b = Self.topBar?.state.bt { b.setPower(!b.powered) } },
             cmd("Toggle Do Not Disturb", "Focus", "moon.circle", Mocha.mauve) { Self.topBar?.data.toggleDND() },
             cmd("Toggle Caffeinate", "Keep Mac awake", "cup.and.saucer.fill", Mocha.peach) { Self.topBar?.data.toggleCaffeinate() },
-            cmd("Toggle Low Power Mode", "Battery", "battery.25", Mocha.yellow) { Self.topBar?.data.toggleLowPower() },
             cmd("Toggle Microphone", "Mute / unmute input", "mic.slash", Mocha.peach) { Self.topBar?.data.toggleMic() },
             cmd("Quit Frontmost App", "", "xmark.app", Mocha.red) {
                 NSWorkspace.shared.frontmostApplication?.terminate() },

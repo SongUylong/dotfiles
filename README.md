@@ -23,7 +23,6 @@ Eric replaced the macOS menu bar, Dock, Raycast and Cmd+Tab with his own tools:
 - Wi-Fi join: CoreWLAN/networksetup fail with -3900, so joins click the network in Control Center's Wi-Fi menu via AX.
 - DND toggles with `/usr/bin/shortcuts run 'Toggle DND'`.
 - Menu-bar tray icons: when the macOS bar is hidden the snapshots are blank, so app icons are used.
-- Low Power Mode toggle uses root helper `lowpower-helper` (Eric installs it with sudo).
 
 ## Battery notes
 

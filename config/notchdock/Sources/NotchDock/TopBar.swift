@@ -276,8 +276,7 @@ struct TopBarView: View {
                 Image(systemName: batterySymbol).foregroundStyle(data.lowPower ? Mocha.yellow : batteryColor)
                 Text("\(data.batteryPct)%")
             }
-            .help(data.lowPower ? "Low Power Mode on (click to turn off)" : "Click to turn on Low Power Mode")
-            .onTapGesture { data.toggleLowPower() }
+            .help(data.lowPower ? "Battery · Low Power Mode on" : "Battery")
             Pill {
                 Image(systemName: "clock").foregroundStyle(Mocha.peach)
                 Text(data.now, format: .dateTime.weekday(.abbreviated).day().month(.abbreviated).hour().minute())
