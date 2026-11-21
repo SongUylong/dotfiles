@@ -530,8 +530,13 @@ final class LauncherController {
     private func registerHotKeys() {
         var spec = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
         let me = Unmanaged.passUnretained(self).toOpaque()
-        InstallEventHandler(GetApplicationEventTarget(), { _, _, ctx in
-            guard let ctx else { return noErr }
+        InstallEventHandler(GetApplicationEventTarget(), { _, event, ctx in
+            guard let ctx, let event else { return noErr }
+            // Other hotkeys (e.g. the window switcher) share this event target: only handle ours.
+            var hk = EventHotKeyID()
+            GetEventParameter(event, EventParamName(kEventParamDirectObject), EventParamType(typeEventHotKeyID), nil,
+                              MemoryLayout<EventHotKeyID>.size, nil, &hk)
+            guard hk.signature == OSType(0x4E444C43) else { return OSStatus(eventNotHandledErr) }
             let c = Unmanaged<LauncherController>.fromOpaque(ctx).takeUnretainedValue()
             DispatchQueue.main.async { c.toggle() }
             return noErr

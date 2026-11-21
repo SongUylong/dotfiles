@@ -18,6 +18,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     var notch: NotchController?
     var topBar: TopBarController?
     var launcher: LauncherController?
+    var switcher: SwitcherController?
     var settingsWindow: NSWindow?
     var statusItem: NSStatusItem?
 
@@ -26,6 +27,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         topBar = TopBarController(settings: settings)
         notch = NotchController(settings: settings)
         launcher = LauncherController()
+        switcher = SwitcherController()
         setupStatusItem()
         NotificationCenter.default.addObserver(
             self, selector: #selector(screensChanged),
