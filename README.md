@@ -8,7 +8,7 @@ Eric replaced the macOS menu bar, Dock, Raycast and Cmd+Tab with his own tools:
 
 | Folder | What | Notes |
 |---|---|---|
-| `config/notchdock` | **NotchDock**: native SwiftUI top bar, dock, notch shelf, ⌘Space launcher, Cmd+Tab window switcher | Build + install: `cd config/notchdock && ./install.sh --no-system`. Runs from `~/Applications/NotchDock.app` via LaunchAgent `com.eric.notchdock` (KeepAlive). Signed with the Apple Development identity so permissions persist. Debug log: `~/.cache/notchdock/wifi.log`. See its README. |
+| `config/notchdock` | **NotchDock**: native SwiftUI top bar, dock, notch shelf, ⌘Space launcher (apps, files, System Settings panes, calc, clipboard), Cmd+Tab window switcher | Build + install: `cd config/notchdock && ./install.sh --no-system`. Runs from `~/Applications/NotchDock.app` via LaunchAgent `com.eric.notchdock` (KeepAlive). Signed with the Apple Development identity so permissions persist. Debug log: `~/.cache/notchdock/wifi.log`. See its README. |
 | `config/yabai` | Tiling WM, spaces 1–5 | Binary is `/usr/local/bin/yabai`. `menubar_opacity 0.0` hides the macOS menu bar completely; NotchDock's bar sits above it (level mainMenu+1) and a 2 s watchdog keeps it on top and clickable. |
 | `config/skhd` | Hotkeys | `alt-n` chat workspace (Telegram, WeChat, WhatsApp + Messenger as Brave app windows, 2×2 on space 5, `chat.sh`); `alt-w` Workplace app window (`workplace.sh`); `alt-shift-r` screen recording. Reload: `skhd --reload`. |
 | `config/port-killer` | Menu-bar popover listing dev ports with kill/open | Own `install.sh`. |

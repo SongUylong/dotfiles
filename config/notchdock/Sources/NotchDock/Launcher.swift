@@ -6,7 +6,7 @@ import SwiftUI
 // MARK: model
 
 struct LaunchItem: Identifiable {
-    enum Kind: String { case app = "Application", command = "Command", file = "File", folder = "Folder", clipboard = "Clipboard", calc = "Calculator", web = "Search", window = "Window" }
+    enum Kind: String { case app = "Application", command = "Command", file = "File", folder = "Folder", clipboard = "Clipboard", calc = "Calculator", web = "Search", window = "Window", setting = "Settings" }
     var id: String { kind.rawValue + "|" + title + "|" + subtitle }
     let title: String
     var subtitle = ""
@@ -139,7 +139,13 @@ final class LauncherModel: ObservableObject {
             guard let s = Fuzzy.score(q, c.title) else { return nil }
             return (s - 5, c)
         }
-        out += (scoredApps + scoredCmds).sorted { $0.0 > $1.0 }.prefix(10).map(\.1)
+        let scoredSettings = SettingsPanes.all.compactMap { p -> (Int, LaunchItem)? in
+            let s = Fuzzy.score(q, p.title) ?? (p.keywords.localizedCaseInsensitiveContains(q) && q.count >= 3 ? 20 : nil)
+            guard let s else { return nil }
+            return (s - 8, LaunchItem(title: p.title, subtitle: "System Settings", kind: .setting, symbol: p.symbol, color: Mocha.blue) {
+                SettingsPanes.open(p.id) })
+        }
+        out += (scoredApps + scoredCmds + scoredSettings).sorted { $0.0 > $1.0 }.prefix(10).map(\.1)
 
         if q.count >= 2 {
             let clips = clipboard.items.filter { $0.localizedCaseInsensitiveContains(q) }.prefix(2).map(clipItem)
