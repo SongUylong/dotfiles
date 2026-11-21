@@ -6,7 +6,7 @@ import SwiftUI
 // MARK: model
 
 struct LaunchItem: Identifiable {
-    enum Kind: String { case app = "Application", command = "Command", file = "File", clipboard = "Clipboard", calc = "Calculator", web = "Search", window = "Window" }
+    enum Kind: String { case app = "Application", command = "Command", file = "File", folder = "Folder", clipboard = "Clipboard", calc = "Calculator", web = "Search", window = "Window" }
     var id: String { kind.rawValue + "|" + title + "|" + subtitle }
     let title: String
     var subtitle = ""
@@ -128,8 +128,33 @@ final class LauncherModel: ObservableObject {
             let clips = clipboard.items.filter { $0.localizedCaseInsensitiveContains(q) }.prefix(2).map(clipItem)
             out += clips
         }
+        baseResults = out
+        baseQuery = query
+        // Files and folders are searched automatically and slot in under apps/commands.
+        if q.count >= 2 { findFiles(q) } else { fileToken += 1 }
         out.append(webItem(q))
         results = out
+    }
+
+    private var baseResults: [LaunchItem] = []
+    private var baseQuery = ""
+
+    /// Ranks fd hits: exact name, then name prefix, then word match; folders and shallow paths first.
+    private func rankFiles(_ urls: [URL], _ q: String) -> [URL] {
+        let ql = q.lowercased()
+        func score(_ u: URL) -> Int {
+            let name = u.lastPathComponent.lowercased()
+            let base = u.deletingPathExtension().lastPathComponent.lowercased()
+            var s = 0
+            if base == ql || name == ql { s += 100 } else if name.hasPrefix(ql) { s += 60 }
+            else if name.contains(" " + ql) || name.contains("-" + ql) || name.contains("_" + ql) { s += 35 }
+            if u.hasDirectoryPath { s += 15 }
+            s -= u.pathComponents.count * 3
+            let p = u.path
+            for good in ["/Desktop/", "/Documents/", "/Downloads/", "/code/"] where p.contains(good) { s += 10 }
+            return s
+        }
+        return urls.sorted { score($0) > score($1) }
     }
 
     private func appItem(_ a: (name: String, url: URL)) -> LaunchItem {
@@ -151,7 +176,7 @@ final class LauncherModel: ObservableObject {
 
     private func fileItem(_ u: URL) -> LaunchItem {
         LaunchItem(title: u.lastPathComponent, subtitle: u.deletingLastPathComponent().path.replacingOccurrences(of: NSHomeDirectory(), with: "~"),
-                   kind: .file, icon: NSWorkspace.shared.icon(forFile: u.path)) { NSWorkspace.shared.open(u) }
+                   kind: u.hasDirectoryPath ? .folder : .file, icon: NSWorkspace.shared.icon(forFile: u.path)) { NSWorkspace.shared.open(u) }
     }
 
     private func webItem(_ q: String) -> LaunchItem {
@@ -169,14 +194,17 @@ final class LauncherModel: ObservableObject {
         fileToken += 1
         let token = fileToken
         guard q.count >= 2 else { fileResults = []; return }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
+        let auto = !(query.hasPrefix("f ") || query.hasPrefix("file "))
+        DispatchQueue.main.asyncAfter(deadline: .now() + (auto ? 0.22 : 0.15)) { [weak self] in
             guard let self, token == self.fileToken else { return }
             bg {
                 let fd = FileManager.default.isExecutableFile(atPath: "/opt/homebrew/bin/fd") ? "/opt/homebrew/bin/fd" : "fd"
-                let cmd = "\(fd) --ignore-case --max-results 40 --exclude Library --exclude node_modules --exclude .git "
+                let ex = ["Library", "node_modules", ".git", ".build", ".cache", ".Trash", "DerivedData", ".venv", "venv", "__pycache__", ".npm", ".cargo", ".rustup", "Pods"]
+                    .map { "--exclude '\($0)'" }.joined(separator: " ")
+                let cmd = "\(fd) --ignore-case --max-results 300 \(ex) "
                     + "--fixed-strings \(self.shellQuote(q)) ~ 2>/dev/null"
                     + " || mdfind -onlyin ~ -name \(self.shellQuote(q)) 2>/dev/null | head -40"
-                let found = sh(cmd).split(separator: "\n").map { URL(fileURLWithPath: String($0)) }
+                let found = self.rankFiles(sh(cmd).split(separator: "\n").map { URL(fileURLWithPath: String($0)) }, q)
                 main {
                     guard token == self.fileToken else { return }
                     self.fileResults = found
@@ -185,6 +213,10 @@ final class LauncherModel: ObservableObject {
                             ? [LaunchItem(title: "No files match “\(q)”", kind: .file, symbol: "doc.questionmark", run: {})]
                             : found.map(self.fileItem)
                         self.selected = 0
+                    } else if self.query == self.baseQuery, !found.isEmpty {
+                        // Auto mode: keep the user's selection, add files before the web search row.
+                        let files = found.prefix(8).map(self.fileItem)
+                        self.results = self.baseResults + files + [self.webItem(q)]
                     }
                 }
             }
