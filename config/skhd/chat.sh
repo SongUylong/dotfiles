@@ -1,11 +1,11 @@
 #!/bin/bash
 # Option+N: open WeChat, Telegram, WhatsApp and Messenger (as Brave app windows) and tile
-# them 2x2 on space 2:   Telegram | WhatsApp
+# them 2x2 on space 5:   Telegram | WhatsApp
 #                        WeChat   | Messenger
 # Brave app-window titles change (chat names, loading URLs), so their window ids are
 # remembered in ~/.cache/chat-ws instead of matching titles.
 export PATH="/opt/homebrew/bin:$PATH"
-SPACE=2
+SPACE=5
 BRAVE="/Applications/Brave Browser.app/Contents/MacOS/Brave Browser"
 STATE="$HOME/.cache/chat-ws"; mkdir -p "$STATE"
 

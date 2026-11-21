@@ -27,10 +27,10 @@ yabai -m rule --add app="^Adobe Illustrator$" manage=off
 yabai -m rule --add app="^System Settings$" manage=off
 yabai -m rule --add app="^Finder$" title="Preferences" manage=off
 
-# Pin messaging apps to space 2 (Option+N tiles them there) (WhatsApp has a hidden RTL char prefix)
-yabai -m rule --add app="^Telegram$" space=2
-yabai -m rule --add app="WhatsApp"   space=2
-yabai -m rule --add app="^WeChat$"   space=2
+# Pin messaging apps to space 5 (Option+N tiles them there) (WhatsApp has a hidden RTL char prefix)
+yabai -m rule --add app="^Telegram$" space=5
+yabai -m rule --add app="WhatsApp"   space=5
+yabai -m rule --add app="^WeChat$"   space=5
 
 # Space layout depends on display count:
 #   1 display  → 5 spaces on built-in (1-5)
