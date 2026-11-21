@@ -5,6 +5,7 @@ alt - t : /Applications/kitty.app/Contents/MacOS/kitty --single-instance --direc
 alt - b : open -n "/Applications/Brave Browser.app"
 alt - n : ~/.config/skhd/chat.sh
 alt + shift - n : open -n /Applications/Notion.app
+alt - w : open -a "Brave Browser" "https://workplace.uylonglab.xyz/"
 # Musike only runs once: open it, or bring it to the front if it's already open
 alt - m : open -a /Applications/Musike.app
 alt + shift - f : open -a Finder
