@@ -89,12 +89,12 @@ final class BarData: ObservableObject {
     private let pluginDir = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".config/sketchybar/plugins")
 
     init() {
-        every(1.5) { [weak self] in self?.refreshSpaces() }
+        every(4) { [weak self] in self?.refreshSpaces() }   // space/app switches are event-driven; this only catches window changes
         every(15) { [weak self] in self?.now = Date() }
         every(60) { [weak self] in self?.refreshBattery() }
         every(5) { [weak self] in self?.refreshStats() }
-        every(10) { [weak self] in self?.refreshSlowStats() }
-        every(20) { [weak self] in self?.refreshControls() }
+        every(30) { [weak self] in self?.refreshSlowStats() }
+        every(45) { [weak self] in self?.refreshControls() }   // the dropdown refreshes on open
         DistributedNotificationCenter.default().addObserver(forName: .init("com.eric.notchdock.debug.dnd"), object: nil, queue: .main) { [weak self] _ in self?.toggleDND() }
         every(120) { [weak self] in self?.refreshAI(fetch: true) }
         let nc = NSWorkspace.shared.notificationCenter
