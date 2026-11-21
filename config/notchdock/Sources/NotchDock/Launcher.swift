@@ -14,6 +14,7 @@ struct LaunchItem: Identifiable {
     var icon: NSImage?
     var symbol: String = "circle"
     var color: Color = Mocha.text
+    var url: URL? = nil
     let run: () -> Void
 }
 
@@ -78,6 +79,22 @@ final class LauncherModel: ObservableObject {
     }
 
     // MARK: search
+
+    @Published var shown = false
+    @Published var toast: String?
+
+    /// ⌘C on a file/folder/app row copies the item itself (paste it in Finder, Mail, chats…).
+    func copySelected() -> Bool {
+        guard results.indices.contains(selected), let u = results[selected].url else { return false }
+        let pb = NSPasteboard.general
+        pb.clearContents()
+        pb.writeObjects([u as NSURL])
+        pb.setString(u.path, forType: .string)
+        withAnimation(.easeOut(duration: 0.15)) { toast = "Copied “\(u.lastPathComponent)”" }
+        let t = toast
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) { if self.toast == t { withAnimation { self.toast = nil } } }
+        return true
+    }
 
     func search() {
         selected = 0
@@ -159,7 +176,7 @@ final class LauncherModel: ObservableObject {
 
     private func appItem(_ a: (name: String, url: URL)) -> LaunchItem {
         LaunchItem(title: a.name, subtitle: a.url.deletingLastPathComponent().path, kind: .app,
-                   icon: NSWorkspace.shared.icon(forFile: a.url.path)) { [weak self] in
+                   icon: NSWorkspace.shared.icon(forFile: a.url.path), url: a.url) { [weak self] in
             self?.launchCounts[a.name, default: 0] += 1
             UserDefaults.standard.set(self?.launchCounts, forKey: "launchCounts")
             NSWorkspace.shared.openApplication(at: a.url, configuration: NSWorkspace.OpenConfiguration())
@@ -176,7 +193,7 @@ final class LauncherModel: ObservableObject {
 
     private func fileItem(_ u: URL) -> LaunchItem {
         LaunchItem(title: u.lastPathComponent, subtitle: u.deletingLastPathComponent().path.replacingOccurrences(of: NSHomeDirectory(), with: "~"),
-                   kind: u.hasDirectoryPath ? .folder : .file, icon: NSWorkspace.shared.icon(forFile: u.path)) { NSWorkspace.shared.open(u) }
+                   kind: u.hasDirectoryPath ? .folder : .file, icon: NSWorkspace.shared.icon(forFile: u.path), url: u) { NSWorkspace.shared.open(u) }
     }
 
     private func webItem(_ q: String) -> LaunchItem {
@@ -363,6 +380,12 @@ struct LauncherView: View {
                             row(item, selected: i == model.selected)
                                 .id(i)
                                 .onTapGesture { model.selected = i; model.runSelected() }
+                                .onDrag {
+                                    guard let u = item.url else { return NSItemProvider() }
+                                    model.selected = i
+                                    NotificationCenter.default.post(name: .notchdockInternalDrag, object: nil)
+                                    return NSItemProvider(contentsOf: u) ?? NSItemProvider(object: u as NSURL)
+                                }
                         }
                     }.padding(8)
                     .id(model.query)
@@ -374,14 +397,24 @@ struct LauncherView: View {
                 Image(systemName: "command").foregroundStyle(Mocha.mauve)
                 Text("NotchDock").foregroundStyle(Mocha.subtext)
                 Spacer()
-                hint("↵", "Open"); hint("↑↓", "Move"); hint("esc", "Close")
+                if let t = model.toast {
+                    Text(t).foregroundStyle(Mocha.green).lineLimit(1).transition(.opacity)
+                } else {
+                    hint("↵", "Open"); hint("⌘C", "Copy"); hint("↑↓", "Move"); hint("esc", "Close")
+                }
             }
             .font(.system(size: 11, weight: .medium))
             .padding(.horizontal, 14).frame(height: 32)
         }
         .frame(width: 720, height: 460)
         .background(BarBackground(radius: 16))
+        .scaleEffect(model.shown ? 1 : 0.94)
+        .offset(y: model.shown ? 0 : 14)
+        .opacity(model.shown ? 1 : 0)
+        .blur(radius: model.shown ? 0 : 6)
+        .frame(width: 760, height: 500)   // room for the scale/offset animation
         .onAppear { focused = true }
+        .onChange(of: model.shown) { _, s in if s { focused = true } }
         .onKeyPress(.downArrow) { move(1); return .handled }
         .onKeyPress(.upArrow) { move(-1); return .handled }
         .onKeyPress(.escape) {
@@ -434,12 +467,12 @@ struct LauncherView: View {
 final class LauncherPanel: NSPanel {
     var onResign: () -> Void = {}
     init() {
-        super.init(contentRect: NSRect(x: 0, y: 0, width: 720, height: 460),
+        super.init(contentRect: NSRect(x: 0, y: 0, width: 760, height: 500),
                    styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
         isOpaque = false; backgroundColor = .clear; hasShadow = true
         level = .modalPanel
         collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient]
-        isMovableByWindowBackground = true
+        isMovableByWindowBackground = false   // rows are draggable (files to the notch)
     }
     override var canBecomeKey: Bool { true }
     override func resignKey() { super.resignKey(); onResign() }
@@ -456,6 +489,14 @@ final class LauncherController {
         panel.onResign = { [weak self] in self?.hide() }
         model.close = { [weak self] in self?.hide() }
         registerHotKeys()
+        NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] e in
+            guard let self, self.panel.isKeyWindow,
+                  e.modifierFlags.intersection(.deviceIndependentFlagsMask) == .command,
+                  e.charactersIgnoringModifiers == "c" else { return e }
+            // Text selected in the search box? Let normal copy happen.
+            if let tv = self.panel.firstResponder as? NSTextView, tv.selectedRange().length > 0 { return e }
+            return self.model.copySelected() ? nil : e
+        }
     }
 
     func toggle() { panel.isVisible ? hide() : show() }
@@ -467,14 +508,23 @@ final class LauncherController {
         model.search()
         let screen = NSScreen.screens.first { $0.frame.contains(NSEvent.mouseLocation) } ?? NSScreen.main!
         let f = screen.frame
-        panel.setFrameOrigin(NSPoint(x: f.midX - 360, y: f.minY + f.height * 0.62 - 230))
+        panel.setFrameOrigin(NSPoint(x: f.midX - 380, y: f.midY - 250))   // dead centre
+        hideWork?.cancel()
+        model.shown = false
         NSApp.activate(ignoringOtherApps: true)
         panel.makeKeyAndOrderFront(nil)
+        DispatchQueue.main.async {
+            withAnimation(.spring(response: 0.32, dampingFraction: 0.78)) { self.model.shown = true }
+        }
     }
 
+    private var hideWork: DispatchWorkItem?
     func hide() {
-        guard panel.isVisible else { return }
-        panel.orderOut(nil)
+        guard panel.isVisible, model.shown else { return }
+        withAnimation(.easeIn(duration: 0.14)) { model.shown = false }
+        let w = DispatchWorkItem { [weak self] in self?.panel.orderOut(nil) }
+        hideWork = w
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15, execute: w)
     }
 
     /// ⌘Space if Spotlight has released it, and ⌥Space always as a fallback.

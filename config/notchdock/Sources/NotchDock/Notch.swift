@@ -264,6 +264,31 @@ final class NotchController {
         dragMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDragged, .leftMouseUp]) { [weak self] e in
             self?.trackDrag(e)
         }
+        // Drags that start inside NotchDock (e.g. a file from the launcher) aren't seen by the
+        // global monitor, so poll the pointer until the mouse button is released.
+        NotificationCenter.default.addObserver(forName: .notchdockInternalDrag, object: nil, queue: .main) { [weak self] _ in
+            self?.pollInternalDrag()
+        }
+    }
+
+    private var pollTimer: Timer?
+    private func pollInternalDrag() {
+        pollTimer?.invalidate()
+        pollTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 30, repeats: true) { [weak self] t in
+            guard let self, let screen = self.screen else { t.invalidate(); return }
+            if NSEvent.pressedMouseButtons & 1 == 0 {
+                t.invalidate()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    if self.shelf.expanded, !(self.panel?.frame.contains(NSEvent.mouseLocation) ?? false) { self.setExpanded(false) }
+                }
+                return
+            }
+            let p = NSEvent.mouseLocation
+            let geo = NotchGeometry.of(screen)
+            let near = abs(p.x - screen.frame.midX) < geo.notchWidth * 0.3 && p.y > screen.frame.maxY - geo.notchHeight * 0.8
+            if near, !self.shelf.expanded { self.setExpanded(true) }
+            else if !near, self.shelf.expanded, !(self.panel?.frame.contains(p) ?? false) { self.setExpanded(false) }
+        }
     }
 
     private func trackDrag(_ e: NSEvent) {
@@ -311,4 +336,8 @@ final class NotchController {
         p.orderFrontRegardless()
         panel = p
     }
+}
+
+extension Notification.Name {
+    static let notchdockInternalDrag = Notification.Name("notchdockInternalDrag")
 }
