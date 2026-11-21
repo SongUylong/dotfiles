@@ -250,6 +250,8 @@ final class LauncherModel: ObservableObject {
 
     // MARK: built-in commands
 
+    static var topBar: TopBarController? { (NSApp.delegate as? AppDelegate)?.topBar }
+
     func commands() -> [LaunchItem] {
         func cmd(_ t: String, _ sub: String, _ sym: String, _ c: Color, _ kind: LaunchItem.Kind = .command, _ f: @escaping () -> Void) -> LaunchItem {
             LaunchItem(title: t, subtitle: sub, kind: kind, symbol: sym, color: c, run: f)
@@ -276,6 +278,25 @@ final class LauncherModel: ObservableObject {
             cmd("Clear Clipboard History", "", "trash", Mocha.red) { [weak self] in self?.clipboard.clear() },
             cmd("Restart Top Bar & Dock", "NotchDock", "arrow.clockwise", Mocha.mauve) {
                 bg { sh("launchctl kickstart -k gui/$(id -u)/com.eric.notchdock") } },
+            cmd("Restart", "System", "restart", Mocha.red) {
+                bg { sh("osascript -e 'tell application \"System Events\" to restart'") } },
+            cmd("Shut Down", "System", "power", Mocha.red) {
+                bg { sh("osascript -e 'tell application \"System Events\" to shut down'") } },
+            cmd("Log Out", "System", "rectangle.portrait.and.arrow.right", Mocha.red) {
+                bg { sh("osascript -e 'tell application \"System Events\" to log out'") } },
+            cmd("Sleep Displays", "Turn screens off", "display", Mocha.blue) { bg { sh("pmset displaysleepnow") } },
+            cmd("Start Screen Saver", "", "sparkles.tv", Mocha.blue) { bg { sh("open -a ScreenSaverEngine") } },
+            cmd("Empty Trash", "Permanently delete Trash", "trash.fill", Mocha.red) {
+                bg { sh("osascript -e 'tell application \"Finder\" to empty trash'") } },
+            cmd("Open Trash", "", "trash", Mocha.subtext) { NSWorkspace.shared.open(URL(fileURLWithPath: NSHomeDirectory() + "/.Trash")) },
+            cmd("Eject All Disks", "External drives and disk images", "eject.fill", Mocha.yellow) {
+                bg { sh("osascript -e 'tell application \"Finder\" to eject (every disk whose ejectable is true)'") } },
+            cmd("Toggle Wi-Fi", "Network", "wifi", Mocha.blue) { if let w = Self.topBar?.state.wifi { w.setPower(!w.powered) } },
+            cmd("Toggle Bluetooth", "Network", "dot.radiowaves.left.and.right", Mocha.blue) { if let b = Self.topBar?.state.bt { b.setPower(!b.powered) } },
+            cmd("Toggle Do Not Disturb", "Focus", "moon.circle", Mocha.mauve) { Self.topBar?.data.toggleDND() },
+            cmd("Toggle Caffeinate", "Keep Mac awake", "cup.and.saucer.fill", Mocha.peach) { Self.topBar?.data.toggleCaffeinate() },
+            cmd("Toggle Low Power Mode", "Battery", "battery.25", Mocha.yellow) { Self.topBar?.data.toggleLowPower() },
+            cmd("Toggle Microphone", "Mute / unmute input", "mic.slash", Mocha.peach) { Self.topBar?.data.toggleMic() },
             cmd("Quit Frontmost App", "", "xmark.app", Mocha.red) {
                 NSWorkspace.shared.frontmostApplication?.terminate() },
         ]
