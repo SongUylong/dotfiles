@@ -502,6 +502,8 @@ final class TopBarController {
         })
     }
 
+    private var guardTimer: Timer?
+
     func reposition() {
         panel?.orderOut(nil); panel = nil
         dropPanel?.orderOut(nil); dropPanel = nil
@@ -513,6 +515,16 @@ final class TopBarController {
                                                                      notchGap: geo.hasNotch ? geo.notchWidth : 0))
         bar.orderFrontRegardless()
         panel = bar
+        // Watchdog: yabai restarts, space switches or sleep can push the bar behind the
+        // (invisible) macOS menu bar or make it stop taking clicks. Re-assert every 2 s.
+        guardTimer?.invalidate()
+        guardTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in
+            guard let self, let bar = self.panel else { return }
+            let top = NSWindow.Level(rawValue: NSWindow.Level.mainMenu.rawValue + 1)
+            for p in [bar, self.dropPanel].compactMap({ $0 }) where p.level != top { p.level = top }
+            bar.ignoresMouseEvents = false
+            if !bar.isVisible || !bar.isOnActiveSpace { bar.orderFrontRegardless() }
+        }
 
         // Fixed-size, mostly transparent window under the bar's right end; content is top-aligned.
         let w: CGFloat = 400, h: CGFloat = 820
