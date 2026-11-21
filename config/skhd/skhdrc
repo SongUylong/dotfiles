@@ -3,7 +3,8 @@ alt - c : open -n /Applications/Cursor.app
 # one kitty process; each press opens a new window in it (so cmd+q quits everything)
 alt - t : /Applications/kitty.app/Contents/MacOS/kitty --single-instance --directory ~ >/dev/null 2>&1 &
 alt - b : open -n "/Applications/Brave Browser.app"
-alt - n : open -n /Applications/Notion.app
+alt - n : ~/.config/skhd/chat.sh
+alt + shift - n : open -n /Applications/Notion.app
 # Musike only runs once: open it, or bring it to the front if it's already open
 alt - m : open -a /Applications/Musike.app
 alt + shift - f : open -a Finder
