@@ -109,3 +109,4 @@ msg_layout="$HOME/.config/yabai/plugins/messaging_layout.sh"
 
 # Reload sketchybar so space items are rebuilt with the current space list.
 sketchybar --reload
+yabai -m config menubar_opacity 0.0   # hide macOS menu bar completely (NotchDock replaces it)
