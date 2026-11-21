@@ -176,7 +176,7 @@ final class LauncherModel: ObservableObject {
 
     private func appItem(_ a: (name: String, url: URL)) -> LaunchItem {
         LaunchItem(title: a.name, subtitle: a.url.deletingLastPathComponent().path, kind: .app,
-                   icon: NSWorkspace.shared.icon(forFile: a.url.path), url: a.url) { [weak self] in
+                   icon: Icons.get(a.url.path), url: a.url) { [weak self] in
             self?.launchCounts[a.name, default: 0] += 1
             UserDefaults.standard.set(self?.launchCounts, forKey: "launchCounts")
             NSWorkspace.shared.openApplication(at: a.url, configuration: NSWorkspace.OpenConfiguration())
@@ -193,7 +193,7 @@ final class LauncherModel: ObservableObject {
 
     private func fileItem(_ u: URL) -> LaunchItem {
         LaunchItem(title: u.lastPathComponent, subtitle: u.deletingLastPathComponent().path.replacingOccurrences(of: NSHomeDirectory(), with: "~"),
-                   kind: u.hasDirectoryPath ? .folder : .file, icon: NSWorkspace.shared.icon(forFile: u.path), url: u) { NSWorkspace.shared.open(u) }
+                   kind: u.hasDirectoryPath ? .folder : .file, icon: Icons.get(u.path), url: u) { NSWorkspace.shared.open(u) }
     }
 
     private func webItem(_ q: String) -> LaunchItem {
@@ -411,7 +411,6 @@ struct LauncherView: View {
         .scaleEffect(model.shown ? 1 : 0.94)
         .offset(y: model.shown ? 0 : 14)
         .opacity(model.shown ? 1 : 0)
-        .blur(radius: model.shown ? 0 : 6)
         .frame(width: 760, height: 500)   // room for the scale/offset animation
         .onAppear { focused = true }
         .onChange(of: model.shown) { _, s in if s { focused = true } }
@@ -469,7 +468,7 @@ final class LauncherPanel: NSPanel {
     init() {
         super.init(contentRect: NSRect(x: 0, y: 0, width: 760, height: 500),
                    styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
-        isOpaque = false; backgroundColor = .clear; hasShadow = true
+        isOpaque = false; backgroundColor = .clear; hasShadow = false   // BarBackground draws its own; a window shadow is re-traced every animation frame
         level = .modalPanel
         collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient]
         isMovableByWindowBackground = false   // rows are draggable (files to the notch)
@@ -514,7 +513,7 @@ final class LauncherController {
         NSApp.activate(ignoringOtherApps: true)
         panel.makeKeyAndOrderFront(nil)
         DispatchQueue.main.async {
-            withAnimation(.spring(response: 0.32, dampingFraction: 0.78)) { self.model.shown = true }
+            withAnimation(.spring(response: 0.26, dampingFraction: 0.82)) { self.model.shown = true }
         }
     }
 
@@ -547,3 +546,19 @@ final class LauncherController {
 }
 
 
+
+/// Icon cache: NSWorkspace icons are large multi-resolution images; loading and scaling them
+/// on every keystroke/open made the launcher stutter. Cached at row size.
+enum Icons {
+    private static var cache: [String: NSImage] = [:]
+    static func get(_ path: String) -> NSImage {
+        if let i = cache[path] { return i }
+        let src = NSWorkspace.shared.icon(forFile: path)
+        let size = NSSize(width: 52, height: 52)
+        let img = NSImage(size: size, flipped: false) { r in src.draw(in: r); return true }
+        // Rasterise once so SwiftUI doesn't redraw the vector/multi-rep icon each frame.
+        if let tiff = img.tiffRepresentation, let bmp = NSImage(data: tiff) { bmp.size = NSSize(width: 26, height: 26); cache[path] = bmp; return bmp }
+        cache[path] = img
+        return img
+    }
+}
