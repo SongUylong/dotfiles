@@ -63,3 +63,6 @@ alt + shift - i : /Users/eric/dotfiles/scripts/ocr-snap chi_sim
 
 # Dictation: toggle record, transcribe with whisper, copy to clipboard
 ctrl - space : /Users/eric/.config/skhd/dictate.sh
+
+# Reload NotchDock (top bar, dock, launcher) if it stops responding
+alt + shift - 0x27 : launchctl kickstart -k gui/$(id -u)/com.eric.notchdock
