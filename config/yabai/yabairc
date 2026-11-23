@@ -87,19 +87,21 @@ yabai -m signal --remove messaging_layout_telegram  2>/dev/null || true
 yabai -m signal --remove messaging_layout_whatsapp  2>/dev/null || true
 yabai -m signal --remove messaging_layout_wechat    2>/dev/null || true
 
-refresh_bar="$HOME/.config/sketchybar/plugins/update_workspace_icons.sh"
-yabai -m signal --add label=sketchybar_space_changed    event=space_changed        action="$refresh_bar"
-yabai -m signal --add label=sketchybar_window_created   event=window_created       action="$refresh_bar"
-yabai -m signal --add label=sketchybar_window_destroyed event=window_destroyed     action="$refresh_bar"
-yabai -m signal --add label=sketchybar_app_launched     event=application_launched action="$refresh_bar"
-yabai -m signal --add label=sketchybar_app_terminated   event=application_terminated action="$refresh_bar"
-yabai -m signal --add label=sketchybar_window_focused event=window_focused action="$refresh_bar"
-yabai -m signal --add label=sketchybar_window_moved event=window_moved action="$refresh_bar"
-yabai -m signal --add label=sketchybar_window_minimized event=window_minimized action="$refresh_bar"
-yabai -m signal --add label=sketchybar_window_deminimized event=window_deminimized action="$refresh_bar"
-yabai -m signal --add label=sketchybar_app_front event=application_front_switched action="$refresh_bar"
-yabai -m signal --add label=sketchybar_app_hidden event=application_hidden action="$refresh_bar"
-yabai -m signal --add label=sketchybar_app_visible event=application_visible action="$refresh_bar"
+# NotchDock's top bar redraws space icons when yabai pings it. The ping is a Darwin
+# notification (one tiny notifyutil, no script, no queries). App focus, launch, quit,
+# hide and space switches already reach NotchDock through NSWorkspace, so only
+# window-level events are sent here. The old SketchyBar script is not run any more.
+yabai -m signal --remove notchdock_window_created   2>/dev/null || true
+yabai -m signal --remove notchdock_window_destroyed 2>/dev/null || true
+yabai -m signal --remove notchdock_window_moved     2>/dev/null || true
+yabai -m signal --remove notchdock_window_minimized 2>/dev/null || true
+yabai -m signal --remove notchdock_window_deminimized 2>/dev/null || true
+ping_bar="/usr/bin/notifyutil -p com.eric.notchdock.yabai"
+yabai -m signal --add label=notchdock_window_created     event=window_created     action="$ping_bar"
+yabai -m signal --add label=notchdock_window_destroyed   event=window_destroyed   action="$ping_bar"
+yabai -m signal --add label=notchdock_window_moved       event=window_moved       action="$ping_bar"
+yabai -m signal --add label=notchdock_window_minimized   event=window_minimized   action="$ping_bar"
+yabai -m signal --add label=notchdock_window_deminimized event=window_deminimized action="$ping_bar"
 
 # Trigger messaging layout when Telegram/WhatsApp/WeChat opens
 msg_layout="$HOME/.config/yabai/plugins/messaging_layout.sh"
@@ -107,6 +109,7 @@ msg_layout="$HOME/.config/yabai/plugins/messaging_layout.sh"
 # (replaced by skhd/chat.sh) yabai -m signal --add label=messaging_layout_whatsapp event=window_created app='WhatsApp'   action="$msg_layout"
 # (replaced by skhd/chat.sh) yabai -m signal --add label=messaging_layout_wechat   event=window_created app='^WeChat$'   action="$msg_layout"
 
-# Reload sketchybar so space items are rebuilt with the current space list.
-sketchybar --reload
 yabai -m config menubar_opacity 0.0   # hide macOS menu bar completely (NotchDock replaces it)
+
+# Tell NotchDock to rebuild its bar windows (a yabai restart can leave them dead to clicks).
+notifyutil -p com.eric.notchdock.rebuild
